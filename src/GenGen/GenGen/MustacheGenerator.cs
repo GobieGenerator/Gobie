@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using Stubble.Core.Builders;
 
 namespace Mustache
 {
@@ -89,26 +88,25 @@ namespace Mustache
 
         private static string SourceFileFromMustachePath(string name, string template, string hash)
         {
-            ////var stubble = new StubbleBuilder().Build();
-            ////var mtext = stubble.Render(template, Newtonsoft.Json.JsonConvert.DeserializeObject(hash));
+            var ht = HandlebarsDotNet.Handlebars.Compile(template)(hash);
 
-            return GenerateMustacheClass(name, template);
+            return GenerateMustacheClass(name, ht);
         }
 
         private static IEnumerable<(string, string)> SourceFilesFromMustachePaths(IEnumerable<(string, string, string)> pathsData)
         {
             foreach ((string name, string template, string hash) in pathsData)
             {
+                var m = string.Empty;
                 try
                 {
-                    SourceFileFromMustachePath(name, template, hash);
+                    m = SourceFileFromMustachePath(name, template, hash);
                 }
                 catch (Exception e)
                 {
-                    var m = e.Message;
-                    throw;
+                    m = e.Message;
                 }
-                var t = (name, SourceFileFromMustachePath(name, template, hash));
+                var t = (name, m);
                 yield return t;
             }
         }

@@ -14,7 +14,22 @@
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Stubble.Core" Version="1.9.3" />
   </ItemGroup>
 
+
+	<!--https://github.com/dotnet/roslyn-sdk/blob/0313c80ed950ac4f4eef11bb2e1c6d1009b328c4/samples/CSharp/SourceGenerators/SourceGeneratorSamples/SourceGeneratorSamples.csproj#L13-L30-->
+	<ItemGroup>
+		<!-- Generator dependencies -->
+    <PackageReference Include="Handlebars.Net" Version="1.10.1" GeneratePathProperty="true" PrivateAssets="all" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+	</PropertyGroup>
+
+	<Target Name="GetDependencyTargetPaths">
+		<ItemGroup>
+            <TargetPathWithTargetPlatformMoniker Include="$(PkgHandlebars_Net)\lib\netstandard2.0\Handlebars.dll" IncludeRuntimeDependency="false" />   
+		</ItemGroup>
+	</Target>
 </Project>
