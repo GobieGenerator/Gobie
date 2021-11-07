@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GenGen": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\GenGen.Client\\GenGen.Client.csproj"
+    }
+  }
+}

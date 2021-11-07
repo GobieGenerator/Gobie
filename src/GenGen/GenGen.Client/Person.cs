@@ -7,6 +7,7 @@ using AutoNotify;
 
 namespace GenGen.Client
 {
+    //[Mustache]
     public partial class Person
     {
         [AutoNotify]

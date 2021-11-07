@@ -2,11 +2,18 @@
 {
     using System;
 
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private const string m = @"{{#repo}}
+  <b>{{name}}</b>
+{{/repo}}
+{{^repo}}
+  No repos :(
+{{/repo}}";
+
+        private static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine(m);
         }
     }
 }
