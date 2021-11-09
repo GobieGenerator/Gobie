@@ -121,12 +121,14 @@ namespace Mustache
             StringBuilder sb = new StringBuilder();
             sb.Append($@"
 namespace Mustache {{
-    public static partial class Constants {{
-        public const string {className} = @""{mustacheText.Replace("\"", "\"\"")}"";
-    }}
+    
+    {mustacheText}
+    
 }}
 ");
             return sb.ToString();
         }
     }
 }
+
+
