@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Stubble.Core.Builders;
 
 namespace Mustache
 {
@@ -88,7 +89,11 @@ namespace Mustache
 
         private static string SourceFileFromMustachePath(string name, string template, string hash)
         {
-            var ht = HandlebarsDotNet.Handlebars.Compile(template)(hash);
+
+            var stubble = new StubbleBuilder().Build();
+            var dict = new Dictionary<string, string>();
+            dict.Add("Name", "Mike");
+            var ht = stubble.Render(template, dict);
 
             return GenerateMustacheClass(name, ht);
         }
