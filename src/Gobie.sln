@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenGen", "GenGen\GenGen.csproj", "{CB436752-4AFF-46FA-9FA2-374B984EB90E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gobie", "Gobie\Gobie.csproj", "{CB436752-4AFF-46FA-9FA2-374B984EB90E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenGen.Client", "GenGen.Client\GenGen.Client.csproj", "{AAA26288-BE06-42F8-89CB-06061133950F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gobie.Client", "Gobie.Client\Gobie.Client.csproj", "{AAA26288-BE06-42F8-89CB-06061133950F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-﻿namespace GenGen.Client
+﻿namespace Gobie.Client
 {
     using System;
 

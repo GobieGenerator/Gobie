@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Gobie": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Gobie.Client\\Gobie.Client.csproj"
+    }
+  }
+}
