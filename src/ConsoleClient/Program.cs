@@ -1,4 +1,4 @@
-﻿namespace Gobie.Client
+﻿namespace ConsoleClient
 {
     using System;
 
