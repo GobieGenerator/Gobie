@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -17,28 +18,9 @@ namespace Mustache
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            ////            string attributeSource = @"
-            ////    [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple=true)]
-            ////    internal sealed class MustacheAttribute: System.Attribute
-            ////    {
-            ////        public string Name { get; }
-            ////        public string Template { get; }
-            ////        public string Hash { get; }
-            ////        public MustacheAttribute(string name, string template, string hash)
-            ////            => (Name, Template, Hash) = (name, template, hash);
-            ////    }
-            ////";
-            ////            context.AddSource("Mustache_MainAttributes__", SourceText.From(attributeSource, Encoding.UTF8));
-
             Compilation compilation = context.Compilation;
 
-            IEnumerable<(string, string, string)> options = GetMustacheOptions(compilation);
-            IEnumerable<(string, string)> namesSources = SourceFilesFromMustachePaths(options);
-
-            foreach ((string name, string source) in namesSources)
-            {
-                context.AddSource($"Mustache{name}", SourceText.From(source, Encoding.UTF8));
-            }
+            GetMustacheOptions(compilation, context);
         }
 
         public void Initialize(GeneratorInitializationContext context)
@@ -46,7 +28,7 @@ namespace Mustache
             // No initialization required
         }
 
-        private static IEnumerable<(string, string, string)> GetMustacheOptions(Compilation compilation)
+        private static void GetMustacheOptions(Compilation compilation, GeneratorExecutionContext context)
         {
             // Get all Mustache attributes
             IEnumerable<SyntaxNode>? allNodes = compilation.SyntaxTrees.SelectMany(s => s.GetRoot().DescendantNodes());
@@ -54,103 +36,91 @@ namespace Mustache
 
             foreach (var a in allAttributes)
             {
-                Trace.WriteLine(Environment.NewLine + "New Attribute:"); 
+                ////Trace.WriteLine(Environment.NewLine + "New Attribute:");
                 var attName = a.Name;
-                Trace.WriteLine(attName.ToString()); // This gets us the attribute name as written (w or w/o Attribute at the end)
+                ////Trace.WriteLine(attName.ToString()); // This gets us the attribute name as written (w or w/o Attribute at the end)
                 var sm = compilation.GetSemanticModel(a.SyntaxTree);
                 var typeInfo = sm.GetTypeInfo(a);
-                
-                Trace.WriteLine("Type containing namespace: " + typeInfo.Type.ContainingNamespace); 
-                Trace.WriteLine("Type name: " + typeInfo.Type.Name); 
-                Trace.WriteLine("Type metadata name: " + typeInfo.Type.MetadataName); 
-                Trace.WriteLine("Type base type: " + typeInfo.Type.BaseType); 
+
+                ////Trace.WriteLine("Type containing namespace: " + typeInfo.Type.ContainingNamespace);
+                ////Trace.WriteLine("Type name: " + typeInfo.Type.Name);
+                ////Trace.WriteLine("Type metadata name: " + typeInfo.Type.MetadataName);
+                ////Trace.WriteLine("Type base type: " + typeInfo.Type.BaseType);
+                ////Trace.WriteLine("Type base type name: " + typeInfo.Type.BaseType.Name);
+
+                if (typeInfo.Type?.Name == "GobieFieldGeneratorAttribute" || typeInfo.Type?.BaseType?.Name == "GobieFieldGeneratorAttribute")
+                {
+                    var fieldName = string.Empty;
+                    var dict = new Dictionary<string, string>();
+                    var template = string.Empty;
+                    SemanticModel m = compilation.GetSemanticModel(a.SyntaxTree);
+                    var index = 0;
+                    foreach (AttributeArgumentSyntax arg in a.ArgumentList.Arguments)
+                    {
+                        ExpressionSyntax expr = arg.Expression;
+
+                        TypeInfo t = m.GetTypeInfo(expr);
+                        Optional<object?> v = m.GetConstantValue(expr);
+
+                        if (index == 0)
+                        {
+                            template = v.ToString();
+                        }
+                        index++;
+                    }
+
+                    Trace.WriteLine("Found a gobie generator:");
+                    if (FindField(a) is FieldDeclarationSyntax field)
+                    {
+                        ////var names = field.DescendantTokens(x => true);
+                        ////foreach (var name in names)
+                        ////{
+                        ////    Trace.WriteLine("Descendant token: " + name.ToString() + " " + name.Kind());
+                        ////}
+                        SemanticModel model = compilation.GetSemanticModel(field.SyntaxTree);
+                        foreach (VariableDeclaratorSyntax variable in field.Declaration.Variables)
+                        {
+                            Trace.WriteLine("variable " + variable);
+
+                            // Get the symbol being decleared by the field, and keep it if its annotated
+                            IFieldSymbol fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
+                            Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
+                            fieldName = fieldSymbol?.Name;
+                            if (fieldName?.Length > 0)
+                            {
+                                dict.Add("field", fieldName);
+                                dict.Add("Property", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(fieldName));
+                            }
+                        }
+                    }
+
+                    var stubble = new StubbleBuilder().Build();
+                    var ht = stubble.Render(template, dict);
+                    context.AddSource($"Gobie_Field_{fieldName}", SourceText.From(ht, Encoding.UTF8));
+                }
             }
 
             // If we know the MetadataName then we can recursivly find the base to get back to ours.
-            var baseSymbol = compilation.GetTypeByMetadataName("Gobie.GobieAssemblyGeneratorAttribute");
-            if (baseSymbol != null)
-            {
-                var t = baseSymbol.BaseType;
-                var bt = t?.BaseType;
-                //var baseType = t.BaseType;
-            }
-
-            IEnumerable<SemanticModel> models = compilation.SyntaxTrees.Select(st => compilation.GetSemanticModel(st));
-            foreach (AttributeSyntax att in allAttributes)
-            {
-                string mustacheName = "", template = "", hash = "";
-                int index = 0;
-
-                if (att.ArgumentList is null) throw new Exception("Can't be null here");
-
-                SemanticModel m = compilation.GetSemanticModel(att.SyntaxTree);
-
-                foreach (AttributeArgumentSyntax arg in att.ArgumentList.Arguments)
-                {
-                    ExpressionSyntax expr = arg.Expression;
-
-                    TypeInfo t = m.GetTypeInfo(expr);
-                    Optional<object?> v = m.GetConstantValue(expr);
-                    if (index == 0)
-                    {
-                        mustacheName = v.ToString();
-                    }
-                    else if (index == 1)
-                    {
-                        template = v.ToString();
-                    }
-                    else
-                    {
-                        hash = v.ToString();
-                    }
-                    index += 1;
-                }
-                yield return (mustacheName, template, hash);
-            }
+            ////var baseSymbol = compilation.GetTypeByMetadataName("Gobie.GobieAssemblyGeneratorAttribute");
+            ////if (baseSymbol != null)
+            ////{
+            ////    var t = baseSymbol.BaseType;
+            ////    var bt = t?.BaseType;
+            ////    //var baseType = t.BaseType;
+            ////}
         }
 
-        private static string SourceFileFromMustachePath(string name, string template, string hash)
+        private static FieldDeclarationSyntax? FindField(SyntaxNode node)
         {
-
-            var stubble = new StubbleBuilder().Build();
-            var dict = new Dictionary<string, string>();
-            dict.Add("Name", "Mike");
-            var ht = stubble.Render(template, dict);
-
-            return GenerateMustacheClass(name, ht);
-        }
-
-        private static IEnumerable<(string, string)> SourceFilesFromMustachePaths(IEnumerable<(string, string, string)> pathsData)
-        {
-            foreach ((string name, string template, string hash) in pathsData)
+            if (node is FieldDeclarationSyntax field)
             {
-                var m = string.Empty;
-                try
-                {
-                    m = SourceFileFromMustachePath(name, template, hash);
-                }
-                catch (Exception e)
-                {
-                    m = e.Message;
-                }
-                var t = (name, m);
-                yield return t;
+                return field;
             }
-        }
-
-        private static string GenerateMustacheClass(string className, string mustacheText)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append($@"
-namespace Mustache {{
-    
-    {mustacheText}
-    
-}}
-");
-            return sb.ToString();
+            if (node is SyntaxNode)
+            {
+                return FindField(node.Parent);
+            }
+            return null;
         }
     }
 }
-
-

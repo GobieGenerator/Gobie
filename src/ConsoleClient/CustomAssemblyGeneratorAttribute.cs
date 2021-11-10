@@ -9,9 +9,21 @@
 
     public class CustomAssemblyGeneratorAttribute : GobieAssemblyGeneratorAttribute
     {
-        public string Name { get; }
-        public string Template { get; }
         public CustomAssemblyGeneratorAttribute(string name, string template)
             => (Name, Template) = (name, template);
+
+        public string Name { get; }
+
+        public string Template { get; }
     }
+
+    ////internal sealed class EncapsulatedCollectionAttribute : GobieFieldGeneratorAttribute
+    ////{
+    ////    private const string EncapsulationTemplate = "{{ Name }} {{ name }}";
+
+    ////    public EncapsulatedCollectionAttribute()
+    ////               : base(EncapsulationTemplate)
+    ////    {
+    ////    }
+    ////}
 }
