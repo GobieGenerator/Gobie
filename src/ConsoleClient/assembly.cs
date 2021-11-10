@@ -1,6 +1,9 @@
-﻿using System;
+﻿using ConsoleClient;
+using System;
 
-[assembly: MustacheAttribute("TemplateTest", Template.TestTemplate, "foooo")]
+//[assembly: MustacheAttribute("TemplateTest", Template.TestTemplate, "foooo")]
+[assembly: CustomAssemblyGenerator("TemplateTest", Template.TestTemplate)]
+[assembly: CustomAssemblyGeneratorAttribute("TemplateTest", Template.TestTemplate)]
 
 
 public class Template

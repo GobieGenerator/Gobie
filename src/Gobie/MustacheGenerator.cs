@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -16,18 +17,18 @@ namespace Mustache
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            string attributeSource = @"
-    [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple=true)]
-    internal sealed class MustacheAttribute: System.Attribute
-    {
-        public string Name { get; }
-        public string Template { get; }
-        public string Hash { get; }
-        public MustacheAttribute(string name, string template, string hash)
-            => (Name, Template, Hash) = (name, template, hash);
-    }
-";
-            context.AddSource("Mustache_MainAttributes__", SourceText.From(attributeSource, Encoding.UTF8));
+            ////            string attributeSource = @"
+            ////    [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple=true)]
+            ////    internal sealed class MustacheAttribute: System.Attribute
+            ////    {
+            ////        public string Name { get; }
+            ////        public string Template { get; }
+            ////        public string Hash { get; }
+            ////        public MustacheAttribute(string name, string template, string hash)
+            ////            => (Name, Template, Hash) = (name, template, hash);
+            ////    }
+            ////";
+            ////            context.AddSource("Mustache_MainAttributes__", SourceText.From(attributeSource, Encoding.UTF8));
 
             Compilation compilation = context.Compilation;
 
@@ -50,11 +51,32 @@ namespace Mustache
             // Get all Mustache attributes
             IEnumerable<SyntaxNode>? allNodes = compilation.SyntaxTrees.SelectMany(s => s.GetRoot().DescendantNodes());
             IEnumerable<AttributeSyntax> allAttributes = allNodes.Where((d) => d.IsKind(SyntaxKind.Attribute)).OfType<AttributeSyntax>();
-            ImmutableArray<AttributeSyntax> attributes = allAttributes.Where(d => d.Name.ToString() == "MustacheAttribute")
-                .ToImmutableArray();
+
+            foreach (var a in allAttributes)
+            {
+                Trace.WriteLine(Environment.NewLine + "New Attribute:"); 
+                var attName = a.Name;
+                Trace.WriteLine(attName.ToString()); // This gets us the attribute name as written (w or w/o Attribute at the end)
+                var sm = compilation.GetSemanticModel(a.SyntaxTree);
+                var typeInfo = sm.GetTypeInfo(a);
+                
+                Trace.WriteLine("Type containing namespace: " + typeInfo.Type.ContainingNamespace); 
+                Trace.WriteLine("Type name: " + typeInfo.Type.Name); 
+                Trace.WriteLine("Type metadata name: " + typeInfo.Type.MetadataName); 
+                Trace.WriteLine("Type base type: " + typeInfo.Type.BaseType); 
+            }
+
+            // If we know the MetadataName then we can recursivly find the base to get back to ours.
+            var baseSymbol = compilation.GetTypeByMetadataName("Gobie.GobieAssemblyGeneratorAttribute");
+            if (baseSymbol != null)
+            {
+                var t = baseSymbol.BaseType;
+                var bt = t?.BaseType;
+                //var baseType = t.BaseType;
+            }
 
             IEnumerable<SemanticModel> models = compilation.SyntaxTrees.Select(st => compilation.GetSemanticModel(st));
-            foreach (AttributeSyntax att in attributes)
+            foreach (AttributeSyntax att in allAttributes)
             {
                 string mustacheName = "", template = "", hash = "";
                 int index = 0;

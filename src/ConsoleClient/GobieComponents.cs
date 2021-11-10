@@ -1,6 +1,0 @@
-﻿namespace Gobie
-{
-    using System;
-    
-
-}
