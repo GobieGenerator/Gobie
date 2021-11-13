@@ -30,6 +30,8 @@ namespace Gobie
 
         private static void GetMustacheOptions(Compilation compilation, GeneratorExecutionContext context)
         {
+            var gobieWarning = new DiagnosticDescriptor("GB0001", "Gobie", "Testing a diagnostic that issues a build warning.", "Gobie", DiagnosticSeverity.Warning, true);
+
             // Get all Mustache attributes
             IEnumerable<SyntaxNode>? allNodes = compilation.SyntaxTrees.SelectMany(s => s.GetRoot().DescendantNodes());
             IEnumerable<AttributeSyntax> allAttributes = allNodes.Where((d) => d.IsKind(SyntaxKind.Attribute)).OfType<AttributeSyntax>();
@@ -72,6 +74,9 @@ namespace Gobie
                     Trace.WriteLine("Found a gobie generator:");
                     if (FindField(a) is FieldDeclarationSyntax field)
                     {
+                        context.ReportDiagnostic(Diagnostic.Create(gobieWarning, field.GetLocation()));
+                        context.ReportDiagnostic(Diagnostic.Create(gobieWarning, null));
+
                         ////var names = field.DescendantTokens(x => true);
                         ////foreach (var name in names)
                         ////{
