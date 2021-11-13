@@ -6,7 +6,8 @@
     {
         private static void Main(string[] args)
         {
-            //Mustache.SayHi.ToSomeone();
+            var bg = new BooksGenerated();
+            Console.WriteLine(bg);
         }
     }
 }

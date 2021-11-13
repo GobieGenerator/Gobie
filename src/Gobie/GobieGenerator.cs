@@ -11,10 +11,10 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Stubble.Core.Builders;
 
-namespace Mustache
+namespace Gobie
 {
     [Generator]
-    public class MustacheGenerator : ISourceGenerator
+    public class GobieGenerator : ISourceGenerator
     {
         public void Execute(GeneratorExecutionContext context)
         {
@@ -96,7 +96,28 @@ namespace Mustache
 
                     var stubble = new StubbleBuilder().Build();
                     var ht = stubble.Render(template, dict);
-                    context.AddSource($"Gobie_Field_{fieldName}", SourceText.From(ht, Encoding.UTF8));
+
+                    var len = dict.Max(x => x.Key.Length) + 1;
+
+                    // TODO only debug when requested.
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"// Gobie Debug");
+                    sb.AppendLine($"// ---------------------------------------");
+                    sb.AppendLine($"// Dictionary:");
+                    foreach (var item in dict.OrderBy(x => x.Key))
+                    {
+                        sb.AppendLine($"// {item.Key.PadRight(len)}: '{item.Value}'");
+                    }
+                    sb.AppendLine();
+                    sb.AppendLine($"// Source Template:");
+                    foreach (var templateLine in template.Split('\n'))
+                    {
+                        sb.Append($"// {templateLine}{(templateLine.EndsWith("\r") ? "\n" : string.Empty)}");
+                    }
+                    sb.AppendLine();
+                    sb.AppendLine(ht);
+
+                    context.AddSource($"Gobie_Field_{fieldName}", SourceText.From(sb.ToString(), Encoding.UTF8));
                 }
             }
 
