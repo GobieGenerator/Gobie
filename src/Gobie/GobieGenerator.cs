@@ -72,6 +72,25 @@ namespace Gobie
                     }
 
                     Trace.WriteLine("Found a gobie generator:");
+
+                    if (FindClass(a) is ClassDeclarationSyntax classDeclaration)
+                    {
+                        if (classDeclaration.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
+                        {
+                            // Continue
+                        }
+                        else
+                        {
+                            var classNotPartial = new DiagnosticDescriptor("GB0001", "Gobie", "Class must be defined as partial.", "Gobie", DiagnosticSeverity.Error, true);
+                            context.ReportDiagnostic(Diagnostic.Create(classNotPartial, classDeclaration.GetLocation()));
+                            // TODO return;
+                        }
+                    }
+                    else
+                    {
+                        // TODO return; // How wouldn't this be in the class.
+                    }
+
                     if (FindField(a) is FieldDeclarationSyntax field)
                     {
                         context.ReportDiagnostic(Diagnostic.Create(gobieWarning, field.GetLocation()));
@@ -89,6 +108,7 @@ namespace Gobie
 
                             // Get the symbol being decleared by the field, and keep it if its annotated
                             IFieldSymbol fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
+
                             Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
                             fieldName = fieldSymbol?.Name;
                             if (fieldName?.Length > 0)
@@ -145,6 +165,19 @@ namespace Gobie
             if (node is SyntaxNode)
             {
                 return FindField(node.Parent);
+            }
+            return null;
+        }
+
+        private static ClassDeclarationSyntax? FindClass(SyntaxNode node)
+        {
+            if (node is ClassDeclarationSyntax classDeclaration)
+            {
+                return classDeclaration;
+            }
+            if (node is SyntaxNode)
+            {
+                return FindClass(node.Parent);
             }
             return null;
         }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleClient
 {
-    public class Author
+    public partial class Author
     {
         private const string EncapsulationTemplate = @"
 
@@ -25,9 +25,9 @@ namespace ConsoleClient
         [Gobie.GobieFieldGenerator(EncapsulationTemplate)]
         private List<string> books = new();
 
+        [Gobie.GobieFieldGenerator(EncapsulationTemplate)]
         private List<string> books2 = new();
 
-        [Gobie.GobieFieldGenerator(EncapsulationTemplate)]
         private List<string> sdf = new();
     }
 }
