@@ -1,6 +1,8 @@
 ﻿namespace Gobie
 {
-    public class GobieAssemblyGeneratorBaseAttribute : System.Attribute
+    using System;
+
+    public abstract class GobieAssemblyGeneratorBaseAttribute : Attribute
     {
         public GobieAssemblyGeneratorBaseAttribute(bool debug)
         {
@@ -10,8 +12,8 @@
         public bool Debug { get; private set; }
     }
 
-    [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple = true)]
-    public class GobieAssemblyGeneratorAttribute : GobieAssemblyGeneratorBaseAttribute
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+    public abstract class GobieAssemblyGeneratorAttribute : GobieAssemblyGeneratorBaseAttribute
     {
         public GobieAssemblyGeneratorAttribute(bool debug = true)
             : base(debug)
@@ -19,15 +21,17 @@
         }
     }
 
-    [System.AttributeUsage(System.AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
-    public class GobieFieldGeneratorAttribute : GobieAssemblyGeneratorBaseAttribute
+    [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public abstract class GobieFieldGeneratorAttribute : GobieAssemblyGeneratorBaseAttribute
     {
-        public GobieFieldGeneratorAttribute(string template, bool debug = true)
+        public GobieFieldGeneratorAttribute(bool debug = true)
             : base(debug)
         {
-            Template = template;
         }
+    }
 
-        public string Template { get; }
+    [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class GobieTemplateAttribute : Attribute
+    {
     }
 }

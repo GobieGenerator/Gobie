@@ -21,7 +21,7 @@ namespace Gobie
         {
             Compilation compilation = context.Compilation;
 
-            GetMustacheOptions(compilation, context);
+            RunGobie(compilation, context);
         }
 
         public void Initialize(GeneratorInitializationContext context)
@@ -29,12 +29,34 @@ namespace Gobie
             // No initialization required
         }
 
-        private static void GetMustacheOptions(Compilation compilation, GeneratorExecutionContext context)
+        private static void RunGobie(Compilation compilation, GeneratorExecutionContext context)
         {
             // Get all Mustache attributes
             IEnumerable<SyntaxNode>? allNodes = compilation.SyntaxTrees.SelectMany(s => s.GetRoot().DescendantNodes());
-            IEnumerable<AttributeSyntax> allAttributes = allNodes.Where((d) => d.IsKind(SyntaxKind.Attribute)).OfType<AttributeSyntax>();
+            ProcessClasses(compilation, context, allNodes);
+            ProcessAttributes(compilation, context, allNodes);
+        }
 
+        private static void ProcessClasses(Compilation compilation, GeneratorExecutionContext context, IEnumerable<SyntaxNode> allNodes)
+        {
+            IEnumerable<ClassDeclarationSyntax> allClasses = allNodes.Where((d) => d.IsKind(SyntaxKind.ClassDeclaration)).OfType<ClassDeclarationSyntax>();
+            foreach (var c in allClasses)
+            {
+                // Check if its inherited from one of our attributes.
+
+                // If it is, pull all the template info off of this instance
+                ////if (typeInfo.Type?.Name == "GobieTemplateAttribute" || typeInfo.Type?.BaseType?.Name == "GobieTemplateAttribute")
+                ////{
+                ////    GetTemplateOrIssueDiagnostic(compilation, context, a);
+                ////}
+
+                // Accumulate that into a dictionary or something so we can use it to build the output.
+            }
+        }
+
+        private static void ProcessAttributes(Compilation compilation, GeneratorExecutionContext context, IEnumerable<SyntaxNode> allNodes)
+        {
+            IEnumerable<AttributeSyntax> allAttributes = allNodes.Where((d) => d.IsKind(SyntaxKind.Attribute)).OfType<AttributeSyntax>();
             foreach (var a in allAttributes)
             {
                 var attName = a.Name;
@@ -46,21 +68,7 @@ namespace Gobie
                     var fieldName = string.Empty;
                     var dict = new Dictionary<string, string>();
                     var template = string.Empty;
-                    SemanticModel m = compilation.GetSemanticModel(a.SyntaxTree);
-                    var index = 0;
-                    foreach (AttributeArgumentSyntax arg in a.ArgumentList.Arguments)
-                    {
-                        ExpressionSyntax expr = arg.Expression;
-
-                        TypeInfo t = m.GetTypeInfo(expr);
-                        Optional<object?> v = m.GetConstantValue(expr);
-
-                        if (index == 0)
-                        {
-                            template = v.ToString();
-                        }
-                        index++;
-                    }
+                    // TODO get template from
 
                     Trace.WriteLine("Found a gobie generator:");
 
@@ -106,6 +114,31 @@ namespace Gobie
                     context.AddSource($"Gobie_Field_{fieldName}", SourceText.From(genCode, Encoding.UTF8));
                 }
             }
+        }
+
+        private static string? GetTemplateOrIssueDiagnostic(Compilation compilation, GeneratorExecutionContext context, AttributeSyntax a)
+        {
+            if (FindField(a) is FieldDeclarationSyntax field)
+            {
+                if (!field.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword)))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.TemplateIsNotConstString, field.GetLocation()));
+                }
+
+                //We assume its only one variable.
+                var init = field.Declaration.Variables[0];
+                if (init.Initializer?.Value is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.StringLiteralExpression))
+                {
+                    var sm = compilation.GetSemanticModel(a.SyntaxTree);
+                    return sm.GetConstantValue(literal).ToString();
+                }
+                else
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.TemplateIsNotConstString, field.GetLocation()));
+                }
+            }
+
+            return null;
         }
 
         private static string RenderTemplate(Dictionary<string, string> dict, string template, bool debug)
