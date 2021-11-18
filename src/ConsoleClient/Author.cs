@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleClient
+namespace ConsoleClient.Models
 {
     public partial class Author
     {

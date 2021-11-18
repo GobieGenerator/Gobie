@@ -6,8 +6,20 @@
     {
         private static void Main(string[] args)
         {
-            ////var bg = new BooksGenerated();
-            ////Console.WriteLine(bg);
+            var auth = new Author();
+
+            auth.AddBooks("My first book");
+            auth.AddBooks("Another");
+
+            foreach (var book in auth.Books)
+            {
+                Console.WriteLine(book);
+            }
+
+            foreach (var bl in auth.BooksLengths)
+            {
+                Console.WriteLine(bl);
+            }
         }
     }
 }

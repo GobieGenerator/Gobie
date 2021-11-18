@@ -124,9 +124,11 @@ namespace Gobie
                     }
                     else
                     {
+                        continue;
                         // TODO return; // How wouldn't this be in the class.
                     }
 
+                    INamedTypeSymbol? partialClass = null;
                     if (FindField(a) is FieldDeclarationSyntax field)
                     {
                         SemanticModel model = compilation.GetSemanticModel(field.SyntaxTree);
@@ -136,6 +138,7 @@ namespace Gobie
 
                             // Get the symbol being decleared by the field, and keep it if its annotated
                             IFieldSymbol fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
+                            partialClass = fieldSymbol.ContainingType;
 
                             Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
                             fieldName = fieldSymbol?.Name;
@@ -147,16 +150,54 @@ namespace Gobie
                         }
                     }
 
-                    var sb = new StringBuilder();
-                    foreach (var template in templates)
+                    if (partialClass != null)
                     {
-                        sb.AppendLine(RenderTemplate(dict, template, true));
-                        sb.AppendLine();
-                    }
+                        var sb = new StringBuilder();
+                        foreach (var template in templates)
+                        {
+                            sb.AppendLine(RenderTemplate(dict, template, true));
+                            sb.AppendLine();
+                        }
 
-                    context.AddSource($"Gobie_Field_{fieldName}", SourceText.From(sb.ToString(), Encoding.UTF8));
+                        string generatedCode = BuildPartialClass(partialClass, sb.ToString());
+
+                        context.AddSource($"Gobie_Field_{fieldName}", SourceText.From(generatedCode, Encoding.UTF8));
+                    }
                 }
             }
+        }
+
+        private static string BuildPartialClass(ITypeSymbol type, string v)
+        {
+            var fullNamespace = GetNamespaces(type);
+
+            return
+@$"using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace {fullNamespace}
+{{
+    public partial class {type.Name}
+    {{
+{v}
+    }}
+}}";
+        }
+
+        private static string GetNamespaces(ITypeSymbol type)
+        {
+            var n = type.ContainingNamespace;
+            var ns = n.Name;
+            n = n.ContainingNamespace;
+            while (n is INamespaceSymbol && !n.IsGlobalNamespace)
+            {
+                ns = n.Name + "." + ns;
+                n = n.ContainingNamespace;
+            }
+            return ns;
         }
 
         private static string? GetTemplateOrIssueDiagnostic(Compilation compilation, GeneratorExecutionContext context, AttributeSyntax a)
