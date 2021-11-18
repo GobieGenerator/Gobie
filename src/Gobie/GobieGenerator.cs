@@ -33,28 +33,61 @@ namespace Gobie
         {
             // Get all Mustache attributes
             IEnumerable<SyntaxNode>? allNodes = compilation.SyntaxTrees.SelectMany(s => s.GetRoot().DescendantNodes());
-            ProcessClasses(compilation, context, allNodes);
-            ProcessAttributes(compilation, context, allNodes);
+            var attributeTemplates = new Dictionary<string, List<string>>();
+            GetCustomUserTemplateDefinitions(compilation, context, allNodes, attributeTemplates);
+            ProcessAttributes(compilation, context, allNodes, attributeTemplates);
         }
 
-        private static void ProcessClasses(Compilation compilation, GeneratorExecutionContext context, IEnumerable<SyntaxNode> allNodes)
+        private static void GetCustomUserTemplateDefinitions(Compilation compilation, GeneratorExecutionContext context, IEnumerable<SyntaxNode> allNodes, Dictionary<string, List<string>> attributeTemplates)
         {
             IEnumerable<ClassDeclarationSyntax> allClasses = allNodes.Where((d) => d.IsKind(SyntaxKind.ClassDeclaration)).OfType<ClassDeclarationSyntax>();
             foreach (var c in allClasses)
             {
                 // Check if its inherited from one of our attributes.
+                if (!ClassInheritsFrom(compilation, c, "GobieAssemblyGeneratorBaseAttribute"))
+                {
+                    continue;
+                }
 
-                // If it is, pull all the template info off of this instance
-                ////if (typeInfo.Type?.Name == "GobieTemplateAttribute" || typeInfo.Type?.BaseType?.Name == "GobieTemplateAttribute")
-                ////{
-                ////    GetTemplateOrIssueDiagnostic(compilation, context, a);
-                ////}
+                if (c.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieAttributeIsPartial, c.GetLocation()));
+                    continue;
+                }
+                else if (c.Modifiers.Any(x => x.IsKind(SyntaxKind.AbstractKeyword)))
+                {
+                    continue; // We don't care about abstract instances.
+                }
 
-                // Accumulate that into a dictionary or something so we can use it to build the output.
+                var attTemplates = new List<string>();
+                IEnumerable<AttributeSyntax> allAttributes = c.DescendantNodesAndSelf((_) => true, false).Where((d) => d.IsKind(SyntaxKind.Attribute)).OfType<AttributeSyntax>();
+                foreach (var attribute in allAttributes)
+                {
+                    var sm = compilation.GetSemanticModel(attribute.SyntaxTree);
+                    var typeInfo = sm.GetTypeInfo(attribute);
+                    //If it is, pull all the template info off of this instance
+                    if (typeInfo.Type?.Name == "GobieTemplateAttribute" || typeInfo.Type?.BaseType?.Name == "GobieTemplateAttribute")
+                    {
+                        var template = GetTemplateOrIssueDiagnostic(compilation, context, attribute);
+                        if (template != null)
+                        {
+                            attTemplates.Add(template);
+                        }
+                    }
+                }
+
+                if (attTemplates.Any())
+                {
+                    attributeTemplates.Add(GetClassname(compilation, c), attTemplates);
+                }
+                else
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieAttributeHasNoTemplates, c.GetLocation()));
+                }
             }
         }
 
-        private static void ProcessAttributes(Compilation compilation, GeneratorExecutionContext context, IEnumerable<SyntaxNode> allNodes)
+        private static void ProcessAttributes(Compilation compilation, GeneratorExecutionContext context, IEnumerable<SyntaxNode> allNodes, Dictionary<string, List<string>> attributeTemplates)
         {
             IEnumerable<AttributeSyntax> allAttributes = allNodes.Where((d) => d.IsKind(SyntaxKind.Attribute)).OfType<AttributeSyntax>();
             foreach (var a in allAttributes)
@@ -63,12 +96,17 @@ namespace Gobie
                 var sm = compilation.GetSemanticModel(a.SyntaxTree);
                 var typeInfo = sm.GetTypeInfo(a);
 
-                if (typeInfo.Type?.Name == "GobieFieldGeneratorAttribute" || typeInfo.Type?.BaseType?.Name == "GobieFieldGeneratorAttribute")
+                if (typeInfo.Type?.BaseType?.Name == "GobieFieldGeneratorAttribute")
                 {
+                    var customAttrTypeName = typeInfo.Type.Name;
                     var fieldName = string.Empty;
                     var dict = new Dictionary<string, string>();
-                    var template = string.Empty;
-                    // TODO get template from
+
+                    if (!attributeTemplates.TryGetValue(customAttrTypeName, out var templates))
+                    {
+                        // todo issue a diagnostic?
+                        continue;
+                    }
 
                     Trace.WriteLine("Found a gobie generator:");
 
@@ -81,7 +119,7 @@ namespace Gobie
                         else
                         {
                             context.ReportDiagnostic(Diagnostic.Create(Diagnostics.ClassIsNotParital, classDeclaration.GetLocation()));
-                            // TODO return;
+                            continue;
                         }
                     }
                     else
@@ -109,9 +147,14 @@ namespace Gobie
                         }
                     }
 
-                    var genCode = RenderTemplate(dict, template, true);
+                    var sb = new StringBuilder();
+                    foreach (var template in templates)
+                    {
+                        sb.AppendLine(RenderTemplate(dict, template, true));
+                        sb.AppendLine();
+                    }
 
-                    context.AddSource($"Gobie_Field_{fieldName}", SourceText.From(genCode, Encoding.UTF8));
+                    context.AddSource($"Gobie_Field_{fieldName}", SourceText.From(sb.ToString(), Encoding.UTF8));
                 }
             }
         }

@@ -35,5 +35,41 @@ namespace Gobie.Helpers
             }
             return null;
         }
+
+        internal static bool ClassInheritsFrom(Compilation compilation, ClassDeclarationSyntax c, string targetName)
+        {
+            var sm = compilation.GetSemanticModel(c.SyntaxTree);
+            //TODO this doesn't seem ideal.
+            var typeInfo = (ITypeSymbol)sm.GetDeclaredSymbol(c);
+
+            return SearchForType(typeInfo);
+
+            bool SearchForType(ITypeSymbol? typeInfo)
+            {
+                if (typeInfo == null)
+                {
+                    return false;
+                }
+                if (typeInfo.Name == targetName)
+                {
+                    return true;
+                }
+                else if (typeInfo.BaseType is ITypeSymbol type)
+                {
+                    return SearchForType(type);
+                }
+
+                return false;
+            }
+        }
+
+        internal static string GetClassname(Compilation compilation, ClassDeclarationSyntax c)
+        {
+            var sm = compilation.GetSemanticModel(c.SyntaxTree);
+            //TODO this doesn't seem ideal.
+            var typeInfo = (ITypeSymbol)sm.GetDeclaredSymbol(c);
+
+            return typeInfo.Name;
+        }
     }
 }

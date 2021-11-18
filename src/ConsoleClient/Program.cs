@@ -6,8 +6,8 @@
     {
         private static void Main(string[] args)
         {
-            var bg = new BooksGenerated();
-            Console.WriteLine(bg);
+            ////var bg = new BooksGenerated();
+            ////Console.WriteLine(bg);
         }
     }
 }
