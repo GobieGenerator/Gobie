@@ -101,6 +101,7 @@ namespace Gobie
                     var customAttrTypeName = typeInfo.Type.Name;
                     var fieldName = string.Empty;
                     var dict = new Dictionary<string, string>();
+                    INamedTypeSymbol attributeSymbol = compilation.GetTypeByMetadataName("ConsoleClient." + customAttrTypeName);
 
                     if (!attributeTemplates.TryGetValue(customAttrTypeName, out var templates))
                     {
@@ -140,12 +141,15 @@ namespace Gobie
                             IFieldSymbol fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
                             partialClass = fieldSymbol.ContainingType;
 
+                            var attributeData = fieldSymbol.GetAttributes().Single(ad => ad.AttributeClass.Equals(attributeSymbol, SymbolEqualityComparer.Default));
+
                             Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
                             fieldName = fieldSymbol?.Name;
                             if (fieldName?.Length > 0)
                             {
                                 dict.Add("field", fieldName);
                                 dict.Add("Property", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(fieldName));
+                                dict.Add("validator", attributeData.ConstructorArguments[0].Value.ToString());
                             }
                         }
                     }
@@ -227,8 +231,6 @@ namespace {fullNamespace}
 
         private static string RenderTemplate(Dictionary<string, string> dict, string template, bool debug)
         {
-            // TODO only debug when requested.
-
             var sb = new StringBuilder();
             var stubble = new StubbleBuilder().Build();
             var ht = stubble.Render(template, dict);

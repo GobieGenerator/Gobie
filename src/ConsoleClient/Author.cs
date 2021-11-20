@@ -9,12 +9,15 @@ namespace ConsoleClient.Models
 {
     public partial class Author
     {
-        [CustomFieldGenerator]
+        [EncapulatedCollection(validator: nameof(ValidateBooks))]
         private List<string> books = new();
 
-        [CustomFieldGenerator]
-        private List<string> books2 = new();
+        [EncapulatedCollection()]
+        private List<string> publishers = new();
 
-        private List<string> sdf = new();
+        public bool ValidateBooks(string a)
+        {
+            return true;
+        }
     }
 }
