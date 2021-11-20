@@ -9,7 +9,7 @@ namespace ConsoleClient.Models
 {
     public partial class Author
     {
-        [EncapulatedCollection(validator: nameof(ValidateBooks))]
+        [EncapulatedCollection(CustomValidator = nameof(ValidateBooks))]
         private List<string> books = new();
 
         [EncapulatedCollection()]

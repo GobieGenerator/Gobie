@@ -149,7 +149,11 @@ namespace Gobie
                             {
                                 dict.Add("field", fieldName);
                                 dict.Add("Property", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(fieldName));
-                                dict.Add("validator", attributeData.ConstructorArguments[0].Value.ToString());
+
+                                foreach (var na in attributeData.NamedArguments)
+                                {
+                                    dict.Add(na.Key, na.Value.Value.ToString());
+                                }
                             }
                         }
                     }
@@ -176,7 +180,7 @@ namespace Gobie
             var fullNamespace = GetNamespaces(type);
 
             return
-@$"using System;
+        @$"using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
