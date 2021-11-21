@@ -41,8 +41,20 @@ namespace Gobie
             // Get all Mustache attributes
             IEnumerable<SyntaxNode>? allNodes = compilation.SyntaxTrees.SelectMany(s => s.GetRoot().DescendantNodes());
             var attributeTemplates = new Dictionary<string, List<string>>();
+            var partialClassContents = new Dictionary<(string namespaceName, string className), string>();
             GetCustomUserTemplateDefinitions(compilation, context, allNodes, attributeTemplates);
-            ProcessAttributes(compilation, context, allNodes, attributeTemplates);
+            ProcessAttributes(compilation, context, allNodes, attributeTemplates, partialClassContents);
+            OutputPartialClasses(context, partialClassContents);
+        }
+
+        private static void OutputPartialClasses(GeneratorExecutionContext context, Dictionary<(string namespaceName, string className), string> partialClassContents)
+        {
+            foreach (var pc in partialClassContents)
+            {
+                string generatedCode = BuildPartialClass(pc.Key.namespaceName, pc.Key.className, pc.Value);
+                generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
+                context.AddSource($"{pc.Key.namespaceName}.{pc.Key.className}", SourceText.From(generatedCode, Encoding.UTF8));
+            }
         }
 
         private static void GetCustomUserTemplateDefinitions(Compilation compilation, GeneratorExecutionContext context, IEnumerable<SyntaxNode> allNodes, Dictionary<string, List<string>> attributeTemplates)
@@ -94,7 +106,12 @@ namespace Gobie
             }
         }
 
-        private static void ProcessAttributes(Compilation compilation, GeneratorExecutionContext context, IEnumerable<SyntaxNode> allNodes, Dictionary<string, List<string>> attributeTemplates)
+        private static void ProcessAttributes(
+            Compilation compilation,
+            GeneratorExecutionContext context,
+            IEnumerable<SyntaxNode> allNodes,
+            Dictionary<string, List<string>> attributeTemplates,
+            Dictionary<(string namespaceName, string className), string> partialClassContents)
         {
             IEnumerable<AttributeSyntax> allAttributes = allNodes.Where((d) => d.IsKind(SyntaxKind.Attribute)).OfType<AttributeSyntax>();
             foreach (var a in allAttributes)
@@ -182,18 +199,22 @@ namespace Gobie
                             sb.AppendLine();
                         }
 
-                        string generatedCode = BuildPartialClass(partialClass, sb.ToString());
-                        generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
-                        context.AddSource($"Gobie_Field_{fieldName}", SourceText.From(generatedCode, Encoding.UTF8));
+                        var key = (GetNamespaces(partialClass), partialClass.Name);
+                        if (partialClassContents.TryGetValue(key, out var contents))
+                        {
+                            partialClassContents[key] = contents + Environment.NewLine + sb.ToString();
+                        }
+                        else
+                        {
+                            partialClassContents.Add(key, sb.ToString());
+                        }
                     }
                 }
             }
         }
 
-        private static string BuildPartialClass(ITypeSymbol type, string v)
+        private static string BuildPartialClass(string fullNamespace, string typeName, string v)
         {
-            var fullNamespace = GetNamespaces(type);
-
             return
         @$"using System;
 using System.Collections.Generic;
@@ -203,7 +224,7 @@ using System.Threading.Tasks;
 
 namespace {fullNamespace}
 {{
-    public partial class {type.Name}
+    public partial class {typeName}
     {{
 {v}
     }}

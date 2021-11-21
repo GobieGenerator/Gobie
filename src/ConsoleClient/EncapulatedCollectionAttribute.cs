@@ -18,16 +18,19 @@ namespace ConsoleClient
 
         [GobieTemplate]
         private const string AddMethod =
-@"      public void Add{{ Property }}(string s)
+@"      public bool TryAdd{{ Property }}(string s)
         {
             {{#CustomValidator}}
             if({{CustomValidator}}(s))
             {
                 {{ field }}.Add(s);
+                return true;
             }
+            return false;
             {{/CustomValidator}}
             {{^CustomValidator}}
             {{ field }}.Add(s);
+            return true;
             {{/CustomValidator}}
         }";
 
