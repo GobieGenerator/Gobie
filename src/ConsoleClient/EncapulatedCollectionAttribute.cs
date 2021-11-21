@@ -11,39 +11,26 @@ namespace ConsoleClient
     {
         [GobieTemplate]
         private const string EncapsulationTemplate =
-@"
-        public System.Collections.Generic.IEnumerable<string> {{ Property }} => {{ field }}.AsReadOnly();
+@"      public IEnumerable<string> {{ Property }} => {{ field }}.AsReadOnly();
 
-        public System.Collections.Generic.IEnumerable<int> {{ Property }}Lengths => {{ field }}.Select(x => x.Length);
+        public IEnumerable<int> {{ Property }}Lengths => {{ field }}.Select(x => x.Length);
 ";
 
         [GobieTemplate]
         private const string AddMethod =
-@"
-        public void Add{{ Property }}(string s)
+@"      public void Add{{ Property }}(string s)
         {
-            {{#validator}}
-            if({{validator}}(s))
+            {{#CustomValidator}}
+            if({{CustomValidator}}(s))
             {
                 {{ field }}.Add(s);
             }
-            {{/validator}}
-            {{^validator}}
+            {{/CustomValidator}}
+            {{^CustomValidator}}
             {{ field }}.Add(s);
-            {{/validator}}
-        }
-";
-
-        private readonly string validator;
-
-        public EncapulatedCollectionAttribute(string validator = "")
-                                    : base(false)
-        {
-            this.validator = validator;
-        }
+            {{/CustomValidator}}
+        }";
 
         public string CustomValidator { get; set; } = null;
-
-        public string CustomSideEffect { get; set; } = null;
     }
 }

@@ -21,7 +21,14 @@ namespace Gobie
         {
             Compilation compilation = context.Compilation;
 
-            RunGobie(compilation, context);
+            try
+            {
+                RunGobie(compilation, context);
+            }
+            catch (Exception ex)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieCrashed(ex.Message), null));
+            }
         }
 
         public void Initialize(GeneratorInitializationContext context)
@@ -129,6 +136,7 @@ namespace Gobie
                         // TODO return; // How wouldn't this be in the class.
                     }
 
+                    var templateDebug = false;
                     INamedTypeSymbol? partialClass = null;
                     if (FindField(a) is FieldDeclarationSyntax field)
                     {
@@ -152,7 +160,14 @@ namespace Gobie
 
                                 foreach (var na in attributeData.NamedArguments)
                                 {
-                                    dict.Add(na.Key, na.Value.Value.ToString());
+                                    if (na.Key == "TemplateDebug")
+                                    {
+                                        templateDebug = bool.Parse(na.Value.Value.ToString());
+                                    }
+                                    else
+                                    {
+                                        dict.Add(na.Key, na.Value.Value.ToString());
+                                    }
                                 }
                             }
                         }
@@ -163,12 +178,12 @@ namespace Gobie
                         var sb = new StringBuilder();
                         foreach (var template in templates)
                         {
-                            sb.AppendLine(RenderTemplate(dict, template, true));
+                            sb.AppendLine(RenderTemplate(dict, template, templateDebug));
                             sb.AppendLine();
                         }
 
                         string generatedCode = BuildPartialClass(partialClass, sb.ToString());
-
+                        generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
                         context.AddSource($"Gobie_Field_{fieldName}", SourceText.From(generatedCode, Encoding.UTF8));
                     }
                 }

@@ -20,5 +20,8 @@ namespace Gobie
 
         public static DiagnosticDescriptor GobieAttributeHasNoTemplates =>
              new DiagnosticDescriptor("GB1003", "Gobie", "Attribute has no tempaltes and will not generate any output.", "Gobie", DiagnosticSeverity.Warning, true);
+
+        public static DiagnosticDescriptor GobieCrashed(string exMessage) =>
+             new DiagnosticDescriptor("GB0000", "Gobie", $"Gobie Crashed. {exMessage}", "Gobie", DiagnosticSeverity.Error, true);
     }
 }
