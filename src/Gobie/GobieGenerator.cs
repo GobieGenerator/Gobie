@@ -53,7 +53,7 @@ namespace Gobie
             {
                 string generatedCode = BuildPartialClass(pc.Key.namespaceName, pc.Key.className, pc.Value);
                 generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
-                context.AddSource($"{pc.Key.namespaceName}.{pc.Key.className}", SourceText.From(generatedCode, Encoding.UTF8));
+                context.AddSource($"{pc.Key.namespaceName}.{pc.Key.className}.g", SourceText.From(generatedCode, Encoding.UTF8));
             }
         }
 
