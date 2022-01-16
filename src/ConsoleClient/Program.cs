@@ -9,8 +9,8 @@
         {
             var auth = new Author();
 
-            auth.AddBooks("My first book");
-            auth.AddBooks("Another");
+            auth.TryAddBooks("Spellmonger");
+            auth.TryAddBooks("The Warrior's Apprentace");
 
             foreach (var book in auth.Books)
             {

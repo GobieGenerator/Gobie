@@ -17,6 +17,11 @@ namespace Gobie
     [Generator]
     public class GobieGenerator : ISourceGenerator
     {
+        public void Initialize(GeneratorInitializationContext context)
+        {
+            // No initialization required
+        }
+
         public void Execute(GeneratorExecutionContext context)
         {
             Compilation compilation = context.Compilation;
@@ -27,13 +32,8 @@ namespace Gobie
             }
             catch (Exception ex)
             {
-                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieCrashed(ex.Message), null));
+                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieCrashed(ex.Message + ": " + ex.StackTrace), null));
             }
-        }
-
-        public void Initialize(GeneratorInitializationContext context)
-        {
-            // No initialization required
         }
 
         private static void RunGobie(Compilation compilation, GeneratorExecutionContext context)
@@ -63,7 +63,7 @@ namespace Gobie
             foreach (var c in allClasses)
             {
                 // Check if its inherited from one of our attributes.
-                if (!ClassInheritsFrom(compilation, c, "GobieAssemblyGeneratorBaseAttribute"))
+                if (!ClassInheritsFrom(compilation, c, "GobieGeneratorBase"))
                 {
                     continue;
                 }
@@ -97,7 +97,15 @@ namespace Gobie
 
                 if (attTemplates.Any())
                 {
-                    attributeTemplates.Add(GetClassname(compilation, c), attTemplates);
+                    var baseName = GetClassname(compilation, c);
+                    if (baseName.EndsWith("Generator"))
+                    {
+                        baseName = baseName.Substring(0, baseName.Length - 9);
+                    }
+                    baseName += "Attribute";
+                    // TODO output the actual attribute here.
+
+                    attributeTemplates.Add(baseName, attTemplates);
                 }
                 else
                 {
@@ -125,11 +133,16 @@ namespace Gobie
                     var customAttrTypeName = typeInfo.Type.Name;
                     var fieldName = string.Empty;
                     var dict = new Dictionary<string, string>();
-                    INamedTypeSymbol attributeSymbol = compilation.GetTypeByMetadataName("ConsoleClient." + customAttrTypeName);
+                    INamedTypeSymbol? attributeSymbol = compilation.GetTypeByMetadataName("Gobie." + customAttrTypeName);
+                    if (attributeSymbol is null)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find attribute"), a.GetLocation()));
+                        continue;
+                    }
 
                     if (!attributeTemplates.TryGetValue(customAttrTypeName, out var templates))
                     {
-                        // todo issue a diagnostic?
+                        context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find attribute templates"), a.GetLocation()));
                         continue;
                     }
 
@@ -163,12 +176,18 @@ namespace Gobie
                             Trace.WriteLine("variable " + variable);
 
                             // Get the symbol being decleared by the field, and keep it if its annotated
-                            IFieldSymbol fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
+                            IFieldSymbol? fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
+                            if (fieldSymbol is null)
+                            {
+                                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find field symbol"), a.GetLocation()));
+                                continue;
+                            }
+
                             partialClass = fieldSymbol.ContainingType;
 
+                            Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
                             var attributeData = fieldSymbol.GetAttributes().Single(ad => ad.AttributeClass.Equals(attributeSymbol, SymbolEqualityComparer.Default));
 
-                            Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
                             fieldName = fieldSymbol?.Name;
                             if (fieldName?.Length > 0)
                             {

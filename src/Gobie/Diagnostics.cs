@@ -23,5 +23,8 @@ namespace Gobie
 
         public static DiagnosticDescriptor GobieCrashed(string exMessage) =>
              new DiagnosticDescriptor("GB0000", "Gobie", $"Gobie Crashed. {exMessage}", "Gobie", DiagnosticSeverity.Error, true);
+
+        public static DiagnosticDescriptor GobieUnknownError(string exMessage) =>
+             new DiagnosticDescriptor("GB0000", "Gobie", $"Gobie had some error. {exMessage}", "Gobie", DiagnosticSeverity.Error, true);
     }
 }
