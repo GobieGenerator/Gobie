@@ -37,6 +37,13 @@ namespace ConsoleClient
             {{/CustomValidator}}
         }";
 
+        [GobieFileTemplate(FileNameTemplate = "AuthorLog")]
+        private const string ClassTemplate =
+@"
+
+/* COULD YOU DO SOMETHING PLEASE */
+";
+
         public override bool DebugGenerator { get; protected set; } = true;
 
         public string CustomValidator { get; set; } = null;

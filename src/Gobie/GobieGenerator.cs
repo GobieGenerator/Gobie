@@ -42,6 +42,8 @@ namespace Gobie
             IEnumerable<SyntaxNode>? allNodes = compilation.SyntaxTrees.SelectMany(s => s.GetRoot().DescendantNodes());
             var attributeTemplates = new Dictionary<string, List<string>>();
             var partialClassContents = new Dictionary<(string namespaceName, string className), string>();
+            var fileContents = new Dictionary<string, string>();
+
             GetCustomUserTemplateDefinitions(compilation, context, allNodes, attributeTemplates);
             ProcessAttributes(compilation, context, allNodes, attributeTemplates, partialClassContents);
             OutputPartialClasses(context, partialClassContents);
@@ -79,13 +81,17 @@ namespace Gobie
                 }
 
                 var attTemplates = new List<string>();
-                IEnumerable<AttributeSyntax> allAttributes = c.DescendantNodesAndSelf((_) => true, false).Where((d) => d.IsKind(SyntaxKind.Attribute)).OfType<AttributeSyntax>();
+                IEnumerable<AttributeSyntax> allAttributes =
+                    c.DescendantNodesAndSelf((_) => true, false)
+                     .Where((d) => d.IsKind(SyntaxKind.Attribute))
+                     .OfType<AttributeSyntax>();
+
                 foreach (var attribute in allAttributes)
                 {
                     var sm = compilation.GetSemanticModel(attribute.SyntaxTree);
                     var typeInfo = sm.GetTypeInfo(attribute);
                     //If it is, pull all the template info off of this instance
-                    if (typeInfo.Type?.Name == "GobieTemplateAttribute" || typeInfo.Type?.BaseType?.Name == "GobieTemplateAttribute")
+                    if (typeInfo.Type?.Name == "GobieBaseFieldAttribute" || typeInfo.Type?.BaseType?.Name == "GobieBaseFieldAttribute")
                     {
                         var template = GetTemplateOrIssueDiagnostic(compilation, context, attribute);
                         if (template != null)
@@ -112,6 +118,13 @@ namespace Gobie
                     context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieAttributeHasNoTemplates, c.GetLocation()));
                 }
             }
+
+            Trace.WriteLine($"Found these User Templates");
+            foreach (var at in attributeTemplates)
+            {
+                Trace.WriteLine($"{at.Key}");
+            }
+            Trace.WriteLine($"Found these User Templates");
         }
 
         private static void ProcessAttributes(
@@ -196,6 +209,7 @@ namespace Gobie
 
                                 foreach (var na in attributeData.NamedArguments)
                                 {
+                                    Trace.WriteLine($"NamedArgument {na.Key}='{na.Value.Value.ToString()}'");
                                     if (na.Key == "TemplateDebug")
                                     {
                                         templateDebug = bool.Parse(na.Value.Value.ToString());

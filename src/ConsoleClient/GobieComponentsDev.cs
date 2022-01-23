@@ -6,8 +6,26 @@
     /// Base class Gobie ALWAYS generates.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
-    public sealed class GobieTemplateAttribute : Attribute
+    public abstract class GobieBaseFieldAttribute : Attribute
     {
+    }
+
+    /// <summary>
+    /// Base class Gobie ALWAYS generates.
+    /// </summary>
+    public sealed class GobieTemplateAttribute : GobieBaseFieldAttribute
+    {
+    }
+
+    /// <summary>
+    /// Base class Gobie ALWAYS generates.
+    /// </summary>
+    public sealed class GobieFileTemplateAttribute : GobieBaseFieldAttribute
+    {
+        /// <summary>
+        /// A literal string or mustache template to determine the file name. 
+        /// </summary>
+        public string FileNameTemplate { get; set; }
     }
 
     public abstract class GobieGeneratorBase
