@@ -6,8 +6,15 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    public class EnumToGenerate
+    public readonly struct EnumToGenerate
     {
+        public readonly string Name;
+        public readonly List<string> Values;
 
+        public EnumToGenerate(string name, List<string> values)
+        {
+            Name = name;
+            Values = values;
+        }
     }
 }
