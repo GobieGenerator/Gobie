@@ -19,316 +19,355 @@ namespace Gobie
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            // Wire up incremental generator here.
+            IncrementalValuesProvider<EnumDeclarationSyntax> enumDeclarations = context.SyntaxProvider
+                .CreateSyntaxProvider(
+                    predicate: static (s, _) => IsSyntaxTargetForGeneration(s), // select enums with attributes
+                    transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx)) // sect the enum with the [EnumExtensions] attribute
+                .Where(static m => m is not null)!; // filter out attributed enums that we don't care about
         }
 
-////        public void Execute(GeneratorExecutionContext context)
-////        {
-////            Compilation compilation = context.Compilation;
+        static bool IsSyntaxTargetForGeneration(SyntaxNode node)
+            => node is EnumDeclarationSyntax m && m.AttributeLists.Count > 0;
 
-////            try
-////            {
-////                RunGobie(compilation, context);
-////            }
-////            catch (Exception ex)
-////            {
-////                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieCrashed(ex.Message + ": " + ex.StackTrace), null));
-////            }
-////        }
+        static EnumDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
+        {
+            // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
+            var enumDeclarationSyntax = (EnumDeclarationSyntax)context.Node;
 
-////        private static void RunGobie(Compilation compilation, GeneratorExecutionContext context)
-////        {
-////            // Get all Mustache attributes
-////            IEnumerable<SyntaxNode>? allNodes = compilation.SyntaxTrees.SelectMany(s => s.GetRoot().DescendantNodes());
-////            var attributeTemplates = new Dictionary<string, List<string>>();
-////            var partialClassContents = new Dictionary<(string namespaceName, string className), string>();
-////            var fileContents = new Dictionary<string, string>();
+            // loop through all the attributes on the method
+            foreach (AttributeListSyntax attributeListSyntax in enumDeclarationSyntax.AttributeLists)
+            {
+                foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
+                {
+                    if (context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
+                    {
+                        // weird, we couldn't get the symbol, ignore it
+                        continue;
+                    }
 
-////            GetCustomUserTemplateDefinitions(compilation, context, allNodes, attributeTemplates);
-////            ProcessAttributes(compilation, context, allNodes, attributeTemplates, partialClassContents);
-////            OutputPartialClasses(context, partialClassContents);
-////        }
+                    INamedTypeSymbol attributeContainingTypeSymbol = attributeSymbol.ContainingType;
+                    string fullName = attributeContainingTypeSymbol.ToDisplayString();
 
-////        private static void OutputPartialClasses(GeneratorExecutionContext context, Dictionary<(string namespaceName, string className), string> partialClassContents)
-////        {
-////            foreach (var pc in partialClassContents)
-////            {
-////                string generatedCode = BuildPartialClass(pc.Key.namespaceName, pc.Key.className, pc.Value);
-////                generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
-////                context.AddSource($"{pc.Key.namespaceName}.{pc.Key.className}.g", SourceText.From(generatedCode, Encoding.UTF8));
-////            }
-////        }
+                    // Is the attribute the [EnumExtensions] attribute?
+                    if (fullName == "NetEscapades.EnumGenerators.EnumExtensionsAttribute")
+                    {
+                        // return the enum
+                        return enumDeclarationSyntax;
+                    }
+                }
+            }
 
-////        private static void GetCustomUserTemplateDefinitions(Compilation compilation, GeneratorExecutionContext context, IEnumerable<SyntaxNode> allNodes, Dictionary<string, List<string>> attributeTemplates)
-////        {
-////            IEnumerable<ClassDeclarationSyntax> allClasses = allNodes.Where((d) => d.IsKind(SyntaxKind.ClassDeclaration)).OfType<ClassDeclarationSyntax>();
-////            foreach (var c in allClasses)
-////            {
-////                // Check if its inherited from one of our attributes.
-////                if (!ClassInheritsFrom(compilation, c, "GobieGeneratorBase"))
-////                {
-////                    continue;
-////                }
+            // we didn't find the attribute we were looking for
+            return null;
+        }
 
-////                if (c.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
-////                {
-////                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieAttributeIsPartial, c.GetLocation()));
-////                    continue;
-////                }
-////                else if (c.Modifiers.Any(x => x.IsKind(SyntaxKind.AbstractKeyword)))
-////                {
-////                    continue; // We don't care about abstract instances.
-////                }
+        ////        public void Execute(GeneratorExecutionContext context)
+        ////        {
+        ////            Compilation compilation = context.Compilation;
 
-////                var attTemplates = new List<string>();
-////                IEnumerable<AttributeSyntax> allAttributes =
-////                    c.DescendantNodesAndSelf((_) => true, false)
-////                     .Where((d) => d.IsKind(SyntaxKind.Attribute))
-////                     .OfType<AttributeSyntax>();
+        ////            try
+        ////            {
+        ////                RunGobie(compilation, context);
+        ////            }
+        ////            catch (Exception ex)
+        ////            {
+        ////                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieCrashed(ex.Message + ": " + ex.StackTrace), null));
+        ////            }
+        ////        }
 
-////                foreach (var attribute in allAttributes)
-////                {
-////                    var sm = compilation.GetSemanticModel(attribute.SyntaxTree);
-////                    var typeInfo = sm.GetTypeInfo(attribute);
-////                    //If it is, pull all the template info off of this instance
-////                    if (typeInfo.Type?.Name == "GobieBaseFieldAttribute" || typeInfo.Type?.BaseType?.Name == "GobieBaseFieldAttribute")
-////                    {
-////                        var template = GetTemplateOrIssueDiagnostic(compilation, context, attribute);
-////                        if (template != null)
-////                        {
-////                            attTemplates.Add(template);
-////                        }
-////                    }
-////                }
+        ////        private static void RunGobie(Compilation compilation, GeneratorExecutionContext context)
+        ////        {
+        ////            // Get all Mustache attributes
+        ////            IEnumerable<SyntaxNode>? allNodes = compilation.SyntaxTrees.SelectMany(s => s.GetRoot().DescendantNodes());
+        ////            var attributeTemplates = new Dictionary<string, List<string>>();
+        ////            var partialClassContents = new Dictionary<(string namespaceName, string className), string>();
+        ////            var fileContents = new Dictionary<string, string>();
 
-////                if (attTemplates.Any())
-////                {
-////                    var baseName = GetClassname(compilation, c);
-////                    if (baseName.EndsWith("Generator"))
-////                    {
-////                        baseName = baseName.Substring(0, baseName.Length - 9);
-////                    }
-////                    baseName += "Attribute";
-////                    // TODO output the actual attribute here.
+        ////            GetCustomUserTemplateDefinitions(compilation, context, allNodes, attributeTemplates);
+        ////            ProcessAttributes(compilation, context, allNodes, attributeTemplates, partialClassContents);
+        ////            OutputPartialClasses(context, partialClassContents);
+        ////        }
 
-////                    attributeTemplates.Add(baseName, attTemplates);
-////                }
-////                else
-////                {
-////                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieAttributeHasNoTemplates, c.GetLocation()));
-////                }
-////            }
+        ////        private static void OutputPartialClasses(GeneratorExecutionContext context, Dictionary<(string namespaceName, string className), string> partialClassContents)
+        ////        {
+        ////            foreach (var pc in partialClassContents)
+        ////            {
+        ////                string generatedCode = BuildPartialClass(pc.Key.namespaceName, pc.Key.className, pc.Value);
+        ////                generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
+        ////                context.AddSource($"{pc.Key.namespaceName}.{pc.Key.className}.g", SourceText.From(generatedCode, Encoding.UTF8));
+        ////            }
+        ////        }
 
-////            Trace.WriteLine($"Found these User Templates");
-////            foreach (var at in attributeTemplates)
-////            {
-////                Trace.WriteLine($"{at.Key}");
-////            }
-////            Trace.WriteLine($"Found these User Templates");
-////        }
+        ////        private static void GetCustomUserTemplateDefinitions(Compilation compilation, GeneratorExecutionContext context, IEnumerable<SyntaxNode> allNodes, Dictionary<string, List<string>> attributeTemplates)
+        ////        {
+        ////            IEnumerable<ClassDeclarationSyntax> allClasses = allNodes.Where((d) => d.IsKind(SyntaxKind.ClassDeclaration)).OfType<ClassDeclarationSyntax>();
+        ////            foreach (var c in allClasses)
+        ////            {
+        ////                // Check if its inherited from one of our attributes.
+        ////                if (!ClassInheritsFrom(compilation, c, "GobieGeneratorBase"))
+        ////                {
+        ////                    continue;
+        ////                }
 
-////        private static void ProcessAttributes(
-////            Compilation compilation,
-////            GeneratorExecutionContext context,
-////            IEnumerable<SyntaxNode> allNodes,
-////            Dictionary<string, List<string>> attributeTemplates,
-////            Dictionary<(string namespaceName, string className), string> partialClassContents)
-////        {
-////            IEnumerable<AttributeSyntax> allAttributes = allNodes.Where((d) => d.IsKind(SyntaxKind.Attribute)).OfType<AttributeSyntax>();
-////            foreach (var a in allAttributes)
-////            {
-////                var attName = a.Name;
-////                var sm = compilation.GetSemanticModel(a.SyntaxTree);
-////                var typeInfo = sm.GetTypeInfo(a);
+        ////                if (c.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
+        ////                {
+        ////                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieAttributeIsPartial, c.GetLocation()));
+        ////                    continue;
+        ////                }
+        ////                else if (c.Modifiers.Any(x => x.IsKind(SyntaxKind.AbstractKeyword)))
+        ////                {
+        ////                    continue; // We don't care about abstract instances.
+        ////                }
 
-////                if (typeInfo.Type?.BaseType?.Name == "GobieFieldGeneratorAttribute")
-////                {
-////                    var customAttrTypeName = typeInfo.Type.Name;
-////                    var fieldName = string.Empty;
-////                    var dict = new Dictionary<string, string>();
-////                    INamedTypeSymbol? attributeSymbol = compilation.GetTypeByMetadataName("Gobie." + customAttrTypeName);
-////                    if (attributeSymbol is null)
-////                    {
-////                        context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find attribute"), a.GetLocation()));
-////                        continue;
-////                    }
+        ////                var attTemplates = new List<string>();
+        ////                IEnumerable<AttributeSyntax> allAttributes =
+        ////                    c.DescendantNodesAndSelf((_) => true, false)
+        ////                     .Where((d) => d.IsKind(SyntaxKind.Attribute))
+        ////                     .OfType<AttributeSyntax>();
 
-////                    if (!attributeTemplates.TryGetValue(customAttrTypeName, out var templates))
-////                    {
-////                        context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find attribute templates"), a.GetLocation()));
-////                        continue;
-////                    }
+        ////                foreach (var attribute in allAttributes)
+        ////                {
+        ////                    var sm = compilation.GetSemanticModel(attribute.SyntaxTree);
+        ////                    var typeInfo = sm.GetTypeInfo(attribute);
+        ////                    //If it is, pull all the template info off of this instance
+        ////                    if (typeInfo.Type?.Name == "GobieBaseFieldAttribute" || typeInfo.Type?.BaseType?.Name == "GobieBaseFieldAttribute")
+        ////                    {
+        ////                        var template = GetTemplateOrIssueDiagnostic(compilation, context, attribute);
+        ////                        if (template != null)
+        ////                        {
+        ////                            attTemplates.Add(template);
+        ////                        }
+        ////                    }
+        ////                }
 
-////                    Trace.WriteLine("Found a gobie generator:");
+        ////                if (attTemplates.Any())
+        ////                {
+        ////                    var baseName = GetClassname(compilation, c);
+        ////                    if (baseName.EndsWith("Generator"))
+        ////                    {
+        ////                        baseName = baseName.Substring(0, baseName.Length - 9);
+        ////                    }
+        ////                    baseName += "Attribute";
+        ////                    // TODO output the actual attribute here.
 
-////                    if (FindClass(a) is ClassDeclarationSyntax classDeclaration)
-////                    {
-////                        if (classDeclaration.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
-////                        {
-////                            // Continue
-////                        }
-////                        else
-////                        {
-////                            context.ReportDiagnostic(Diagnostic.Create(Diagnostics.ClassIsNotParital, classDeclaration.GetLocation()));
-////                            continue;
-////                        }
-////                    }
-////                    else
-////                    {
-////                        continue;
-////                        // TODO return; // How wouldn't this be in the class.
-////                    }
+        ////                    attributeTemplates.Add(baseName, attTemplates);
+        ////                }
+        ////                else
+        ////                {
+        ////                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieAttributeHasNoTemplates, c.GetLocation()));
+        ////                }
+        ////            }
 
-////                    var templateDebug = false;
-////                    INamedTypeSymbol? partialClass = null;
-////                    if (FindField(a) is FieldDeclarationSyntax field)
-////                    {
-////                        SemanticModel model = compilation.GetSemanticModel(field.SyntaxTree);
-////                        foreach (VariableDeclaratorSyntax variable in field.Declaration.Variables)
-////                        {
-////                            Trace.WriteLine("variable " + variable);
+        ////            Trace.WriteLine($"Found these User Templates");
+        ////            foreach (var at in attributeTemplates)
+        ////            {
+        ////                Trace.WriteLine($"{at.Key}");
+        ////            }
+        ////            Trace.WriteLine($"Found these User Templates");
+        ////        }
 
-////                            // Get the symbol being decleared by the field, and keep it if its annotated
-////                            IFieldSymbol? fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
-////                            if (fieldSymbol is null)
-////                            {
-////                                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find field symbol"), a.GetLocation()));
-////                                continue;
-////                            }
+        ////        private static void ProcessAttributes(
+        ////            Compilation compilation,
+        ////            GeneratorExecutionContext context,
+        ////            IEnumerable<SyntaxNode> allNodes,
+        ////            Dictionary<string, List<string>> attributeTemplates,
+        ////            Dictionary<(string namespaceName, string className), string> partialClassContents)
+        ////        {
+        ////            IEnumerable<AttributeSyntax> allAttributes = allNodes.Where((d) => d.IsKind(SyntaxKind.Attribute)).OfType<AttributeSyntax>();
+        ////            foreach (var a in allAttributes)
+        ////            {
+        ////                var attName = a.Name;
+        ////                var sm = compilation.GetSemanticModel(a.SyntaxTree);
+        ////                var typeInfo = sm.GetTypeInfo(a);
 
-////                            partialClass = fieldSymbol.ContainingType;
+        ////                if (typeInfo.Type?.BaseType?.Name == "GobieFieldGeneratorAttribute")
+        ////                {
+        ////                    var customAttrTypeName = typeInfo.Type.Name;
+        ////                    var fieldName = string.Empty;
+        ////                    var dict = new Dictionary<string, string>();
+        ////                    INamedTypeSymbol? attributeSymbol = compilation.GetTypeByMetadataName("Gobie." + customAttrTypeName);
+        ////                    if (attributeSymbol is null)
+        ////                    {
+        ////                        context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find attribute"), a.GetLocation()));
+        ////                        continue;
+        ////                    }
 
-////                            Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
-////                            var attributeData = fieldSymbol.GetAttributes().Single(ad => ad.AttributeClass.Equals(attributeSymbol, SymbolEqualityComparer.Default));
+        ////                    if (!attributeTemplates.TryGetValue(customAttrTypeName, out var templates))
+        ////                    {
+        ////                        context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find attribute templates"), a.GetLocation()));
+        ////                        continue;
+        ////                    }
 
-////                            fieldName = fieldSymbol?.Name;
-////                            if (fieldName?.Length > 0)
-////                            {
-////                                dict.Add("field", fieldName);
-////                                dict.Add("Property", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(fieldName));
+        ////                    Trace.WriteLine("Found a gobie generator:");
 
-////                                foreach (var na in attributeData.NamedArguments)
-////                                {
-////                                    Trace.WriteLine($"NamedArgument {na.Key}='{na.Value.Value.ToString()}'");
-////                                    if (na.Key == "TemplateDebug")
-////                                    {
-////                                        templateDebug = bool.Parse(na.Value.Value.ToString());
-////                                    }
-////                                    else
-////                                    {
-////                                        dict.Add(na.Key, na.Value.Value.ToString());
-////                                    }
-////                                }
-////                            }
-////                        }
-////                    }
+        ////                    if (FindClass(a) is ClassDeclarationSyntax classDeclaration)
+        ////                    {
+        ////                        if (classDeclaration.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
+        ////                        {
+        ////                            // Continue
+        ////                        }
+        ////                        else
+        ////                        {
+        ////                            context.ReportDiagnostic(Diagnostic.Create(Diagnostics.ClassIsNotParital, classDeclaration.GetLocation()));
+        ////                            continue;
+        ////                        }
+        ////                    }
+        ////                    else
+        ////                    {
+        ////                        continue;
+        ////                        // TODO return; // How wouldn't this be in the class.
+        ////                    }
 
-////                    if (partialClass != null)
-////                    {
-////                        var sb = new StringBuilder();
-////                        foreach (var template in templates)
-////                        {
-////                            sb.AppendLine(RenderTemplate(dict, template, templateDebug));
-////                            sb.AppendLine();
-////                        }
+        ////                    var templateDebug = false;
+        ////                    INamedTypeSymbol? partialClass = null;
+        ////                    if (FindField(a) is FieldDeclarationSyntax field)
+        ////                    {
+        ////                        SemanticModel model = compilation.GetSemanticModel(field.SyntaxTree);
+        ////                        foreach (VariableDeclaratorSyntax variable in field.Declaration.Variables)
+        ////                        {
+        ////                            Trace.WriteLine("variable " + variable);
 
-////                        var key = (GetNamespaces(partialClass), partialClass.Name);
-////                        if (partialClassContents.TryGetValue(key, out var contents))
-////                        {
-////                            partialClassContents[key] = contents + Environment.NewLine + sb.ToString();
-////                        }
-////                        else
-////                        {
-////                            partialClassContents.Add(key, sb.ToString());
-////                        }
-////                    }
-////                }
-////            }
-////        }
+        ////                            // Get the symbol being decleared by the field, and keep it if its annotated
+        ////                            IFieldSymbol? fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
+        ////                            if (fieldSymbol is null)
+        ////                            {
+        ////                                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find field symbol"), a.GetLocation()));
+        ////                                continue;
+        ////                            }
 
-////        private static string BuildPartialClass(string fullNamespace, string typeName, string v)
-////        {
-////            return
-////        @$"using System;
-////using System.Collections.Generic;
-////using System.Linq;
-////using System.Text;
-////using System.Threading.Tasks;
+        ////                            partialClass = fieldSymbol.ContainingType;
 
-////namespace {fullNamespace}
-////{{
-////    public partial class {typeName}
-////    {{
-////{v}
-////    }}
-////}}";
-////        }
+        ////                            Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
+        ////                            var attributeData = fieldSymbol.GetAttributes().Single(ad => ad.AttributeClass.Equals(attributeSymbol, SymbolEqualityComparer.Default));
 
-////        private static string GetNamespaces(ITypeSymbol type)
-////        {
-////            var n = type.ContainingNamespace;
-////            var ns = n.Name;
-////            n = n.ContainingNamespace;
-////            while (n is INamespaceSymbol && !n.IsGlobalNamespace)
-////            {
-////                ns = n.Name + "." + ns;
-////                n = n.ContainingNamespace;
-////            }
-////            return ns;
-////        }
+        ////                            fieldName = fieldSymbol?.Name;
+        ////                            if (fieldName?.Length > 0)
+        ////                            {
+        ////                                dict.Add("field", fieldName);
+        ////                                dict.Add("Property", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(fieldName));
 
-////        private static string? GetTemplateOrIssueDiagnostic(Compilation compilation, GeneratorExecutionContext context, AttributeSyntax a)
-////        {
-////            if (FindField(a) is FieldDeclarationSyntax field)
-////            {
-////                if (!field.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword)))
-////                {
-////                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.TemplateIsNotConstString, field.GetLocation()));
-////                }
+        ////                                foreach (var na in attributeData.NamedArguments)
+        ////                                {
+        ////                                    Trace.WriteLine($"NamedArgument {na.Key}='{na.Value.Value.ToString()}'");
+        ////                                    if (na.Key == "TemplateDebug")
+        ////                                    {
+        ////                                        templateDebug = bool.Parse(na.Value.Value.ToString());
+        ////                                    }
+        ////                                    else
+        ////                                    {
+        ////                                        dict.Add(na.Key, na.Value.Value.ToString());
+        ////                                    }
+        ////                                }
+        ////                            }
+        ////                        }
+        ////                    }
 
-////                //We assume its only one variable.
-////                var init = field.Declaration.Variables[0];
-////                if (init.Initializer?.Value is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.StringLiteralExpression))
-////                {
-////                    var sm = compilation.GetSemanticModel(a.SyntaxTree);
-////                    return sm.GetConstantValue(literal).ToString();
-////                }
-////                else
-////                {
-////                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.TemplateIsNotConstString, field.GetLocation()));
-////                }
-////            }
+        ////                    if (partialClass != null)
+        ////                    {
+        ////                        var sb = new StringBuilder();
+        ////                        foreach (var template in templates)
+        ////                        {
+        ////                            sb.AppendLine(RenderTemplate(dict, template, templateDebug));
+        ////                            sb.AppendLine();
+        ////                        }
 
-////            return null;
-////        }
+        ////                        var key = (GetNamespaces(partialClass), partialClass.Name);
+        ////                        if (partialClassContents.TryGetValue(key, out var contents))
+        ////                        {
+        ////                            partialClassContents[key] = contents + Environment.NewLine + sb.ToString();
+        ////                        }
+        ////                        else
+        ////                        {
+        ////                            partialClassContents.Add(key, sb.ToString());
+        ////                        }
+        ////                    }
+        ////                }
+        ////            }
+        ////        }
 
-////        private static string RenderTemplate(Dictionary<string, string> dict, string template, bool debug)
-////        {
-////            var sb = new StringBuilder();
-////            var stubble = new StubbleBuilder().Build();
-////            var ht = stubble.Render(template, dict);
-////            var len = dict.Max(x => x.Key.Length) + 1;
+        ////        private static string BuildPartialClass(string fullNamespace, string typeName, string v)
+        ////        {
+        ////            return
+        ////        @$"using System;
+        ////using System.Collections.Generic;
+        ////using System.Linq;
+        ////using System.Text;
+        ////using System.Threading.Tasks;
 
-////            if (debug)
-////            {
-////                sb.AppendLine($"// Gobie Debug");
-////                sb.AppendLine($"// ---------------------------------------");
-////                sb.AppendLine($"// Dictionary:");
-////                foreach (var item in dict.OrderBy(x => x.Key))
-////                {
-////                    sb.AppendLine($"// {item.Key.PadRight(len)}: '{item.Value}'");
-////                }
-////                sb.AppendLine();
-////                sb.AppendLine($"// Source Template:");
-////                foreach (var templateLine in template.Split('\n'))
-////                {
-////                    sb.Append($"// {templateLine}{(templateLine.EndsWith("\r") ? "\n" : string.Empty)}");
-////                }
-////                sb.AppendLine();
-////            }
+        ////namespace {fullNamespace}
+        ////{{
+        ////    public partial class {typeName}
+        ////    {{
+        ////{v}
+        ////    }}
+        ////}}";
+        ////        }
 
-////            sb.AppendLine(ht);
-////            return sb.ToString();
-////        }
+        ////        private static string GetNamespaces(ITypeSymbol type)
+        ////        {
+        ////            var n = type.ContainingNamespace;
+        ////            var ns = n.Name;
+        ////            n = n.ContainingNamespace;
+        ////            while (n is INamespaceSymbol && !n.IsGlobalNamespace)
+        ////            {
+        ////                ns = n.Name + "." + ns;
+        ////                n = n.ContainingNamespace;
+        ////            }
+        ////            return ns;
+        ////        }
+
+        ////        private static string? GetTemplateOrIssueDiagnostic(Compilation compilation, GeneratorExecutionContext context, AttributeSyntax a)
+        ////        {
+        ////            if (FindField(a) is FieldDeclarationSyntax field)
+        ////            {
+        ////                if (!field.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword)))
+        ////                {
+        ////                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.TemplateIsNotConstString, field.GetLocation()));
+        ////                }
+
+        ////                //We assume its only one variable.
+        ////                var init = field.Declaration.Variables[0];
+        ////                if (init.Initializer?.Value is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.StringLiteralExpression))
+        ////                {
+        ////                    var sm = compilation.GetSemanticModel(a.SyntaxTree);
+        ////                    return sm.GetConstantValue(literal).ToString();
+        ////                }
+        ////                else
+        ////                {
+        ////                    context.ReportDiagnostic(Diagnostic.Create(Diagnostics.TemplateIsNotConstString, field.GetLocation()));
+        ////                }
+        ////            }
+
+        ////            return null;
+        ////        }
+
+        ////        private static string RenderTemplate(Dictionary<string, string> dict, string template, bool debug)
+        ////        {
+        ////            var sb = new StringBuilder();
+        ////            var stubble = new StubbleBuilder().Build();
+        ////            var ht = stubble.Render(template, dict);
+        ////            var len = dict.Max(x => x.Key.Length) + 1;
+
+        ////            if (debug)
+        ////            {
+        ////                sb.AppendLine($"// Gobie Debug");
+        ////                sb.AppendLine($"// ---------------------------------------");
+        ////                sb.AppendLine($"// Dictionary:");
+        ////                foreach (var item in dict.OrderBy(x => x.Key))
+        ////                {
+        ////                    sb.AppendLine($"// {item.Key.PadRight(len)}: '{item.Value}'");
+        ////                }
+        ////                sb.AppendLine();
+        ////                sb.AppendLine($"// Source Template:");
+        ////                foreach (var templateLine in template.Split('\n'))
+        ////                {
+        ////                    sb.Append($"// {templateLine}{(templateLine.EndsWith("\r") ? "\n" : string.Empty)}");
+        ////                }
+        ////                sb.AppendLine();
+        ////            }
+
+        ////            sb.AppendLine(ht);
+        ////            return sb.ToString();
+        ////        }
     }
 }

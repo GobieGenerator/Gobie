@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Gobie.Attributes\Gobie.Attributes.csproj" />
     <ProjectReference Include="..\Gobie\Gobie.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
