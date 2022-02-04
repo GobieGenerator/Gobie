@@ -1,5 +1,6 @@
 ﻿namespace Gobie.UnitTests
 {
+    using NetEscapades.EnumGenerators.Tests;
     using NUnit.Framework;
     using System;
     using System.Collections.Generic;
@@ -12,27 +13,21 @@
     public class SnapshotTests
     {
         [Test]
-        public Task Test()
+        public Task GeneratesEnumExtensionsCorrectly()
         {
-            var person = new
-            {
-                Id = "ebced679-45d3-4653-8791-3d969c4a6c",
-                Title = "Mr.",
-                GivenNames = "Johnnyzzz",
-                FamilyName = "Smith",
-                Spouse = "Jill",
-                Children = new List<string> 
-                {
-                    "Sam",
-                    "Mary"
-                },
-                Address = new
-                {
-                    Street = "4 Puddle Lane",
-                    Country = "USA"
-                }
-            };
-            return Verifier.Verify(person);
+            // The source code to test
+            var source = @"
+using NetEscapades.EnumGenerators;
+
+[EnumExtensions]
+public enum Colour
+{
+Red = 0,
+Blue = 1,
+}";
+            
+            // Pass the source code to our helper and snapshot test the output
+            return TestHelper.Verify(source);
         }
     }
 }
