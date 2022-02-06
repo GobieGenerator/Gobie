@@ -1,11 +1,4 @@
-﻿using Gobie;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using VerifyNUnit;
-
-namespace NetEscapades.EnumGenerators.Tests;
+﻿namespace NetEscapades.EnumGenerators.Tests;
 
 public static class TestHelper
 {
@@ -37,6 +30,6 @@ public static class TestHelper
 
         // Use verify to snapshot test the source generator output!
         return Verifier
-            .Verify(driver);
+            .Verify(driver).UseDirectory("Snapshots");
     }
 }

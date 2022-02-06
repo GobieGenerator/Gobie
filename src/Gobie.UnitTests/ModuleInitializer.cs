@@ -1,7 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using VerifyTests;
-
-namespace NetEscapades.EnumGenerators.Tests;
+﻿namespace NetEscapades.EnumGenerators.Tests;
 
 public static class ModuleInitializer
 {
