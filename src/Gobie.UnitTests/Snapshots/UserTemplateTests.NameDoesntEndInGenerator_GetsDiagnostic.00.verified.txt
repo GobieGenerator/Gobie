@@ -1,0 +1,17 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: GB0012,
+      Title: Gobie,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (3,28)-(3,39),
+      Description: ,
+      HelpLink: ,
+      MessageFormat: Generator names are expected to end with 'Generator'. You may use th....,
+      Message: Generator names are expected to end with 'Generator'. You may use th....,
+      Category: Gobie Usage,
+      CustomTags: []
+    }
+  ]
+}

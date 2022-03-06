@@ -95,4 +95,41 @@ public class UserTemplateTests
 
         return TestHelper.Verify(source);
     }
+
+    [Test]
+    public Task NameDoesntEndInGenerator_GetsDiagnostic()
+    {
+        var source = @"
+        using Gobie;
+
+        public sealed class UserDefined : Gobie.GobieFieldGenerator
+        {
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public void NameSuppliedByAttribute()
+    {
+        Assert.Fail();
+    }
+
+    [Test]
+    public void NameEndingInAttributeSuppliedByAttribute()
+    {
+        Assert.Fail();
+    }
+
+    [Test]
+    public void NameAndNamespaceSuppliedByAttribute()
+    {
+        Assert.Fail();
+    }
+
+    [Test]
+    public void SimpleValidGenerator_AttributeGenerated()
+    {
+        Assert.Fail();
+    }
 }

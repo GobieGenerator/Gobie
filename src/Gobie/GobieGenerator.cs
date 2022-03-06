@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Gobie.Diagnostics;
 
 namespace Gobie
 {
@@ -24,7 +25,7 @@ namespace Gobie
 
             //### Find the user templates and report diagnostics on issue.
 
-            IncrementalValuesProvider<DataOrDiagnostics<ClassDeclarationSyntax>> userTemplateSyntaxOrDiagnostics =
+            IncrementalValuesProvider<DataOrDiagnostics<UserGeneratorData>> userTemplateSyntaxOrDiagnostics =
                 context.SyntaxProvider
                     .CreateSyntaxProvider(
                         predicate: static (s, _) => IsClassDeclaration(s),
@@ -35,10 +36,14 @@ namespace Gobie
                 userTemplateSyntaxOrDiagnostics,
                 static (spc, source) => OutputDiagnostics(spc, source));
 
-            IncrementalValuesProvider<ClassDeclarationSyntax> userTemplateSyntax =
+            IncrementalValuesProvider<UserGeneratorData> userTemplateSyntax =
                 userTemplateSyntaxOrDiagnostics
                     .Where(x => x.Data is not null)
                     .Select(selector: (s, _) => s.Data!);
+
+            context.RegisterSourceOutput(
+                userTemplateSyntax,
+                static (spc, source) => BuildUserGeneratorAttributes(spc, source));
 
             //### Generate attributes for the defined templates.
 
@@ -62,6 +67,12 @@ namespace Gobie
             ////    static (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
 
+        private static void BuildUserGeneratorAttributes(SourceProductionContext spc, UserGeneratorData source)
+        {
+            var attCode = $"{source.NamespaceName}.{source.AttributeIdentifier}";
+            spc.AddSource($"{source.AttributeIdentifier}.g.cs", attCode);
+        }
+
         private static void OutputDiagnostics<T>(SourceProductionContext spc, DataOrDiagnostics<T> option)
         {
             if (option.Diagnostics is not null)
@@ -75,7 +86,7 @@ namespace Gobie
         private static bool IsClassDeclaration(SyntaxNode node) =>
             node is ClassDeclarationSyntax;
 
-        private static DataOrDiagnostics<ClassDeclarationSyntax>? GetUserTemplate(GeneratorSyntaxContext context)
+        private static DataOrDiagnostics<UserGeneratorData>? GetUserTemplate(GeneratorSyntaxContext context)
         {
             var cds = (ClassDeclarationSyntax)context.Node;
             var classLocation = cds.Identifier.GetLocation();
@@ -93,25 +104,24 @@ namespace Gobie
                 return null;
             }
 
+            //! We accumulate data here.
+            var genData = new UserGeneratorData(cds.Identifier.ToString());
+
             var diagnostics = new List<Diagnostic>();
             if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
             {
-                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsPartial, classLocation));
+                diagnostics.Add(Diagnostic.Create(Errors.UserTemplateIsPartial, classLocation));
             }
 
             if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.SealedKeyword)) == false)
             {
-                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsNotSealed, classLocation));
-            }
-
-            if (diagnostics.Any())
-            {
-                return new(diagnostics);
+                diagnostics.Add(Diagnostic.Create(Errors.UserTemplateIsNotSealed, classLocation));
             }
 
             var classSymbol = context.SemanticModel.GetSymbolInfo(cds).Symbol;
             if (!cds.Identifier.ToString().EndsWith("Generator", StringComparison.OrdinalIgnoreCase))
             {
+                diagnostics.Add(Diagnostic.Create(Errors.GeneratorNameInvalid, classLocation));
                 foreach (var lists in cds.AttributeLists)
                 {
                     foreach (var attribute in lists.Attributes)
@@ -134,9 +144,14 @@ namespace Gobie
                 }
             }
 
-            diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsEmpty, classLocation));
+            if (diagnostics.Any())
+            {
+                return new(diagnostics);
+            }
 
-            return new(cds, diagnostics);
+            diagnostics.Add(Diagnostic.Create(Warnings.UserTemplateIsEmpty, classLocation));
+
+            return new(genData, diagnostics);
         }
 
         private static EnumDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)

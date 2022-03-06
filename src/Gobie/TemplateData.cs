@@ -12,7 +12,7 @@
         {
             Data = data;
 
-            if (diagnostics is not null)
+            if (diagnostics is not null && diagnostics.Any())
             {
                 Diagnostics = new List<Diagnostic>(diagnostics);
             }
