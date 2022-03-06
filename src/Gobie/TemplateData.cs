@@ -8,9 +8,14 @@
 
     public class DataOrDiagnostics<T>
     {
-        public DataOrDiagnostics(T data)
+        public DataOrDiagnostics(T data, IEnumerable<Diagnostic>? diagnostics = null)
         {
             Data = data;
+
+            if (diagnostics is not null)
+            {
+                Diagnostics = new List<Diagnostic>(diagnostics);
+            }
         }
 
         public DataOrDiagnostics(IEnumerable<Diagnostic> diagnostics)

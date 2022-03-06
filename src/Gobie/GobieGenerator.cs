@@ -108,7 +108,9 @@ namespace Gobie
                 return new(diagnostics);
             }
 
-            return new(cds);
+            diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsEmpty, cds.GetLocation()));
+
+            return new(cds, diagnostics);
         }
 
         private static EnumDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
