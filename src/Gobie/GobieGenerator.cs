@@ -69,8 +69,20 @@ namespace Gobie
 
         private static void BuildUserGeneratorAttributes(SourceProductionContext spc, UserGeneratorData source)
         {
-            var attCode = $"{source.NamespaceName}.{source.AttributeIdentifier}";
-            spc.AddSource($"{source.AttributeIdentifier}.g.cs", attCode);
+            var generatedCode = @$"
+
+            namespace {source.NamespaceName}
+            {{
+                /// <summary> This attribute will cause the generator defined by this thing here to
+                /// run <see cref=""TODONAMESPACE.{source.DefinitionIdentifier}""/> to run. </summary>
+                public sealed class {source.AttributeIdentifier} : Gobie.GobieFieldGeneratorAttribute
+                {{
+                }}
+            }}
+            ";
+
+            generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
+            spc.AddSource($"{source.AttributeIdentifier}.g.cs", generatedCode);
         }
 
         private static void OutputDiagnostics<T>(SourceProductionContext spc, DataOrDiagnostics<T> option)
