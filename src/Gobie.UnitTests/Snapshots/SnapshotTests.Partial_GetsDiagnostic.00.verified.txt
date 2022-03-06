@@ -1,0 +1,17 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: GB0003,
+      Title: Gobie,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (3,0)-(5,1),
+      Description: ,
+      HelpLink: ,
+      MessageFormat: Gobie Attributes cannot be implemented with partial classes. As a reminder, multiple source generators can't interact.,
+      Message: Gobie Attributes cannot be implemented with partial classes. As a reminder, multiple source generators can't interact.,
+      Category: Gobie,
+      CustomTags: []
+    }
+  ]
+}
