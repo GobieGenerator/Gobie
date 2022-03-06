@@ -16,41 +16,6 @@ namespace Gobie
             "Gobie.GobieFieldGenerator",
         };
 
-        public static string GenerateExtensionClass(List<EnumToGenerate> enumsToGenerate)
-        {
-            var sb = new StringBuilder();
-            sb.Append(@"
-namespace NetEscapades.EnumGenerators
-{
-    public static partial class EnumExtensions
-    {");
-            foreach (var enumToGenerate in enumsToGenerate)
-            {
-                sb.Append(@"
-                public static string ToStringFast(this ").Append(enumToGenerate.Name).Append(@" value)
-                    => value switch
-                    {");
-                foreach (var member in enumToGenerate.Values)
-                {
-                    sb.Append(@"
-                ").Append(enumToGenerate.Name).Append('.').Append(member)
-                        .Append(" => nameof(")
-                        .Append(enumToGenerate.Name).Append('.').Append(member).Append("),");
-                }
-
-                sb.Append(@"
-                    _ => value.ToString(),
-                };
-");
-            }
-
-            sb.Append(@"
-    }
-}");
-
-            return CSharpSyntaxTree.ParseText(sb.ToString()).GetRoot().NormalizeWhitespace().ToFullString();
-        }
-
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
@@ -178,81 +143,81 @@ namespace NetEscapades.EnumGenerators
             return null;
         }
 
-        private static void Execute(Compilation compilation, ImmutableArray<EnumDeclarationSyntax> enums, SourceProductionContext context)
-        {
-            if (enums.IsDefaultOrEmpty)
-            {
-                // nothing to do yet
-                return;
-            }
+        ////private static void Execute(Compilation compilation, ImmutableArray<EnumDeclarationSyntax> enums, SourceProductionContext context)
+        ////{
+        ////    if (enums.IsDefaultOrEmpty)
+        ////    {
+        ////        // nothing to do yet
+        ////        return;
+        ////    }
 
-            // I'm not sure if this is actually necessary, but `[LoggerMessage]` does it, so seems
-            // like a good idea!
-            IEnumerable<EnumDeclarationSyntax> distinctEnums = enums.Distinct();
+        ////    // I'm not sure if this is actually necessary, but `[LoggerMessage]` does it, so seems
+        ////    // like a good idea!
+        ////    IEnumerable<EnumDeclarationSyntax> distinctEnums = enums.Distinct();
 
-            // Convert each EnumDeclarationSyntax to an EnumToGenerate
-            List<EnumToGenerate> enumsToGenerate = GetTypesToGenerate(compilation, distinctEnums, context.CancellationToken);
+        ////    // Convert each EnumDeclarationSyntax to an EnumToGenerate
+        ////    List<EnumToGenerate> enumsToGenerate = GetTypesToGenerate(compilation, distinctEnums, context.CancellationToken);
 
-            // If there were errors in the EnumDeclarationSyntax, we won't create an EnumToGenerate
-            // for it, so make sure we have something to generate
-            if (enumsToGenerate.Count > 0)
-            {
-                // generate the source code and add it to the output
-                string result = GenerateExtensionClass(enumsToGenerate);
-                context.AddSource("EnumExtensions.g.cs", SourceText.From(result, Encoding.UTF8));
-            }
-        }
+        ////    // If there were errors in the EnumDeclarationSyntax, we won't create an EnumToGenerate
+        ////    // for it, so make sure we have something to generate
+        ////    if (enumsToGenerate.Count > 0)
+        ////    {
+        ////        // generate the source code and add it to the output
+        ////        string result = GenerateExtensionClass(enumsToGenerate);
+        ////        context.AddSource("EnumExtensions.g.cs", SourceText.From(result, Encoding.UTF8));
+        ////    }
+        ////}
 
-        private static List<EnumToGenerate> GetTypesToGenerate(Compilation compilation, IEnumerable<EnumDeclarationSyntax> enums, CancellationToken ct)
-        {
-            // Create a list to hold our output
-            var enumsToGenerate = new List<EnumToGenerate>();
-            // Get the semantic representation of our marker attribute
-            INamedTypeSymbol? enumAttribute = compilation.GetTypeByMetadataName("NetEscapades.EnumGenerators.EnumExtensionsAttribute");
+        ////private static List<EnumToGenerate> GetTypesToGenerate(Compilation compilation, IEnumerable<EnumDeclarationSyntax> enums, CancellationToken ct)
+        ////{
+        ////    // Create a list to hold our output
+        ////    var enumsToGenerate = new List<EnumToGenerate>();
+        ////    // Get the semantic representation of our marker attribute
+        ////    INamedTypeSymbol? enumAttribute = compilation.GetTypeByMetadataName("NetEscapades.EnumGenerators.EnumExtensionsAttribute");
 
-            if (enumAttribute == null)
-            {
-                // If this is null, the compilation couldn't find the marker attribute type which
-                // suggests there's something very wrong! Bail out..
-                return enumsToGenerate;
-            }
+        ////    if (enumAttribute == null)
+        ////    {
+        ////        // If this is null, the compilation couldn't find the marker attribute type which
+        ////        // suggests there's something very wrong! Bail out..
+        ////        return enumsToGenerate;
+        ////    }
 
-            foreach (EnumDeclarationSyntax enumDeclarationSyntax in enums)
-            {
-                // stop if we're asked to
-                ct.ThrowIfCancellationRequested();
+        ////    foreach (EnumDeclarationSyntax enumDeclarationSyntax in enums)
+        ////    {
+        ////        // stop if we're asked to
+        ////        ct.ThrowIfCancellationRequested();
 
-                // Get the semantic representation of the enum syntax
-                SemanticModel semanticModel = compilation.GetSemanticModel(enumDeclarationSyntax.SyntaxTree);
-                if (semanticModel.GetDeclaredSymbol(enumDeclarationSyntax) is not INamedTypeSymbol enumSymbol)
-                {
-                    // something went wrong, bail out
-                    continue;
-                }
+        ////        // Get the semantic representation of the enum syntax
+        ////        SemanticModel semanticModel = compilation.GetSemanticModel(enumDeclarationSyntax.SyntaxTree);
+        ////        if (semanticModel.GetDeclaredSymbol(enumDeclarationSyntax) is not INamedTypeSymbol enumSymbol)
+        ////        {
+        ////            // something went wrong, bail out
+        ////            continue;
+        ////        }
 
-                // Get the full type name of the enum e.g. Colour, or OuterClass<T>.Colour if it was
-                // nested in a generic type (for example)
-                string enumName = enumSymbol.ToString();
+        ////        // Get the full type name of the enum e.g. Colour, or OuterClass<T>.Colour if it was
+        ////        // nested in a generic type (for example)
+        ////        string enumName = enumSymbol.ToString();
 
-                // Get all the members in the enum
-                ImmutableArray<ISymbol> enumMembers = enumSymbol.GetMembers();
-                var members = new List<string>(enumMembers.Length);
+        ////        // Get all the members in the enum
+        ////        ImmutableArray<ISymbol> enumMembers = enumSymbol.GetMembers();
+        ////        var members = new List<string>(enumMembers.Length);
 
-                // Get all the fields from the enum, and add their name to the list
-                foreach (ISymbol member in enumMembers)
-                {
-                    if (member is IFieldSymbol field && field.ConstantValue is not null)
-                    {
-                        members.Add(member.Name);
-                    }
-                }
+        ////        // Get all the fields from the enum, and add their name to the list
+        ////        foreach (ISymbol member in enumMembers)
+        ////        {
+        ////            if (member is IFieldSymbol field && field.ConstantValue is not null)
+        ////            {
+        ////                members.Add(member.Name);
+        ////            }
+        ////        }
 
-                // Create an EnumToGenerate for use in the generation phase
-                enumsToGenerate.Add(new EnumToGenerate(enumName, members));
-            }
+        ////        // Create an EnumToGenerate for use in the generation phase
+        ////        enumsToGenerate.Add(new EnumToGenerate(enumName, members));
+        ////    }
 
-            return enumsToGenerate;
-        }
+        ////    return enumsToGenerate;
+        ////}
 
         ////        public void Execute(GeneratorExecutionContext context)
         ////        {

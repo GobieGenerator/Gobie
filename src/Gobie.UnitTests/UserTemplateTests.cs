@@ -11,7 +11,7 @@ public class UserTemplateTests
         var source = @"
         using NetEscapades.EnumGenerators;
 
-        public partial class PartialTest
+        public partial class UserDefinedGenerator
         {
         }";
 
@@ -24,7 +24,7 @@ public class UserTemplateTests
         var source = @"
         using NetEscapades.EnumGenerators;
 
-        public partial class PartialTest : FooBase
+        public partial class UserDefinedGenerator : FooBase
         {
         }";
 
@@ -37,7 +37,7 @@ public class UserTemplateTests
         var source = @"
         using NetEscapades.EnumGenerators;
 
-        public class PartialTest : FooBase
+        public class UserDefinedGenerator : FooBase
         {
         }";
 
@@ -50,7 +50,7 @@ public class UserTemplateTests
         var source = @"
         using NetEscapades.EnumGenerators;
 
-        public partial sealed class PartialTest : GobieFieldGenerator
+        public partial sealed class UserDefinedGenerator : GobieFieldGenerator
         {
         }";
 
@@ -63,7 +63,7 @@ public class UserTemplateTests
         var source = @"
         using NetEscapades.EnumGenerators;
 
-        public class PartialTest : GobieFieldGenerator
+        public class UserDefinedGenerator : GobieFieldGenerator
         {
         }";
 
@@ -76,7 +76,7 @@ public class UserTemplateTests
         var source = @"
         using NetEscapades.EnumGenerators;
 
-        public partial class PartialTest : Gobie.GobieFieldGenerator
+        public partial class UserDefinedGenerator : Gobie.GobieFieldGenerator
         {
         }";
 
@@ -84,12 +84,12 @@ public class UserTemplateTests
     }
 
     [Test]
-    public Task Valid_NoDiagnostic()
+    public Task Empty_GetsNoDefinitionDiagnostic()
     {
         var source = @"
         using NetEscapades.EnumGenerators;
 
-        public class PartialTest
+        public sealed class UserDefinedGenerator : Gobie.GobieFieldGenerator
         {
         }";
 
