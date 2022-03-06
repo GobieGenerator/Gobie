@@ -109,6 +109,31 @@ namespace Gobie
                 return new(diagnostics);
             }
 
+            var classSymbol = context.SemanticModel.GetSymbolInfo(cds).Symbol;
+            if (!cds.Identifier.ToString().EndsWith("Generator", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var lists in cds.AttributeLists)
+                {
+                    foreach (var attribute in lists.Attributes)
+                    {
+                        if (context.SemanticModel.GetSymbolInfo(attribute).Symbol is not IMethodSymbol attributeSymbol)
+                        {
+                            // weird, we couldn't get the symbol, ignore it
+                            continue;
+                        }
+
+                        INamedTypeSymbol attributeContainingTypeSymbol = attributeSymbol.ContainingType;
+                        string fullName = attributeContainingTypeSymbol.ToDisplayString();
+
+                        // Is the attribute the [EnumExtensions] attribute?
+                        if (fullName == "NetEscapades.EnumGenerators.EnumExtensionsAttribute")
+                        {
+                            // return the enum
+                        }
+                    }
+                }
+            }
+
             diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsEmpty, classLocation));
 
             return new(cds, diagnostics);

@@ -1,4 +1,4 @@
-﻿namespace NetEscapades.EnumGenerators.Tests;
+﻿namespace Gobie.Tests;
 
 public static class TestHelper
 {

@@ -1,4 +1,4 @@
-﻿using NetEscapades.EnumGenerators.Tests;
+﻿using Gobie.Tests;
 
 namespace Gobie.UnitTests;
 
@@ -9,7 +9,7 @@ public class UserTemplateTests
     public Task NoBase_Partial_NoDiagnostic()
     {
         var source = @"
-        using NetEscapades.EnumGenerators;
+        using Gobie;
 
         public partial class UserDefinedGenerator
         {
@@ -22,7 +22,7 @@ public class UserTemplateTests
     public Task NonGobie_Partial_NoDiagnostic()
     {
         var source = @"
-        using NetEscapades.EnumGenerators;
+        using Gobie;
 
         public partial class UserDefinedGenerator : FooBase
         {
@@ -35,7 +35,7 @@ public class UserTemplateTests
     public Task NonGobie_Unsealed_NoDiagnostic()
     {
         var source = @"
-        using NetEscapades.EnumGenerators;
+        using Gobie;
 
         public class UserDefinedGenerator : FooBase
         {
@@ -48,7 +48,7 @@ public class UserTemplateTests
     public Task Partial_GetsDiagnostic()
     {
         var source = @"
-        using NetEscapades.EnumGenerators;
+        using Gobie;
 
         public partial sealed class UserDefinedGenerator : GobieFieldGenerator
         {
@@ -61,7 +61,7 @@ public class UserTemplateTests
     public Task Unsealed_GetsDiagnostic()
     {
         var source = @"
-        using NetEscapades.EnumGenerators;
+        using Gobie;
 
         public class UserDefinedGenerator : GobieFieldGenerator
         {
@@ -74,7 +74,7 @@ public class UserTemplateTests
     public Task PartialUnsealed_GetsDiagnostics()
     {
         var source = @"
-        using NetEscapades.EnumGenerators;
+        using Gobie;
 
         public partial class UserDefinedGenerator : Gobie.GobieFieldGenerator
         {
@@ -87,7 +87,7 @@ public class UserTemplateTests
     public Task Empty_GetsNoDefinitionDiagnostic()
     {
         var source = @"
-        using NetEscapades.EnumGenerators;
+        using Gobie;
 
         public sealed class UserDefinedGenerator : Gobie.GobieFieldGenerator
         {

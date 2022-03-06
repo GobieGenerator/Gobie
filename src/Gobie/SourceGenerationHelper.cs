@@ -49,6 +49,18 @@ namespace Gobie
     public abstract class GobieFieldGeneratorAttribute : Attribute
     {
     }
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public sealed class GobieGeneratorNameAttribute : Attribute
+    {
+        public GobieGeneratorNameAttribute(string attributeName)
+        {
+            AttributeName = attributeName ?? throw new ArgumentNullException(nameof(attributeName));
+        }
+
+        public string AttributeName { get; }
+        public string Namespace { get; set; }
+    }
 }";
     }
 }

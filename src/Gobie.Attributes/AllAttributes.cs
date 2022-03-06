@@ -23,7 +23,7 @@
     public sealed class GobieFileTemplateAttribute : GobieBaseFieldAttribute
     {
         /// <summary>
-        /// A literal string or mustache template to determine the file name. 
+        /// A literal string or mustache template to determine the file name.
         /// </summary>
         public string FileNameTemplate { get; set; }
     }
@@ -42,5 +42,21 @@
 
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public abstract class GobieFieldGeneratorAttribute : Attribute
-    { }
+    {
+    }
+
+    ////[GobieGeneratorName("something")]
+    ////[GobieGeneratorName("something", Namespace = "foo")]
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public sealed class GobieGeneratorNameAttribute : Attribute
+    {
+        public GobieGeneratorNameAttribute(string attributeName)
+        {
+            AttributeName = attributeName ?? throw new ArgumentNullException(nameof(attributeName));
+        }
+
+        public string AttributeName { get; }
+
+        public string Namespace { get; set; }
+    }
 }
