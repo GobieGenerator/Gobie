@@ -110,21 +110,45 @@ public class UserTemplateTests
     }
 
     [Test]
-    public void NameSuppliedByAttribute()
+    public Task NameSuppliedByAttribute()
     {
-        Assert.Fail();
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName(""MyGenerator"")]
+        public sealed class UserDefined : Gobie.GobieFieldGenerator
+        {
+        }";
+
+        return TestHelper.Verify(source);
     }
 
     [Test]
-    public void NameEndingInAttributeSuppliedByAttribute()
+    public Task NameEndingInAttributeSuppliedByAttribute()
     {
-        Assert.Fail();
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName(""MyGeneratorAttribute"")]
+        public sealed class UserDefined : Gobie.GobieFieldGenerator
+        {
+        }";
+
+        return TestHelper.Verify(source);
     }
 
     [Test]
-    public void NameAndNamespaceSuppliedByAttribute()
+    public Task NameAndNamespaceSuppliedByAttribute()
     {
-        Assert.Fail();
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName(""MyGenerator"", Namespace = ""MyNamespace"")]
+        public sealed class UserDefined : Gobie.GobieFieldGenerator
+        {
+        }";
+
+        return TestHelper.Verify(source);
     }
 
     [Test]
