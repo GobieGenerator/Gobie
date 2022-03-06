@@ -78,6 +78,7 @@ namespace Gobie
         private static DataOrDiagnostics<ClassDeclarationSyntax>? GetUserTemplate(GeneratorSyntaxContext context)
         {
             var cds = (ClassDeclarationSyntax)context.Node;
+            var classLocation = cds.Identifier.GetLocation();
 
             if (cds.BaseList is null)
             {
@@ -95,12 +96,12 @@ namespace Gobie
             var diagnostics = new List<Diagnostic>();
             if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
             {
-                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsPartial, cds.GetLocation()));
+                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsPartial, classLocation));
             }
 
             if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.SealedKeyword)) == false)
             {
-                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsNotSealed, cds.GetLocation()));
+                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsNotSealed, classLocation));
             }
 
             if (diagnostics.Any())
@@ -108,7 +109,7 @@ namespace Gobie
                 return new(diagnostics);
             }
 
-            diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsEmpty, cds.GetLocation()));
+            diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsEmpty, classLocation));
 
             return new(cds, diagnostics);
         }
