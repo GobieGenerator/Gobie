@@ -1,8 +1,5 @@
-﻿namespace Gobie
-{
-    public static class SourceGenerationHelper
-    {
-        public const string GobieCore = @"
+﻿//HintName: EnumExtensionsAttribute.g.cs
+
 namespace Gobie
 {
     using System;
@@ -48,7 +45,5 @@ namespace Gobie
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public abstract class GobieFieldGeneratorAttribute : Attribute
     {
-    }
-}";
     }
 }

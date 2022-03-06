@@ -56,28 +56,23 @@ namespace NetEscapades.EnumGenerators
         {
             context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
                 "EnumExtensionsAttribute.g.cs",
-                SourceText.From(SourceGenerationHelper.Attribute, Encoding.UTF8)));
+                SourceText.From(SourceGenerationHelper.GobieCore, Encoding.UTF8)));
 
             //### Find the user templates and report diagnostics on issue.
 
-            IncrementalValuesProvider<DataOrDiagnostics<TemplateData>> userTemplateDataOrDiagnostics =
+            IncrementalValuesProvider<DataOrDiagnostics<ClassDeclarationSyntax>> userTemplateSyntaxOrDiagnostics =
                 context.SyntaxProvider
                     .CreateSyntaxProvider(
                         predicate: static (s, _) => IsClassDeclaration(s),
                         transform: static (ctx, _) => GetUserTemplate(ctx))
                     .Where(static x => x is not null)!;
 
-            IncrementalValuesProvider<IReadOnlyList<Diagnostic>> userTemplateDiagnostics =
-                userTemplateDataOrDiagnostics
-                    .Where(x => x.Diagnostics is not null)
-                    .Select(selector: (s, _) => s.Diagnostics!);
-
             context.RegisterSourceOutput(
-                userTemplateDiagnostics,
+                userTemplateSyntaxOrDiagnostics,
                 static (spc, source) => OutputDiagnostics(spc, source));
 
-            IncrementalValuesProvider<TemplateData> userTemplateData =
-                userTemplateDataOrDiagnostics
+            IncrementalValuesProvider<ClassDeclarationSyntax> userTemplateSyntax =
+                userTemplateSyntaxOrDiagnostics
                     .Where(x => x.Data is not null)
                     .Select(selector: (s, _) => s.Data!);
 
@@ -85,30 +80,29 @@ namespace NetEscapades.EnumGenerators
 
             //### Find usage of the user's attributes and generate their code.
 
-            //### Andrew lock's example
-            IncrementalValuesProvider<EnumDeclarationSyntax> enumDeclarations =
-                context.SyntaxProvider
-                    .CreateSyntaxProvider(
-                        predicate: static (s, _) => IsSyntaxTargetForGeneration(s), // select enums with attributes
-                        transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx)) // sect the enum with the [EnumExtensions] attribute
-                    .Where(static m => m is not null)!; // filter out attributed enums that we don't care about
+            //////### Andrew lock's example
+            ////IncrementalValuesProvider<EnumDeclarationSyntax> enumDeclarations =
+            ////    context.SyntaxProvider
+            ////        .CreateSyntaxProvider(
+            ////            predicate: static (s, _) => IsSyntaxTargetForGeneration(s), // select enums with attributes
+            ////            transform: static (ctx, _) => GetSemanticTargetForGeneration(ctx)) // sect the enum with the [EnumExtensions] attribute
+            ////        .Where(static m => m is not null)!; // filter out attributed enums that we don't care about
 
-            // Combine the selected enums with the `Compilation`
-            IncrementalValueProvider<(Compilation, ImmutableArray<EnumDeclarationSyntax>)> compilationAndEnums =
-                context.CompilationProvider.Combine(enumDeclarations.Collect());
+            ////// Combine the selected enums with the `Compilation`
+            ////IncrementalValueProvider<(Compilation, ImmutableArray<EnumDeclarationSyntax>)> compilationAndEnums =
+            ////    context.CompilationProvider.Combine(enumDeclarations.Collect());
 
-            // Generate the source using the compilation and enums
-            context.RegisterSourceOutput(
-                compilationAndEnums,
-                static (spc, source) => Execute(source.Item1, source.Item2, spc));
+            ////// Generate the source using the compilation and enums
+            ////context.RegisterSourceOutput(
+            ////    compilationAndEnums,
+            ////    static (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
 
-        private static void OutputDiagnostics(SourceProductionContext spc, IReadOnlyList<Diagnostic> diagnostics)
+        private static void OutputDiagnostics<T>(SourceProductionContext spc, DataOrDiagnostics<T> option)
         {
-            foreach (var diagnostic in diagnostics)
-            {
-                spc.ReportDiagnostic(diagnostic);
-            }
+            if (option.Diagnostics is not null)
+                foreach (var diagnostic in option.Diagnostics)
+                    spc.ReportDiagnostic(diagnostic);
         }
 
         private static bool IsSyntaxTargetForGeneration(SyntaxNode node) =>
@@ -117,30 +111,32 @@ namespace NetEscapades.EnumGenerators
         private static bool IsClassDeclaration(SyntaxNode node) =>
             node is ClassDeclarationSyntax;
 
-        private static DataOrDiagnostics<TemplateData>? GetUserTemplate(GeneratorSyntaxContext context)
+        private static DataOrDiagnostics<ClassDeclarationSyntax>? GetUserTemplate(GeneratorSyntaxContext context)
         {
-            var c = (ClassDeclarationSyntax)context.Node;
+            var cds = (ClassDeclarationSyntax)context.Node;
 
-            if (c.BaseList is null)
+            if (cds.BaseList is null)
             {
                 return null;
             }
 
-            var gobieBaseTypeName = c.BaseList.Types.SingleOrDefault(x => GobieBase.Contains(x.ToString()));
+            // Because we control the list of base types they can use this should be a very good
+            // though imperfect filter we can run on the syntax alone.
+            var gobieBaseTypeName = cds.BaseList.Types.SingleOrDefault(x => GobieBase.Contains(x.ToString()));
             if (gobieBaseTypeName is null)
             {
                 return null;
             }
 
             var diagnostics = new List<Diagnostic>();
-            if (c.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
+            if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
             {
-                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsPartial, c.GetLocation()));
+                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsPartial, cds.GetLocation()));
             }
 
-            if (c.Modifiers.Any(x => x.IsKind(SyntaxKind.SealedKeyword)) == false)
+            if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.SealedKeyword)) == false)
             {
-                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsNotSealed, c.GetLocation()));
+                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsNotSealed, cds.GetLocation()));
             }
 
             if (diagnostics.Any())
@@ -148,8 +144,7 @@ namespace NetEscapades.EnumGenerators
                 return new(diagnostics);
             }
 
-            // we didn't find the attribute we were looking for
-            return null;
+            return new(cds);
         }
 
         private static EnumDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)

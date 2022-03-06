@@ -6,8 +6,7 @@ public static class TestHelper
     {
         // Parse the provided string into a C# syntax tree
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source);
-        // Create references for assemblies we require
-        // We could add multiple references if required
+        // Create references for assemblies we require We could add multiple references if required
         IEnumerable<PortableExecutableReference> references = new[]
         {
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
