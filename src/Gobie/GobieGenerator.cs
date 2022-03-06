@@ -10,6 +10,13 @@ namespace Gobie
     [Generator]
     public class GobieGenerator : IIncrementalGenerator
     {
+        private static readonly HashSet<string> GobieBase = new()
+        {
+            "GobieBaseSomething",
+            "Gobie.GobieBaseSomething",
+            "asfdf",
+        };
+
         public static string GenerateExtensionClass(List<EnumToGenerate> enumsToGenerate)
         {
             var sb = new StringBuilder();
@@ -57,7 +64,7 @@ namespace NetEscapades.EnumGenerators
                 context.SyntaxProvider
                     .CreateSyntaxProvider(
                         predicate: static (s, _) => IsClassDeclaration(s),
-                        transform: static (ctx, _) => GetTemplate(ctx))
+                        transform: static (ctx, _) => GetUserTemplate(ctx))
                     .Where(static x => x is not null)!;
 
             IncrementalValuesProvider<IReadOnlyList<Diagnostic>> userTemplateDiagnostics =
@@ -110,14 +117,35 @@ namespace NetEscapades.EnumGenerators
         private static bool IsClassDeclaration(SyntaxNode node) =>
             node is ClassDeclarationSyntax;
 
-        private static DataOrDiagnostics<TemplateData>? GetTemplate(GeneratorSyntaxContext context)
+        private static DataOrDiagnostics<TemplateData>? GetUserTemplate(GeneratorSyntaxContext context)
         {
-            // we know the node is a ClassDeclarationSyntax thanks to IsSyntaxTargetForGeneration
             var c = (ClassDeclarationSyntax)context.Node;
 
+            if (c.BaseList is null)
+            {
+                return null;
+            }
+
+            var gobieBaseTypeName = c.BaseList.Types.SingleOrDefault(x => GobieBase.Contains(x.ToString()));
+            if (gobieBaseTypeName is null)
+            {
+                return null;
+            }
+
+            var diagnostics = new List<Diagnostic>();
             if (c.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
             {
-                return new(Diagnostic.Create(Diagnostics.GobieAttributeIsPartial, c.GetLocation()));
+                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsPartial, c.GetLocation()));
+            }
+
+            if (c.Modifiers.Any(x => x.IsKind(SyntaxKind.SealedKeyword)) == false)
+            {
+                diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsNotSealed, c.GetLocation()));
+            }
+
+            if (diagnostics.Any())
+            {
+                return new(diagnostics);
             }
 
             // we didn't find the attribute we were looking for
