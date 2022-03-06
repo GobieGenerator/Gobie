@@ -50,7 +50,7 @@ public class UserTemplateTests
         var source = @"
         using NetEscapades.EnumGenerators;
 
-        public partial sealed class PartialTest : GobieBaseSomething
+        public partial sealed class PartialTest : GobieFieldGenerator
         {
         }";
 
@@ -63,7 +63,7 @@ public class UserTemplateTests
         var source = @"
         using NetEscapades.EnumGenerators;
 
-        public class PartialTest : GobieBaseSomething
+        public class PartialTest : GobieFieldGenerator
         {
         }";
 
@@ -76,7 +76,7 @@ public class UserTemplateTests
         var source = @"
         using NetEscapades.EnumGenerators;
 
-        public partial class PartialTest : GobieBaseSomething
+        public partial class PartialTest : Gobie.GobieFieldGenerator
         {
         }";
 

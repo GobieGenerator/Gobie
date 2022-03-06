@@ -12,9 +12,8 @@ namespace Gobie
     {
         private static readonly HashSet<string> GobieBase = new()
         {
-            "GobieBaseSomething",
-            "Gobie.GobieBaseSomething",
-            "asfdf",
+            "GobieFieldGenerator",
+            "Gobie.GobieFieldGenerator",
         };
 
         public static string GenerateExtensionClass(List<EnumToGenerate> enumsToGenerate)
