@@ -138,7 +138,7 @@ namespace Gobie
                 {
                     foreach (var attribute in lists.Attributes)
                     {
-                        if (context.SemanticModel.GetSymbolInfo(attribute).Symbol is not IMethodSymbol attributeSymbol)
+                        if (context.SemanticModel.GetSymbolInfo(attribute).Symbol is not INamedTypeSymbol attributeSymbol)
                         {
                             // weird, we couldn't get the symbol, ignore it
                             continue;
@@ -148,8 +148,9 @@ namespace Gobie
                         string fullName = attributeContainingTypeSymbol.ToDisplayString();
 
                         // Is the attribute the [EnumExtensions] attribute?
-                        if (fullName == "NetEscapades.EnumGenerators.EnumExtensionsAttribute")
+                        if (fullName == "Gobie.GobieGeneratorName")
                         {
+                            ////attributeSymbol.NamedArguments
                             // return the enum
                         }
                     }
