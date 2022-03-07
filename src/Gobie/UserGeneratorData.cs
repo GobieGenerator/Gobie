@@ -22,7 +22,7 @@
 
             if (!string.IsNullOrWhiteSpace(namespaceName))
             {
-                NamespaceName = namespaceName;
+                NamespaceName = namespaceName!;
             }
 
             return this;
