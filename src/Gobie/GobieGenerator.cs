@@ -130,33 +130,28 @@ namespace Gobie
                 diagnostics.Add(Diagnostic.Create(Errors.UserTemplateIsNotSealed, classLocation));
             }
 
-            var classSymbol = context.SemanticModel.GetSymbolInfo(cds).Symbol;
+            var classSymbol = context.SemanticModel.GetDeclaredSymbol(context.Node);
             if (!cds.Identifier.ToString().EndsWith("Generator", StringComparison.OrdinalIgnoreCase))
             {
-                diagnostics.Add(Diagnostic.Create(Errors.GeneratorNameInvalid, classLocation));
-                foreach (var lists in cds.AttributeLists)
+                var bad = true;
+                foreach (var attribute in classSymbol!.GetAttributes())
                 {
-                    foreach (var attribute in lists.Attributes)
+                    var b = attribute?.AttributeClass?.ToString();
+                    if (attribute?.AttributeClass?.ToString() == "Gobie.GobieGeneratorNameAttribute")
                     {
-                        if (context.SemanticModel.GetSymbolInfo(attribute).Symbol is not INamedTypeSymbol attributeSymbol)
-                        {
-                            // weird, we couldn't get the symbol, ignore it
-                            continue;
-                        }
-
-                        INamedTypeSymbol attributeContainingTypeSymbol = attributeSymbol.ContainingType;
-                        string fullName = attributeContainingTypeSymbol.ToDisplayString();
-
-                        // Is the attribute the [EnumExtensions] attribute?
-                        if (fullName == "Gobie.GobieGeneratorName")
-                        {
-                            ////attributeSymbol.NamedArguments
-                            // return the enum
-                        }
+                        var genName = attribute!.ConstructorArguments[0].Value.ToString();
+                        genData.WithName(genName!, null);
+                        bad = false;
                     }
+                }
+
+                if (bad)
+                {
+                    diagnostics.Add(Diagnostic.Create(Errors.GeneratorNameInvalid, classLocation));
                 }
             }
 
+            //! Diagnostics before here are errors that stop generation.
             if (diagnostics.Any())
             {
                 return new(diagnostics);
