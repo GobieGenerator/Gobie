@@ -140,7 +140,16 @@ namespace Gobie
                     if (attribute?.AttributeClass?.ToString() == "Gobie.GobieGeneratorNameAttribute")
                     {
                         var genName = attribute!.ConstructorArguments[0].Value.ToString();
-                        genData.WithName(genName!, null);
+
+                        string? namespaceName = null;
+                        var namespaceVal = attribute.NamedArguments.SingleOrDefault(x => x.Key == "Namespace").Value;
+
+                        if (namespaceVal.IsNull == false)
+                        {
+                            namespaceName = namespaceVal.Value!.ToString();
+                        }
+
+                        genData.WithName(genName!, namespaceName);
                         bad = false;
                     }
                 }
