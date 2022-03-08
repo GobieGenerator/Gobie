@@ -110,6 +110,20 @@ public class UserTemplateTests
     }
 
     [Test]
+    public Task ValidNameOverridenByAttribute()
+    {
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName(""MyGenerator"")]
+        public sealed class UserDefinedGenerator : Gobie.GobieFieldGenerator
+        {
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task NameSuppliedByAttribute()
     {
         var source = @"
@@ -144,6 +158,50 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""MyGenerator"", Namespace = ""MyNamespace"")]
+        public sealed class UserDefined : Gobie.GobieFieldGenerator
+        {
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task MultipleNameAndNamespaceSuppliedByAttributes_UsesFirst()
+    {
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName(""MyGenerator"", Namespace = ""MyNamespace"")]
+        [GobieGeneratorName(""SeconGen"", Namespace = ""SecondNamespace"")]
+        public sealed class UserDefined : Gobie.GobieFieldGenerator
+        {
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task PartialAttribute()
+    {
+        // Strangely this does work.
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName(""PartialName
+        public sealed class UserDefined : Gobie.GobieFieldGenerator
+        {
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task AttributeWithoutArgs()
+    {
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName
         public sealed class UserDefined : Gobie.GobieFieldGenerator
         {
         }";

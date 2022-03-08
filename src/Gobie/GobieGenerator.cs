@@ -131,33 +131,37 @@ namespace Gobie
             }
 
             var classSymbol = context.SemanticModel.GetDeclaredSymbol(context.Node);
-            if (!cds.Identifier.ToString().EndsWith("Generator", StringComparison.OrdinalIgnoreCase))
+
+            var invalidName = !cds.Identifier.ToString().EndsWith("Generator", StringComparison.OrdinalIgnoreCase);
+            foreach (var attribute in classSymbol!.GetAttributes())
             {
-                var bad = true;
-                foreach (var attribute in classSymbol!.GetAttributes())
+                var b = attribute?.AttributeClass?.ToString();
+                if (attribute?.AttributeClass?.ToString() == "Gobie.GobieGeneratorNameAttribute")
                 {
-                    var b = attribute?.AttributeClass?.ToString();
-                    if (attribute?.AttributeClass?.ToString() == "Gobie.GobieGeneratorNameAttribute")
+                    if (attribute!.ConstructorArguments.Count() == 0)
                     {
-                        var genName = attribute!.ConstructorArguments[0].Value.ToString();
-
-                        string? namespaceName = null;
-                        var namespaceVal = attribute.NamedArguments.SingleOrDefault(x => x.Key == "Namespace").Value;
-
-                        if (namespaceVal.IsNull == false)
-                        {
-                            namespaceName = namespaceVal.Value!.ToString();
-                        }
-
-                        genData.WithName(genName!, namespaceName);
-                        bad = false;
+                        continue;
                     }
-                }
 
-                if (bad)
-                {
-                    diagnostics.Add(Diagnostic.Create(Errors.GeneratorNameInvalid, classLocation));
+                    var genName = attribute!.ConstructorArguments[0].Value!.ToString();
+
+                    string? namespaceName = null;
+                    var namespaceVal = attribute.NamedArguments.SingleOrDefault(x => x.Key == "Namespace").Value;
+
+                    if (namespaceVal.IsNull == false)
+                    {
+                        namespaceName = namespaceVal.Value!.ToString();
+                    }
+
+                    genData.WithName(genName!, namespaceName);
+                    invalidName = false;
+                    break;
                 }
+            }
+
+            if (invalidName)
+            {
+                diagnostics.Add(Diagnostic.Create(Errors.GeneratorNameInvalid, classLocation));
             }
 
             //! Diagnostics before here are errors that stop generation.
