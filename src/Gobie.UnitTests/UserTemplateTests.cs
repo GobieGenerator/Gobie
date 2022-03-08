@@ -5,15 +5,19 @@ namespace Gobie.UnitTests;
 [TestFixture]
 public class UserTemplateTests
 {
+    private const string TrivialTemplate = @"
+    {
+        [GobieTemplate]
+        private const string EncapsulationTemplate = ""// String Comment"";
+    }";
+
     [Test]
     public Task NoBase_Partial_NoDiagnostic()
     {
         var source = @"
         using Gobie;
 
-        public partial class UserDefinedGenerator
-        {
-        }";
+        public partial class UserDefinedGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -24,9 +28,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public partial class UserDefinedGenerator : FooBase
-        {
-        }";
+        public partial class UserDefinedGenerator : FooBase" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -37,9 +39,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public class UserDefinedGenerator : FooBase
-        {
-        }";
+        public class UserDefinedGenerator : FooBase" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -50,9 +50,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public partial sealed class UserDefinedGenerator : GobieFieldGenerator
-        {
-        }";
+        public partial sealed class UserDefinedGenerator : GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -63,9 +61,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public class UserDefinedGenerator : GobieFieldGenerator
-        {
-        }";
+        public class UserDefinedGenerator : GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -76,9 +72,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public partial class UserDefinedGenerator : Gobie.GobieFieldGenerator
-        {
-        }";
+        public partial class UserDefinedGenerator : Gobie.GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -102,9 +96,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public sealed class UserDefined : Gobie.GobieFieldGenerator
-        {
-        }";
+        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -116,9 +108,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""MyGenerator"")]
-        public sealed class UserDefinedGenerator : Gobie.GobieFieldGenerator
-        {
-        }";
+        public sealed class UserDefinedGenerator : Gobie.GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -130,9 +120,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""MyGenerator"")]
-        public sealed class UserDefined : Gobie.GobieFieldGenerator
-        {
-        }";
+        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -144,9 +132,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""MyGeneratorAttribute"")]
-        public sealed class UserDefined : Gobie.GobieFieldGenerator
-        {
-        }";
+        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -158,9 +144,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""MyGenerator"", Namespace = ""MyNamespace"")]
-        public sealed class UserDefined : Gobie.GobieFieldGenerator
-        {
-        }";
+        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -173,9 +157,7 @@ public class UserTemplateTests
 
         [GobieGeneratorName(""MyGenerator"", Namespace = ""MyNamespace"")]
         [GobieGeneratorName(""SeconGen"", Namespace = ""SecondNamespace"")]
-        public sealed class UserDefined : Gobie.GobieFieldGenerator
-        {
-        }";
+        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -188,9 +170,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""PartialName
-        public sealed class UserDefined : Gobie.GobieFieldGenerator
-        {
-        }";
+        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -202,9 +182,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName
-        public sealed class UserDefined : Gobie.GobieFieldGenerator
-        {
-        }";
+        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }

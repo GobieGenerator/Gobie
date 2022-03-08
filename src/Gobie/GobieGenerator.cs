@@ -170,7 +170,10 @@ namespace Gobie
                 return new(diagnostics);
             }
 
-            diagnostics.Add(Diagnostic.Create(Warnings.UserTemplateIsEmpty, classLocation));
+            if (cds.ToFullString().Contains("GobieTemplate") == false)
+            {
+                diagnostics.Add(Diagnostic.Create(Warnings.UserTemplateIsEmpty, classLocation));
+            }
 
             return new(genData, diagnostics);
         }
