@@ -50,17 +50,28 @@ public class RequiredParameter
 {
     public RequiredParameter(int requestedOrder, int declaredOrder, string name, string csharpTypeName)
     {
+        name = name ?? throw new ArgumentNullException(nameof(name));
         RequestedOrder = requestedOrder;
         DeclaredOrder = declaredOrder;
-        Name = name ?? throw new ArgumentNullException(nameof(name));
         CsharpTypeName = csharpTypeName ?? throw new ArgumentNullException(nameof(csharpTypeName));
+
+        NamePascal = name[0].ToString().ToUpperInvariant() + name.Substring(1);
+        NameCamel = name[0].ToString().ToLowerInvariant() + name.Substring(1);
     }
 
     public int RequestedOrder { get; }
 
     public int DeclaredOrder { get; }
 
-    public string Name { get; }
+    public string NamePascal { get; }
+
+    public string NameCamel { get; }
 
     public string CsharpTypeName { get; }
+
+    public string PropertyString => $"public {CsharpTypeName} {NameCamel} {{ get; set; }}";
+
+    public string CtorArgumentString => $"{CsharpTypeName} {NameCamel}";
+
+    public string CtorAssignmentString => $"this.{NamePascal} = {NameCamel};";
 }

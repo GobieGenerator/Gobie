@@ -178,9 +178,12 @@
                 /// run <see cref=""TODONAMESPACE.{data.DefinitionIdentifier}""/> to run. </summary>
                 public sealed class {data.AttributeIdentifier} : Gobie.GobieFieldGeneratorAttribute
                 {{
-                    public {data.AttributeIdentifier}()
+                    public {data.AttributeIdentifier}({string.Join(", ", data.RequiredParameters.Select(x => x.CtorArgumentString))})
                     {{
+                        {string.Join(Environment.NewLine, data.RequiredParameters.Select(x => x.CtorAssignmentString))}
                     }}
+
+                    {string.Join(Environment.NewLine, data.RequiredParameters.Select(x => x.PropertyString))}
 
                     {string.Join(Environment.NewLine, data.OptionalParameters)}
                 }}
