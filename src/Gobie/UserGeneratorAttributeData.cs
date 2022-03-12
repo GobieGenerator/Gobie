@@ -25,6 +25,8 @@ public class UserGeneratorAttributeData
 
     public List<string> OptionalParameters { get; private set; } = new List<string>();
 
+    public List<RequiredParameter> RequiredParameters { get; private set; } = new List<RequiredParameter>();
+
     public UserGeneratorAttributeData WithName(string identifier, string? namespaceName)
     {
         DefinitionIdentifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
@@ -43,3 +45,22 @@ public class UserGeneratorAttributeData
 /// </summary>
 public class UserGeneratorTemplateData
 { }
+
+public class RequiredParameter
+{
+    public RequiredParameter(int requestedOrder, int declaredOrder, string name, string csharpTypeName)
+    {
+        RequestedOrder = requestedOrder;
+        DeclaredOrder = declaredOrder;
+        Name = name ?? throw new ArgumentNullException(nameof(name));
+        CsharpTypeName = csharpTypeName ?? throw new ArgumentNullException(nameof(csharpTypeName));
+    }
+
+    public int RequestedOrder { get; }
+
+    public int DeclaredOrder { get; }
+
+    public string Name { get; }
+
+    public string CsharpTypeName { get; }
+}

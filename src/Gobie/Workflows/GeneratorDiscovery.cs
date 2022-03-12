@@ -134,9 +134,35 @@
                 return new(diagnostics);
             }
 
+            var requiredPropertyNumber = 1;
             foreach (PropertyDeclarationSyntax node in cds.ChildNodes().Where(x => x is PropertyDeclarationSyntax))
             {
+                var propertySymbol = context.SemanticModel.GetDeclaredSymbol(node);
+                if (propertySymbol is null)
+                {
+                    // TODO is this a problem?
+                    continue;
+                }
+
+                foreach (var att in propertySymbol.GetAttributes())
+                {
+                    var b = att?.AttributeClass?.ToString();
+                    if (b == "Gobie.Required")
+                    {
+                        genData.RequiredParameters.Add(
+                            new RequiredParameter(
+                                1,
+                                requiredPropertyNumber,
+                                "ReqParam",
+                                "string"));
+
+                        requiredPropertyNumber++;
+                        goto RequiredPropertyHandeled;
+                    }
+                }
+
                 genData.OptionalParameters.Add(node.ToString());
+            RequiredPropertyHandeled:;
             }
 
             return new(genData);
@@ -152,6 +178,10 @@
                 /// run <see cref=""TODONAMESPACE.{data.DefinitionIdentifier}""/> to run. </summary>
                 public sealed class {data.AttributeIdentifier} : Gobie.GobieFieldGeneratorAttribute
                 {{
+                    public {data.AttributeIdentifier}()
+                    {{
+                    }}
+
                     {string.Join(Environment.NewLine, data.OptionalParameters)}
                 }}
             }}

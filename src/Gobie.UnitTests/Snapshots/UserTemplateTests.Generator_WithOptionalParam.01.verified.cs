@@ -5,6 +5,10 @@ namespace Gobie
     /// run <see cref = "TODONAMESPACE.PrimaryKeyGenerator"/> to run. </summary>
     public sealed class PrimaryKeyGeneratorAttribute : Gobie.GobieFieldGeneratorAttribute
     {
+        public PrimaryKeyGeneratorAttribute()
+        {
+        }
+
         public string MyParam { get; set; }
 
         public string OtherParam { get; set; } = "My Initial Value";

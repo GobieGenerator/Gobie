@@ -5,5 +5,8 @@ namespace Gobie
     /// run <see cref = "TODONAMESPACE.PartialName"/> to run. </summary>
     public sealed class PartialNameAttribute : Gobie.GobieFieldGeneratorAttribute
     {
+        public PartialNameAttribute()
+        {
+        }
     }
 }

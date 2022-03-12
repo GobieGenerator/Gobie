@@ -5,5 +5,8 @@ namespace MyNamespace
     /// run <see cref = "TODONAMESPACE.MyGenerator"/> to run. </summary>
     public sealed class MyGeneratorAttribute : Gobie.GobieFieldGeneratorAttribute
     {
+        public MyGeneratorAttribute()
+        {
+        }
     }
 }
