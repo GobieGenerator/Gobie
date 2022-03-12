@@ -1,5 +1,6 @@
 ﻿namespace Gobie;
 
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 
@@ -53,10 +54,12 @@ public class UserGeneratorTemplateData
 
 public class RequiredParameter
 {
-    public RequiredParameter(int requestedOrder, int declaredOrder, string name, string csharpTypeName)
+    public RequiredParameter(int requestedOrder, Location location, int declaredOrder, string name, string csharpTypeName)
     {
         name = name ?? throw new ArgumentNullException(nameof(name));
+
         RequestedOrder = requestedOrder;
+        RequestedOrderLocation = location;
         DeclaredOrder = declaredOrder;
         CsharpTypeName = csharpTypeName ?? throw new ArgumentNullException(nameof(csharpTypeName));
 
@@ -65,6 +68,8 @@ public class RequiredParameter
     }
 
     public int RequestedOrder { get; }
+
+    public Location RequestedOrderLocation { get; }
 
     public int DeclaredOrder { get; }
 

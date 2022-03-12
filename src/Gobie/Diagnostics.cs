@@ -40,5 +40,8 @@ namespace Gobie.Diagnostics
 
         public static DiagnosticDescriptor GobieAttributeHasNoTemplates =>
             new("GB1003", "Gobie", "Attribute has no tempaltes and will not generate any output.", "Gobie", Severity, true);
+
+        public static DiagnosticDescriptor PriorityAlreadyDeclared(int i) =>
+                new("GB0012", "Gobie", $"Another required parameter is using the priority {i}", "Gobie Usage", Severity, true);
     }
 }

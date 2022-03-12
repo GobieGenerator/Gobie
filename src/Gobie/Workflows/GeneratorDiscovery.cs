@@ -53,6 +53,24 @@
 
         private static bool IsClassDeclaration(SyntaxNode node) => node is ClassDeclarationSyntax;
 
+        private static IEnumerable<Diagnostic> Duplicates(IEnumerable<RequiredParameter> requiredParameters)
+        {
+            var diagnostics = new List<Diagnostic>();
+
+            foreach (var requestedOrders in requiredParameters.GroupBy(x => x.RequestedOrder).Where(x => x.Key != int.MaxValue))
+            {
+                foreach (var req in requestedOrders.AsEnumerable().Skip(1))
+                {
+                    diagnostics.Add(
+                        Diagnostic.Create(
+                            Warnings.PriorityAlreadyDeclared(req.RequestedOrder),
+                            req.RequestedOrderLocation));
+                }
+            }
+
+            return diagnostics;
+        }
+
         private static DataOrDiagnostics<UserGeneratorAttributeData>? GetUserTemplate(GeneratorSyntaxContext context)
         {
             var cds = (ClassDeclarationSyntax)context.Node;
@@ -156,6 +174,7 @@
                         genData.AddRequiredParameter(
                             new RequiredParameter(
                                 order,
+                                node.GetLocation(),
                                 requiredPropertyNumber,
                                 node.Identifier.Text,
                                 ((PredefinedTypeSyntax)node.Type).Keyword.Text));
@@ -170,7 +189,9 @@
             RequiredPropertyHandeled:;
             }
 
-            return new(genData);
+            diagnostics.AddRange(Duplicates(genData.RequiredParameters));
+
+            return new(genData, diagnostics);
         }
 
         private static void BuildUserGeneratorAttributes(SourceProductionContext spc, UserGeneratorAttributeData data)

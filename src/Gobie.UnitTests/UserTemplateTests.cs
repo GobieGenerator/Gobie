@@ -287,6 +287,31 @@ public class UserTemplateTests
     }
 
     [Test]
+    public Task Generator_ReqParamsTies_OutputDiagnostics()
+    {
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName]
+        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        {
+            [Required(5)]
+            public string ReqRequestedFifth {get; set;}
+
+            [Required(1)]
+            public int ReqRequestedFirst {get; set;}
+
+            [Required(5)]
+            public int AlsoReqRequestedFifth {get; set;}
+
+            [Required(5)]
+            public int AnotherReqRequestedFifth {get; set;}
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task SimpleValidGenerator_WithUsage_GeneratesOutput()
     {
         Assert.Fail("Not workign yet");
