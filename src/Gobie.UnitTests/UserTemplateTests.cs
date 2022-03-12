@@ -188,8 +188,23 @@ public class UserTemplateTests
     }
 
     [Test]
-    public void SimpleValidGenerator_AttributeGenerated()
+    public Task SimpleValidGenerator_WithUsage_GeneratesOutput()
     {
-        Assert.Fail();
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName]
+        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""public int Id {get; set;}"";
+        }
+
+        [PrimaryKey]
+        public partial class GenTarget { }
+
+";
+
+        return TestHelper.Verify(source);
     }
 }

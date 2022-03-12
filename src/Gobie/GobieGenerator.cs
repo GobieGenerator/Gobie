@@ -25,7 +25,7 @@ namespace Gobie
 
             //### Find the user templates and report diagnostics on issue.
 
-            IncrementalValuesProvider<DataOrDiagnostics<UserGeneratorData>> userTemplateSyntaxOrDiagnostics =
+            IncrementalValuesProvider<DataOrDiagnostics<UserGeneratorAttributeData>> userTemplateSyntaxOrDiagnostics =
                 context.SyntaxProvider
                     .CreateSyntaxProvider(
                         predicate: static (s, _) => IsClassDeclaration(s),
@@ -36,7 +36,7 @@ namespace Gobie
                 userTemplateSyntaxOrDiagnostics,
                 static (spc, source) => OutputDiagnostics(spc, source));
 
-            IncrementalValuesProvider<UserGeneratorData> userTemplateSyntax =
+            IncrementalValuesProvider<UserGeneratorAttributeData> userTemplateSyntax =
                 userTemplateSyntaxOrDiagnostics
                     .Where(x => x.Data is not null)
                     .Select(selector: (s, _) => s.Data!);
@@ -44,6 +44,13 @@ namespace Gobie
             context.RegisterSourceOutput(
                 userTemplateSyntax,
                 static (spc, source) => BuildUserGeneratorAttributes(spc, source));
+
+            IncrementalValueProvider<(Compilation, ImmutableArray<UserGeneratorAttributeData>)> compliationAndGeneratorDeclarations =
+                context.CompilationProvider.Combine(userTemplateSyntax.Collect());
+
+            IncrementalValueProvider<DataOrDiagnostics<UserGeneratorTemplateData>> userGeneratorsOrDiagnostics =
+                compliationAndGeneratorDeclarations.Select(
+                    static (s, _) => GetFullTemplateDeclaration(s));
 
             //### Generate attributes for the defined templates.
 
@@ -67,7 +74,7 @@ namespace Gobie
             ////    static (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
 
-        private static void BuildUserGeneratorAttributes(SourceProductionContext spc, UserGeneratorData source)
+        private static void BuildUserGeneratorAttributes(SourceProductionContext spc, UserGeneratorAttributeData source)
         {
             var generatedCode = @$"
 
@@ -85,6 +92,11 @@ namespace Gobie
             spc.AddSource($"{source.AttributeIdentifier}.g.cs", generatedCode);
         }
 
+        private static DataOrDiagnostics<UserGeneratorTemplateData> GetFullTemplateDeclaration((Compilation, ImmutableArray<UserGeneratorAttributeData>) s)
+        {
+            throw new NotImplementedException();
+        }
+
         private static void OutputDiagnostics<T>(SourceProductionContext spc, DataOrDiagnostics<T> option)
         {
             if (option.Diagnostics is not null)
@@ -98,7 +110,7 @@ namespace Gobie
         private static bool IsClassDeclaration(SyntaxNode node) =>
             node is ClassDeclarationSyntax;
 
-        private static DataOrDiagnostics<UserGeneratorData>? GetUserTemplate(GeneratorSyntaxContext context)
+        private static DataOrDiagnostics<UserGeneratorAttributeData>? GetUserTemplate(GeneratorSyntaxContext context)
         {
             var cds = (ClassDeclarationSyntax)context.Node;
             var classLocation = cds.Identifier.GetLocation();
@@ -117,7 +129,7 @@ namespace Gobie
             }
 
             //! We accumulate data here.
-            var genData = new UserGeneratorData(cds.Identifier.ToString());
+            var genData = new UserGeneratorAttributeData(cds.Identifier.ToString(), cds);
 
             var diagnostics = new List<Diagnostic>();
             if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
@@ -145,6 +157,15 @@ namespace Gobie
 
                     var genName = attribute!.ConstructorArguments[0].Value!.ToString();
 
+                    string G(AttributeData d, int index)
+                    {
+                        if (d.ConstructorArguments.Length > index)
+                        {
+                        }
+
+                        return string.Empty;
+                    }
+
                     string? namespaceName = null;
                     var namespaceVal = attribute.NamedArguments.SingleOrDefault(x => x.Key == "Namespace").Value;
 
@@ -170,12 +191,31 @@ namespace Gobie
                 return new(diagnostics);
             }
 
+            GetTemplates(cds, classSymbol, genData);
+
             if (cds.ToFullString().Contains("GobieTemplate") == false)
             {
                 diagnostics.Add(Diagnostic.Create(Warnings.UserTemplateIsEmpty, classLocation));
             }
 
             return new(genData, diagnostics);
+        }
+
+        private static void GetTemplates(ClassDeclarationSyntax cds, ISymbol classSymbol, UserGeneratorAttributeData genData)
+        {
+            foreach (var child in cds.ChildNodes())
+            {
+                if (child is FieldDeclarationSyntax f)
+                {
+                    foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
+                    {
+                        var a = ((IdentifierNameSyntax)att.Name).Identifier;
+                        if (a.Text == "GobieTemplate")
+                        {
+                        }
+                    }
+                }
+            }
         }
 
         private static EnumDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
@@ -208,6 +248,48 @@ namespace Gobie
 
             // we didn't find the attribute we were looking for
             return null;
+        }
+
+        private static void A(FieldDeclarationSyntax field)
+        {
+            ////SemanticModel model = compilation.GetSemanticModel(field.SyntaxTree);
+            ////foreach (VariableDeclaratorSyntax variable in field.Declaration.Variables)
+            ////{
+            ////    Trace.WriteLine("variable " + variable);
+
+            ////    // Get the symbol being decleared by the field, and keep it if its annotated
+            ////    IFieldSymbol? fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
+            ////    if (fieldSymbol is null)
+            ////    {
+            ////        context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find field symbol"), a.GetLocation()));
+            ////        continue;
+            ////    }
+
+            ////    partialClass = fieldSymbol.ContainingType;
+
+            ////    Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
+            ////    var attributeData = fieldSymbol.GetAttributes().Single(ad => ad.AttributeClass.Equals(attributeSymbol, SymbolEqualityComparer.Default));
+
+            ////    fieldName = fieldSymbol?.Name;
+            ////    if (fieldName?.Length > 0)
+            ////    {
+            ////        dict.Add("field", fieldName);
+            ////        dict.Add("Property", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(fieldName));
+
+            ////        foreach (var na in attributeData.NamedArguments)
+            ////        {
+            ////            Trace.WriteLine($"NamedArgument {na.Key}='{na.Value.Value.ToString()}'");
+            ////            if (na.Key == "TemplateDebug")
+            ////            {
+            ////                templateDebug = bool.Parse(na.Value.Value.ToString());
+            ////            }
+            ////            else
+            ////            {
+            ////                dict.Add(na.Key, na.Value.Value.ToString());
+            ////            }
+            ////        }
+            ////    }
+            ////}
         }
 
         ////private static void Execute(Compilation compilation, ImmutableArray<EnumDeclarationSyntax> enums, SourceProductionContext context)
