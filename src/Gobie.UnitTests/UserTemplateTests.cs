@@ -80,6 +80,7 @@ public class UserTemplateTests
     [Test]
     public Task Empty_GetsNoDefinitionDiagnostic()
     {
+        Assert.Fail("Not workign yet");
         var source = @"
         using Gobie;
 
@@ -207,6 +208,8 @@ public class UserTemplateTests
     [Test]
     public Task SimpleValidGenerator_WithUsage_GeneratesOutput()
     {
+        Assert.Fail("Not workign yet");
+
         var source = @"
         using Gobie;
 

@@ -58,4 +58,15 @@ namespace Gobie
         public string AttributeName { get; }
         public string Namespace { get; set; }
     }
+
+    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    public sealed class Required : Attribute
+    {
+        public Required(int order = int.MaxValue)
+        {
+            Order = order;
+        }
+
+        public int Order { get; }
+    }
 }
