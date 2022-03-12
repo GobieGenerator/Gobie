@@ -8,6 +8,8 @@ using System;
 /// </summary>
 public class UserGeneratorAttributeData
 {
+    private readonly List<RequiredParameter> requiredParameters = new List<RequiredParameter>();
+
     public UserGeneratorAttributeData(string identifier, ClassDeclarationSyntax classDeclarationSyntax)
     {
         ClassDeclarationSyntax = classDeclarationSyntax;
@@ -25,7 +27,10 @@ public class UserGeneratorAttributeData
 
     public List<string> OptionalParameters { get; private set; } = new List<string>();
 
-    public List<RequiredParameter> RequiredParameters { get; private set; } = new List<RequiredParameter>();
+    public IEnumerable<RequiredParameter> RequiredParameters =>
+        requiredParameters.OrderBy(x => x.RequestedOrder).ThenBy(x => x.DeclaredOrder);
+
+    public void AddRequiredParameter(RequiredParameter p) => requiredParameters.Add(p);
 
     public UserGeneratorAttributeData WithName(string identifier, string? namespaceName)
     {

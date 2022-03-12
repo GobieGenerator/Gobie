@@ -249,6 +249,44 @@ public class UserTemplateTests
     }
 
     [Test]
+    public Task Generator_ReqParams_SpecificPriorityPrioritized()
+    {
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName]
+        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        {
+            [Required]
+            public string ReqNoPositionRequest {get; set;}
+
+            [Required(1)]
+            public int ReqRequestedFirst {get; set;}
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task Generator_ReqParams_SpecificPrioritiesOrdered()
+    {
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName]
+        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        {
+            [Required(5)]
+            public string ReqRequestedFifth {get; set;}
+
+            [Required(1)]
+            public int ReqRequestedFirst {get; set;}
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task SimpleValidGenerator_WithUsage_GeneratesOutput()
     {
         Assert.Fail("Not workign yet");

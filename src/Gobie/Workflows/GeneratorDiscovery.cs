@@ -146,12 +146,16 @@
 
                 foreach (var att in propertySymbol.GetAttributes())
                 {
-                    var b = att?.AttributeClass?.ToString();
-                    if (b == "Gobie.Required")
+                    if (att?.AttributeClass?.ToString() == "Gobie.Required")
                     {
-                        genData.RequiredParameters.Add(
+                        // Get the requested order. If we can't get it presumably the compiler is
+                        // complaining to the user about providing an invalid value.
+                        var orderArg = att.ConstructorArguments[0].Value;
+                        var order = orderArg is int i ? i : int.MaxValue;
+
+                        genData.AddRequiredParameter(
                             new RequiredParameter(
-                                1,
+                                order,
                                 requiredPropertyNumber,
                                 node.Identifier.Text,
                                 ((PredefinedTypeSyntax)node.Type).Keyword.Text));
@@ -161,6 +165,7 @@
                     }
                 }
 
+                // If we get here it isn't a required property, so we setup the optional one
                 genData.OptionalParameters.Add(node.ToString());
             RequiredPropertyHandeled:;
             }
