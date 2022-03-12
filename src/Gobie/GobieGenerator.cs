@@ -5,13 +5,14 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Gobie.Diagnostics;
+using Gobie.Workflows;
 
 namespace Gobie
 {
     [Generator]
     public class GobieGenerator : IIncrementalGenerator
     {
-        private static readonly HashSet<string> GobieBase = new()
+        public static readonly HashSet<string> GobieGeneratorBaseClasses = new()
         {
             "GobieFieldGenerator",
             "Gobie.GobieFieldGenerator",
@@ -23,34 +24,17 @@ namespace Gobie
                 "EnumExtensionsAttribute.g.cs",
                 SourceText.From(SourceGenerationHelper.GobieCore, Encoding.UTF8)));
 
-            //### Find the user templates and report diagnostics on issue.
+            // Find the user templates and report diagnostics on issues.
+            var userTemplateSyntaxOrDiagnostics = GeneratorDiscovery.FindUserTemplates(context);
+            DiagnosticsReporting.Report(context, userTemplateSyntaxOrDiagnostics);
+            var userTemplateSyntax = ExtractData(userTemplateSyntaxOrDiagnostics);
 
-            IncrementalValuesProvider<DataOrDiagnostics<UserGeneratorAttributeData>> userTemplateSyntaxOrDiagnostics =
-                context.SyntaxProvider
-                    .CreateSyntaxProvider(
-                        predicate: static (s, _) => IsClassDeclaration(s),
-                        transform: static (ctx, _) => GetUserTemplate(ctx))
-                    .Where(static x => x is not null)!;
+            GeneratorDiscovery.GenerateAttributes(context, userTemplateSyntax);
 
-            context.RegisterSourceOutput(
-                userTemplateSyntaxOrDiagnostics,
-                static (spc, source) => OutputDiagnostics(spc, source));
-
-            IncrementalValuesProvider<UserGeneratorAttributeData> userTemplateSyntax =
-                userTemplateSyntaxOrDiagnostics
-                    .Where(x => x.Data is not null)
-                    .Select(selector: (s, _) => s.Data!);
-
-            context.RegisterSourceOutput(
-                userTemplateSyntax,
-                static (spc, source) => BuildUserGeneratorAttributes(spc, source));
-
-            IncrementalValuesProvider<(UserGeneratorAttributeData, Compilation)> compliationAndGeneratorDeclarations =
-                userTemplateSyntax.Combine(context.CompilationProvider);
-
-            IncrementalValuesProvider<DataOrDiagnostics<UserGeneratorTemplateData>> userGeneratorsOrDiagnostics =
-                compliationAndGeneratorDeclarations.Select(
-                    static (s, _) => GetFullTemplateDeclaration(s));
+            var compliationAndGeneratorDeclarations = userTemplateSyntax.Combine(context.CompilationProvider);
+            var userGeneratorsOrDiagnostics = GeneratorDiscovery.GetFullGenerators(compliationAndGeneratorDeclarations);
+            DiagnosticsReporting.Report(context, userGeneratorsOrDiagnostics);
+            var userGenerators = ExtractData(userGeneratorsOrDiagnostics);
 
             //### Generate attributes for the defined templates.
 
@@ -74,134 +58,15 @@ namespace Gobie
             ////    static (spc, source) => Execute(source.Item1, source.Item2, spc));
         }
 
-        private static void BuildUserGeneratorAttributes(SourceProductionContext spc, UserGeneratorAttributeData source)
+        private static IncrementalValuesProvider<T> ExtractData<T>(IncrementalValuesProvider<DataOrDiagnostics<T>> values)
         {
-            var generatedCode = @$"
-
-            namespace {source.NamespaceName}
-            {{
-                /// <summary> This attribute will cause the generator defined by this thing here to
-                /// run <see cref=""TODONAMESPACE.{source.DefinitionIdentifier}""/> to run. </summary>
-                public sealed class {source.AttributeIdentifier} : Gobie.GobieFieldGeneratorAttribute
-                {{
-                }}
-            }}
-            ";
-
-            generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
-            spc.AddSource($"{source.AttributeIdentifier}.g.cs", generatedCode);
-        }
-
-        private static DataOrDiagnostics<UserGeneratorTemplateData> GetFullTemplateDeclaration((UserGeneratorAttributeData, Compilation) s)
-        {
-            var (data, compliation) = (s.Item1, s.Item2);
-
-            throw new NotImplementedException();
-        }
-
-        private static void OutputDiagnostics<T>(SourceProductionContext spc, DataOrDiagnostics<T> option)
-        {
-            if (option.Diagnostics is not null)
-                foreach (var diagnostic in option.Diagnostics)
-                    spc.ReportDiagnostic(diagnostic);
+            return values
+                .Where(x => x.Data is not null)
+                .Select(selector: (s, _) => s.Data!);
         }
 
         private static bool IsSyntaxTargetForGeneration(SyntaxNode node) =>
             node is EnumDeclarationSyntax m && m.AttributeLists.Count > 0;
-
-        private static bool IsClassDeclaration(SyntaxNode node) =>
-            node is ClassDeclarationSyntax;
-
-        private static DataOrDiagnostics<UserGeneratorAttributeData>? GetUserTemplate(GeneratorSyntaxContext context)
-        {
-            var cds = (ClassDeclarationSyntax)context.Node;
-            var classLocation = cds.Identifier.GetLocation();
-
-            if (cds.BaseList is null)
-            {
-                return null;
-            }
-
-            // Because we control the list of base types they can use this should be a very good
-            // though imperfect filter we can run on the syntax alone.
-            var gobieBaseTypeName = cds.BaseList.Types.SingleOrDefault(x => GobieBase.Contains(x.ToString()));
-            if (gobieBaseTypeName is null)
-            {
-                return null;
-            }
-
-            //! We accumulate data here.
-            var genData = new UserGeneratorAttributeData(cds.Identifier.ToString(), cds);
-
-            var diagnostics = new List<Diagnostic>();
-            if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
-            {
-                diagnostics.Add(Diagnostic.Create(Errors.UserTemplateIsPartial, classLocation));
-            }
-
-            if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.SealedKeyword)) == false)
-            {
-                diagnostics.Add(Diagnostic.Create(Errors.UserTemplateIsNotSealed, classLocation));
-            }
-
-            var classSymbol = context.SemanticModel.GetDeclaredSymbol(context.Node);
-
-            var invalidName = !cds.Identifier.ToString().EndsWith("Generator", StringComparison.OrdinalIgnoreCase);
-            foreach (var attribute in classSymbol!.GetAttributes())
-            {
-                var b = attribute?.AttributeClass?.ToString();
-                if (attribute?.AttributeClass?.ToString() == "Gobie.GobieGeneratorNameAttribute")
-                {
-                    if (attribute!.ConstructorArguments.Count() == 0)
-                    {
-                        continue;
-                    }
-
-                    var genName = attribute!.ConstructorArguments[0].Value!.ToString();
-
-                    string G(AttributeData d, int index)
-                    {
-                        if (d.ConstructorArguments.Length > index)
-                        {
-                        }
-
-                        return string.Empty;
-                    }
-
-                    string? namespaceName = null;
-                    var namespaceVal = attribute.NamedArguments.SingleOrDefault(x => x.Key == "Namespace").Value;
-
-                    if (namespaceVal.IsNull == false)
-                    {
-                        namespaceName = namespaceVal.Value!.ToString();
-                    }
-
-                    genData.WithName(genName!, namespaceName);
-                    invalidName = false;
-                    break;
-                }
-            }
-
-            if (invalidName)
-            {
-                diagnostics.Add(Diagnostic.Create(Errors.GeneratorNameInvalid, classLocation));
-            }
-
-            //! Diagnostics before here are errors that stop generation.
-            if (diagnostics.Any())
-            {
-                return new(diagnostics);
-            }
-
-            GetTemplates(cds, classSymbol, genData);
-
-            if (cds.ToFullString().Contains("GobieTemplate") == false)
-            {
-                diagnostics.Add(Diagnostic.Create(Warnings.UserTemplateIsEmpty, classLocation));
-            }
-
-            return new(genData, diagnostics);
-        }
 
         private static void GetTemplates(ClassDeclarationSyntax cds, ISymbol classSymbol, UserGeneratorAttributeData genData)
         {
