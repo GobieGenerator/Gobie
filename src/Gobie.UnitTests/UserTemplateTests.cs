@@ -188,6 +188,23 @@ public class UserTemplateTests
     }
 
     [Test]
+    public Task Generator_WithOptionalParam()
+    {
+        var source = @"
+        using Gobie;
+
+        [GobieGeneratorName]
+        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        {
+            public string MyParam {get; set;}
+
+            public string OtherParam {get; set;} = ""My Initial Value"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task SimpleValidGenerator_WithUsage_GeneratesOutput()
     {
         var source = @"

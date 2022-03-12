@@ -23,6 +23,8 @@ public class UserGeneratorAttributeData
 
     public ClassDeclarationSyntax ClassDeclarationSyntax { get; }
 
+    public List<string> OptionalParameters { get; private set; } = new List<string>();
+
     public UserGeneratorAttributeData WithName(string identifier, string? namespaceName)
     {
         DefinitionIdentifier = identifier ?? throw new ArgumentNullException(nameof(identifier));

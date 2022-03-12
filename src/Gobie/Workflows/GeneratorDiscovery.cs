@@ -134,25 +134,31 @@
                 return new(diagnostics);
             }
 
+            foreach (PropertyDeclarationSyntax node in cds.ChildNodes().Where(x => x is PropertyDeclarationSyntax))
+            {
+                genData.OptionalParameters.Add(node.ToString());
+            }
+
             return new(genData);
         }
 
-        private static void BuildUserGeneratorAttributes(SourceProductionContext spc, UserGeneratorAttributeData source)
+        private static void BuildUserGeneratorAttributes(SourceProductionContext spc, UserGeneratorAttributeData data)
         {
             var generatedCode = @$"
 
-            namespace {source.NamespaceName}
+            namespace {data.NamespaceName}
             {{
                 /// <summary> This attribute will cause the generator defined by this thing here to
-                /// run <see cref=""TODONAMESPACE.{source.DefinitionIdentifier}""/> to run. </summary>
-                public sealed class {source.AttributeIdentifier} : Gobie.GobieFieldGeneratorAttribute
+                /// run <see cref=""TODONAMESPACE.{data.DefinitionIdentifier}""/> to run. </summary>
+                public sealed class {data.AttributeIdentifier} : Gobie.GobieFieldGeneratorAttribute
                 {{
+                    {string.Join(Environment.NewLine, data.OptionalParameters)}
                 }}
             }}
             ";
 
             generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
-            spc.AddSource($"{source.AttributeIdentifier}.g.cs", generatedCode);
+            spc.AddSource($"{data.AttributeIdentifier}.g.cs", generatedCode);
         }
     }
 }
