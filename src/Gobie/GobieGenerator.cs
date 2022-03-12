@@ -45,10 +45,10 @@ namespace Gobie
                 userTemplateSyntax,
                 static (spc, source) => BuildUserGeneratorAttributes(spc, source));
 
-            IncrementalValueProvider<(Compilation, ImmutableArray<UserGeneratorAttributeData>)> compliationAndGeneratorDeclarations =
-                context.CompilationProvider.Combine(userTemplateSyntax.Collect());
+            IncrementalValuesProvider<(UserGeneratorAttributeData, Compilation)> compliationAndGeneratorDeclarations =
+                userTemplateSyntax.Combine(context.CompilationProvider);
 
-            IncrementalValueProvider<DataOrDiagnostics<UserGeneratorTemplateData>> userGeneratorsOrDiagnostics =
+            IncrementalValuesProvider<DataOrDiagnostics<UserGeneratorTemplateData>> userGeneratorsOrDiagnostics =
                 compliationAndGeneratorDeclarations.Select(
                     static (s, _) => GetFullTemplateDeclaration(s));
 
@@ -92,8 +92,10 @@ namespace Gobie
             spc.AddSource($"{source.AttributeIdentifier}.g.cs", generatedCode);
         }
 
-        private static DataOrDiagnostics<UserGeneratorTemplateData> GetFullTemplateDeclaration((Compilation, ImmutableArray<UserGeneratorAttributeData>) s)
+        private static DataOrDiagnostics<UserGeneratorTemplateData> GetFullTemplateDeclaration((UserGeneratorAttributeData, Compilation) s)
         {
+            var (data, compliation) = (s.Item1, s.Item2);
+
             throw new NotImplementedException();
         }
 
