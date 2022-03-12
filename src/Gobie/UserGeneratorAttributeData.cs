@@ -69,7 +69,7 @@ public class RequiredParameter
 
     public string CsharpTypeName { get; }
 
-    public string PropertyString => $"public {CsharpTypeName} {NameCamel} {{ get; set; }}";
+    public string PropertyString => $"public {CsharpTypeName} {NamePascal} {{ get; set; }}";
 
     public string CtorArgumentString => $"{CsharpTypeName} {NameCamel}";
 

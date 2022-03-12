@@ -153,8 +153,8 @@
                             new RequiredParameter(
                                 1,
                                 requiredPropertyNumber,
-                                "ReqParam",
-                                "string"));
+                                node.Identifier.Text,
+                                ((PredefinedTypeSyntax)node.Type).Keyword.Text));
 
                         requiredPropertyNumber++;
                         goto RequiredPropertyHandeled;
