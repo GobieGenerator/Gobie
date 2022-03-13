@@ -238,13 +238,13 @@
         {
             var generatedCode = @$"
 
-            namespace {data.NamespaceName}
+            namespace {data.AttributeIdentifier.NamespaceName}
             {{
                 /// <summary> This attribute will cause the generator defined by this thing here to
-                /// run <see cref=""TODONAMESPACE.{data.DefinitionIdentifier}""/> to run. </summary>
-                public sealed class {data.AttributeIdentifier} : Gobie.GobieFieldGeneratorAttribute
+                /// run <see cref=""{data.DefinitionIdentifier.FullName}""/> to run. </summary>
+                public sealed class {data.AttributeIdentifier.ClassName} : Gobie.GobieFieldGeneratorAttribute
                 {{
-                    public {data.AttributeIdentifier}({string.Join(", ", data.RequiredParameters.Select(x => x.CtorArgumentString))})
+                    public {data.AttributeIdentifier.ClassName}({string.Join(", ", data.RequiredParameters.Select(x => x.CtorArgumentString))})
                     {{
                         {string.Join(Environment.NewLine, data.RequiredParameters.Select(x => x.CtorAssignmentString))}
                     }}
@@ -257,7 +257,7 @@
             ";
 
             generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
-            spc.AddSource($"_{data.AttributeIdentifier}.g.cs", generatedCode);
+            spc.AddSource($"_{data.AttributeIdentifier.FullName}.g.cs", generatedCode);
         }
     }
 }

@@ -17,17 +17,11 @@ public class UserGeneratorAttributeData
         DefinitionIdentifier = defintionIdentifier;
         AttributeIdentifier = CalculateAttributeIdentifier(defintionIdentifier);
         ClassDeclarationSyntax = classDeclarationSyntax;
-        //DefinitionIdentifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
     }
-
-    public string NamespaceName { get; private set; } = "Gobie";
 
     public ClassIdentifier DefinitionIdentifier { get; private set; }
 
     public ClassIdentifier AttributeIdentifier { get; private set; }
-
-    //public string AttributeIdentifier =>
-    //    DefinitionIdentifier + (DefinitionIdentifier.EndsWith("Attribute", StringComparison.Ordinal) ? string.Empty : "Attribute");
 
     public ClassDeclarationSyntax ClassDeclarationSyntax { get; }
 
@@ -40,12 +34,9 @@ public class UserGeneratorAttributeData
 
     public UserGeneratorAttributeData WithName(string identifier, string? namespaceName)
     {
-        //DefinitionIdentifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+        namespaceName = string.IsNullOrWhiteSpace(namespaceName) ? AttributeIdentifier.NamespaceName : namespaceName;
 
-        if (!string.IsNullOrWhiteSpace(namespaceName))
-        {
-            NamespaceName = namespaceName!;
-        }
+        AttributeIdentifier = new ClassIdentifier(namespaceName!, identifier);
 
         return this;
     }
@@ -119,7 +110,10 @@ public class ClassIdentifier
     public string ClassName { get; }
 
     public string FullName =>
-        $"global::{NamespaceName}{(string.IsNullOrWhiteSpace(NamespaceName) ? "" : ".")}{ClassName}";
+    $"{NamespaceName}{(string.IsNullOrWhiteSpace(NamespaceName) ? "" : ".")}{ClassName}";
+
+    public string GlobalName =>
+        $"global::{FullName}";
 }
 
 public class RequiredParameter
