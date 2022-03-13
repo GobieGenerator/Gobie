@@ -129,7 +129,8 @@
             }
 
             //! We accumulate data here.
-            var genData = new UserGeneratorAttributeData(cds.Identifier.ToString(), cds);
+            var ident = new ClassIdentifier("Gobie", cds.Identifier.ToString());
+            var genData = new UserGeneratorAttributeData(ident, cds);
 
             var diagnostics = new List<Diagnostic>();
             if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))

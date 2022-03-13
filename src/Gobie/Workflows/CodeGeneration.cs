@@ -14,7 +14,7 @@ public static class CodeGeneration
     public static void Output(SourceProductionContext spc, TargetAndTemplateData source)
     {
         var fullCode = $@"
-            namespace {source.TargetClass.ClassNamespace}
+            namespace {source.TargetClass.NamespaceName}
             {{
                 public partial class {source.TargetClass.ClassName}
                 {{

@@ -12,18 +12,22 @@ public class UserGeneratorAttributeData
 {
     private readonly List<RequiredParameter> requiredParameters = new List<RequiredParameter>();
 
-    public UserGeneratorAttributeData(string identifier, ClassDeclarationSyntax classDeclarationSyntax)
+    public UserGeneratorAttributeData(ClassIdentifier defintionIdentifier, ClassDeclarationSyntax classDeclarationSyntax)
     {
+        DefinitionIdentifier = defintionIdentifier;
+        AttributeIdentifier = CalculateAttributeIdentifier(defintionIdentifier);
         ClassDeclarationSyntax = classDeclarationSyntax;
-        DefinitionIdentifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+        //DefinitionIdentifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
     }
 
     public string NamespaceName { get; private set; } = "Gobie";
 
-    public string DefinitionIdentifier { get; private set; }
+    public ClassIdentifier DefinitionIdentifier { get; private set; }
 
-    public string AttributeIdentifier =>
-        DefinitionIdentifier + (DefinitionIdentifier.EndsWith("Attribute", StringComparison.Ordinal) ? string.Empty : "Attribute");
+    public ClassIdentifier AttributeIdentifier { get; private set; }
+
+    //public string AttributeIdentifier =>
+    //    DefinitionIdentifier + (DefinitionIdentifier.EndsWith("Attribute", StringComparison.Ordinal) ? string.Empty : "Attribute");
 
     public ClassDeclarationSyntax ClassDeclarationSyntax { get; }
 
@@ -36,7 +40,7 @@ public class UserGeneratorAttributeData
 
     public UserGeneratorAttributeData WithName(string identifier, string? namespaceName)
     {
-        DefinitionIdentifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+        //DefinitionIdentifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
 
         if (!string.IsNullOrWhiteSpace(namespaceName))
         {
@@ -44,6 +48,23 @@ public class UserGeneratorAttributeData
         }
 
         return this;
+    }
+
+    private static ClassIdentifier CalculateAttributeIdentifier(ClassIdentifier defintionIdentifier)
+    {
+        const string Generator = "Generator";
+        const string Attribute = "Attribute";
+
+        var defName = defintionIdentifier.ClassName;
+        var attName = defName;
+
+        if (defName.EndsWith(Generator, StringComparison.OrdinalIgnoreCase))
+        {
+            attName = defName.Substring(0, defName.Length - Generator.Length);
+        }
+        attName += Attribute;
+
+        return new ClassIdentifier(defintionIdentifier.NamespaceName, attName);
     }
 }
 
@@ -68,7 +89,7 @@ public class UserGeneratorTemplateData
 /// </summary>
 public class TargetAndTemplateData
 {
-    public TargetAndTemplateData(TemplateType templateType, string generatorName, TargetClass targetClass, string code)
+    public TargetAndTemplateData(TemplateType templateType, string generatorName, ClassIdentifier targetClass, string code)
     {
         TemplateType = templateType;
         GeneratorName = generatorName ?? throw new ArgumentNullException(nameof(generatorName));
@@ -80,22 +101,25 @@ public class TargetAndTemplateData
 
     public string GeneratorName { get; }
 
-    public TargetClass TargetClass { get; }
+    public ClassIdentifier TargetClass { get; }
 
     public string Code { get; }
 }
 
-public class TargetClass
+public class ClassIdentifier
 {
-    public TargetClass(string className, string classNamespace)
+    public ClassIdentifier(string classNamespace, string className)
     {
+        NamespaceName = classNamespace ?? throw new ArgumentNullException(nameof(classNamespace));
         ClassName = className ?? throw new ArgumentNullException(nameof(className));
-        ClassNamespace = classNamespace ?? throw new ArgumentNullException(nameof(classNamespace));
     }
+
+    public string NamespaceName { get; }
 
     public string ClassName { get; }
 
-    public string ClassNamespace { get; }
+    public string FullName =>
+        $"global::{NamespaceName}{(string.IsNullOrWhiteSpace(NamespaceName) ? "" : ".")}{ClassName}";
 }
 
 public class RequiredParameter

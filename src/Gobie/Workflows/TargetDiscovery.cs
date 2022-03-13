@@ -68,7 +68,7 @@ public class TargetDiscovery
 
             foreach (var template in templates)
             {
-                if (ctypeName == template.AttributeData.DefinitionIdentifier)
+                if (ctypeName == template.AttributeData.DefinitionIdentifier.ClassName)
                 {
                     var ti = typeInfo.Name;
                     var tin = typeInfo.ContainingNamespace.Name;
@@ -77,7 +77,7 @@ public class TargetDiscovery
                         new TargetAndTemplateData(
                             TemplateType.Complete,
                             ctypeName,
-                            new TargetClass(ti, tin),
+                            new ClassIdentifier(tin, ti),
                             code));
                 }
             }
@@ -106,7 +106,7 @@ public class TargetDiscovery
             foreach (var gen in userGenerators)
             {
                 var a = ((IdentifierNameSyntax)item.Name).Identifier.Text;
-                if (userGenerators.Any(x => x.AttributeData.AttributeIdentifier == a + "Attribute"))
+                if (userGenerators.Any(x => x.AttributeData.AttributeIdentifier.ClassName == a + "Attribute"))
                 {
                     return (cds, userGenerators);
                 }

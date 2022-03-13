@@ -6,7 +6,7 @@
     {
         private static void Main(string[] args)
         {
-            var auth = new Author();
+            ////var auth = new Author();
 
             ////auth.TryAddBooks("Spellmonger");
             ////auth.TryAddBooks("The Warrior's Apprentace");
