@@ -71,8 +71,14 @@ public class TargetDiscovery
                 if (ctypeName == template.AttributeData.DefinitionIdentifier)
                 {
                     var ti = typeInfo.Name;
+                    var tin = typeInfo.ContainingNamespace.Name;
                     var code = string.Join(Environment.NewLine, template.Templates);
-                    output.Add(new TargetAndTemplateData(TemplateType.Complete, ctypeName, ti, code));
+                    output.Add(
+                        new TargetAndTemplateData(
+                            TemplateType.Complete,
+                            ctypeName,
+                            new TargetClass(ti, tin),
+                            code));
                 }
             }
         }

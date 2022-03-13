@@ -1,5 +1,5 @@
 ﻿//HintName: PkGen_GenTarget2.g.cs
-namespace MyNamespace
+namespace SomeNamespace
 {
     public partial class GenTarget2
     {

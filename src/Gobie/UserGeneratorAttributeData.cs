@@ -68,11 +68,11 @@ public class UserGeneratorTemplateData
 /// </summary>
 public class TargetAndTemplateData
 {
-    public TargetAndTemplateData(TemplateType templateType, string generatorName, string targetName, string code)
+    public TargetAndTemplateData(TemplateType templateType, string generatorName, TargetClass targetClass, string code)
     {
         TemplateType = templateType;
         GeneratorName = generatorName ?? throw new ArgumentNullException(nameof(generatorName));
-        TargetName = targetName ?? throw new ArgumentNullException(nameof(targetName));
+        TargetClass = targetClass ?? throw new ArgumentNullException(nameof(targetClass));
         Code = code ?? throw new ArgumentNullException(nameof(code));
     }
 
@@ -80,9 +80,22 @@ public class TargetAndTemplateData
 
     public string GeneratorName { get; }
 
-    public string TargetName { get; }
+    public TargetClass TargetClass { get; }
 
     public string Code { get; }
+}
+
+public class TargetClass
+{
+    public TargetClass(string className, string classNamespace)
+    {
+        ClassName = className ?? throw new ArgumentNullException(nameof(className));
+        ClassNamespace = classNamespace ?? throw new ArgumentNullException(nameof(classNamespace));
+    }
+
+    public string ClassName { get; }
+
+    public string ClassNamespace { get; }
 }
 
 public class RequiredParameter

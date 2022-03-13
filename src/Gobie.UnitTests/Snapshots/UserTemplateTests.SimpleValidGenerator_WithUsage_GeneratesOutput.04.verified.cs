@@ -1,5 +1,5 @@
 ﻿//HintName: NamePropertyGenerator_GenTarget.g.cs
-namespace MyNamespace
+namespace SomeNamespace
 {
     public partial class GenTarget
     {

@@ -14,9 +14,9 @@ public static class CodeGeneration
     public static void Output(SourceProductionContext spc, TargetAndTemplateData source)
     {
         var fullCode = $@"
-            namespace MyNamespace
+            namespace {source.TargetClass.ClassNamespace}
             {{
-                public partial class {source.TargetName}
+                public partial class {source.TargetClass.ClassName}
                 {{
                     {source.Code}
                 }}
@@ -25,6 +25,6 @@ public static class CodeGeneration
 
         fullCode = CSharpSyntaxTree.ParseText(fullCode).GetRoot().NormalizeWhitespace().ToFullString();
 
-        spc.AddSource($"{source.GeneratorName}_{source.TargetName}.g.cs", fullCode);
+        spc.AddSource($"{source.GeneratorName}_{source.TargetClass.ClassName}.g.cs", fullCode);
     }
 }
