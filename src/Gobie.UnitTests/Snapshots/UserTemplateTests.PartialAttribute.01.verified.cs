@@ -1,4 +1,4 @@
-﻿//HintName: PartialNameAttribute.g.cs
+﻿//HintName: _PartialNameAttribute.g.cs
 namespace Gobie
 {
     /// <summary> This attribute will cause the generator defined by this thing here to

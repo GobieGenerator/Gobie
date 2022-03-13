@@ -1,4 +1,4 @@
-﻿//HintName: MyGeneratorAttribute.g.cs
+﻿//HintName: _MyGeneratorAttribute.g.cs
 namespace Gobie
 {
     /// <summary> This attribute will cause the generator defined by this thing here to

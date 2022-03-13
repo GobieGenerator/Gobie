@@ -1,3 +1,8 @@
-﻿//HintName: afile.g.cs
-public int Id {get; set;}
-public string Name {get; set;}
+﻿//HintName: PkGen_GenTarget.g.cs
+namespace MyNamespace
+{
+    public partial class GenTarget
+    {
+        public int Id { get; set; } // This is a key
+    }
+}
