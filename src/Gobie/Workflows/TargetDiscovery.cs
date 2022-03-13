@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Gobie.Enums;
 
 namespace Gobie.Workflows;
 
@@ -29,24 +30,24 @@ public class TargetDiscovery
         return cwaAndGenerators.Select(selector: static (s, _) => FindProbableTargets(s.Left, s.Right));
     }
 
-    public static IncrementalValuesProvider<DataOrDiagnostics<string>> GetTargetsOrDiagnostics(IncrementalValuesProvider<((ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? Left, Compilation Right)> data)
+    public static IncrementalValuesProvider<DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>> GetTargetsOrDiagnostics(IncrementalValuesProvider<((ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? Left, Compilation Right)> data)
     {
         return data
             .Select(selector: static (s, _) =>
                 GetTargetsOrDiagnostics(s.Left?.Item1, s.Left?.Item2, s.Right));
     }
 
-    private static DataOrDiagnostics<string> GetTargetsOrDiagnostics(
+    private static DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>> GetTargetsOrDiagnostics(
         ClassDeclarationSyntax? cds,
         ImmutableArray<UserGeneratorTemplateData>? templates,
         Compilation compilation)
     {
+        var output = new List<TargetAndTemplateData>();
         var diagnostics = new List<Diagnostic>();
-        var sb = new StringBuilder();
 
         if (cds is null || templates is null)
         {
-            return new DataOrDiagnostics<string>(diagnostics);
+            return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(diagnostics);
         }
 
         // Verify for certian this is a target
@@ -56,7 +57,7 @@ public class TargetDiscovery
         if (typeInfo is null)
         {
             // TODO should this change?
-            return new DataOrDiagnostics<string>(diagnostics);
+            return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(diagnostics);
         }
 
         foreach (var att in typeInfo.GetAttributes())
@@ -69,7 +70,9 @@ public class TargetDiscovery
             {
                 if (ctypeName == template.AttributeData.DefinitionIdentifier)
                 {
-                    sb.AppendLine(string.Join(Environment.NewLine, template.Templates));
+                    var ti = typeInfo.Name;
+                    var code = string.Join(Environment.NewLine, template.Templates);
+                    output.Add(new TargetAndTemplateData(TemplateType.Complete, ctypeName, ti, code));
                 }
             }
         }
@@ -83,7 +86,9 @@ public class TargetDiscovery
         // Output some object that can be rendered into source code. We do this as multiple steps to
         // support global templates down the road.
 
-        return new DataOrDiagnostics<string>(sb.ToString());
+        var builder = ImmutableArray.CreateBuilder<TargetAndTemplateData>();
+        builder.AddRange(output);
+        return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(builder.ToImmutable());
     }
 
     private static (ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableTargets(

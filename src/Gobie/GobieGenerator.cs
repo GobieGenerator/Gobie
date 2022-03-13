@@ -21,7 +21,7 @@ namespace Gobie
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
-                "GobieAttributes.g.cs",
+                "__GobieAttributes.g.cs",
                 SourceText.From(SourceGenerationHelper.GobieCore, Encoding.UTF8)));
 
             // Find the user templates and report diagnostics on issues.
@@ -44,7 +44,7 @@ namespace Gobie
             var compliationAndProbleTargets = probableTargets.Where(x => x is not null).Combine(context.CompilationProvider);
             var targetsOrDiagnostics = TargetDiscovery.GetTargetsOrDiagnostics(compliationAndProbleTargets);
             DiagnosticsReporting.Report(context, targetsOrDiagnostics);
-            var targets = ExtractData(targetsOrDiagnostics);
+            var targets = ExtractManyData(targetsOrDiagnostics);
 
             //! Seems like the syntax provider won't run unless downstream we output text or something. So we report nonsense.
             context.RegisterSourceOutput(targets, static (spc, source) => CodeGeneration.Output(spc, source));
@@ -72,6 +72,12 @@ namespace Gobie
             return values
                 .Where(x => x.Data is not null)
                 .Select(selector: (s, _) => s.Data!);
+        }
+
+        private static IncrementalValuesProvider<T> ExtractManyData<T>(IncrementalValuesProvider<DataOrDiagnostics<ImmutableArray<T>>> values)
+        {
+            return values
+                .SelectMany(selector: (s, _) => s.Data);
         }
 
         ////private static bool IsSyntaxTargetForGeneration(SyntaxNode node) =>

@@ -335,6 +335,11 @@ public class UserTemplateTests
         [PkGen]
         [NamePropertyGenerator]
         public partial class GenTarget
+        { }
+
+        [PkGen]
+        [NamePropertyGenerator]
+        public partial class GenTarget2
         { }";
 
         return TestHelper.Verify(source);

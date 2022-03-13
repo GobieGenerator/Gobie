@@ -256,7 +256,7 @@
             ";
 
             generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
-            spc.AddSource($"{data.AttributeIdentifier}.g.cs", generatedCode);
+            spc.AddSource($"_{data.AttributeIdentifier}.g.cs", generatedCode);
         }
     }
 }

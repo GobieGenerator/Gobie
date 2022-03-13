@@ -1,5 +1,6 @@
 ﻿namespace Gobie;
 
+using Gobie.Enums;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
@@ -60,6 +61,28 @@ public class UserGeneratorTemplateData
     public List<string> Templates { get; }
 
     public UserGeneratorAttributeData AttributeData { get; }
+}
+
+/// <summary>
+/// Has a 1:1 mapping of templates and the targets they are mapped to.
+/// </summary>
+public class TargetAndTemplateData
+{
+    public TargetAndTemplateData(TemplateType templateType, string generatorName, string targetName, string code)
+    {
+        TemplateType = templateType;
+        GeneratorName = generatorName ?? throw new ArgumentNullException(nameof(generatorName));
+        TargetName = targetName ?? throw new ArgumentNullException(nameof(targetName));
+        Code = code ?? throw new ArgumentNullException(nameof(code));
+    }
+
+    public TemplateType TemplateType { get; }
+
+    public string GeneratorName { get; }
+
+    public string TargetName { get; }
+
+    public string Code { get; }
 }
 
 public class RequiredParameter
