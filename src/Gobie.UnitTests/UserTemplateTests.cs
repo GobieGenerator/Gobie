@@ -317,6 +317,8 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
+        namespace MyNamespace;
+
         [GobieGeneratorName]
         public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
         {

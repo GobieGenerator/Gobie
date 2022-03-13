@@ -37,25 +37,53 @@ public class TargetDiscovery
     }
 
     private static DataOrDiagnostics<string> GetTargetsOrDiagnostics(
-        ClassDeclarationSyntax? classDeclarationSyntax,
-        ImmutableArray<UserGeneratorTemplateData>? item2,
+        ClassDeclarationSyntax? cds,
+        ImmutableArray<UserGeneratorTemplateData>? templates,
         Compilation compilation)
     {
         var diagnostics = new List<Diagnostic>();
+        var sb = new StringBuilder();
 
-        if (classDeclarationSyntax is null || item2 is null)
+        if (cds is null || templates is null)
         {
             return new DataOrDiagnostics<string>(diagnostics);
         }
 
         // Verify for certian this is a target
+        var sm = compilation.GetSemanticModel(cds.SyntaxTree);
+        var typeInfo = sm.GetDeclaredSymbol(cds);
+
+        if (typeInfo is null)
+        {
+            // TODO should this change?
+            return new DataOrDiagnostics<string>(diagnostics);
+        }
+
+        foreach (var att in typeInfo.GetAttributes())
+        {
+            var a = att.AttributeClass;
+            var b = a.ContainingNamespace.Name; // TODO this could be a global namespace which is an empty string
+            var ctypeName = a.Name;
+
+            foreach (var template in templates)
+            {
+                if (ctypeName == template.AttributeData.DefinitionIdentifier)
+                {
+                    sb.AppendLine(string.Join(Environment.NewLine, template.Templates));
+                }
+            }
+        }
+
+        // Get attribute data
+
+        // Match it to a template. if it matches, get the ctor and named data off the attribute.
 
         // TODO later: Get the data off the target attributes
 
         // Output some object that can be rendered into source code. We do this as multiple steps to
         // support global templates down the road.
 
-        return new DataOrDiagnostics<string>("Something to output");
+        return new DataOrDiagnostics<string>(sb.ToString());
     }
 
     private static (ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableTargets(
