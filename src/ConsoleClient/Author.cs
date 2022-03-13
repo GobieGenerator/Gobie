@@ -3,17 +3,21 @@ using System.Collections.Generic;
 
 namespace ConsoleClient.Models
 {
-    public partial class Author
+    [GobieGeneratorName("PkGen")]
+    public sealed class PrimaryKeyGenerator : GobieFieldGenerator
     {
-        [EncapulatedCollection(CustomValidator = nameof(ValidateBooks))]
-        private List<string> books = new();
-
-        [EncapulatedCollection()]
-        private List<string> publishers = new();
-
-        public bool ValidateBooks(string a)
-        {
-            return true;
-        }
+        [GobieTemplate]
+        private const string KeyString = "public int Id { get; set; } // This is a key";
     }
+
+    public sealed class NamePropertyGenerator : GobieFieldGenerator
+    {
+        [GobieTemplate]
+        private const string KeyString = "public string Name { get; set; }";
+    }
+
+    [PkGen]
+    [NamePropertyGenerator]
+    public partial class GenTarget
+    { }
 }

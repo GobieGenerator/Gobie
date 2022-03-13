@@ -21,7 +21,7 @@ namespace Gobie
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
-                "EnumExtensionsAttribute.g.cs",
+                "GobieAttributes.g.cs",
                 SourceText.From(SourceGenerationHelper.GobieCore, Encoding.UTF8)));
 
             // Find the user templates and report diagnostics on issues.

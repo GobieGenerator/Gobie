@@ -22,9 +22,6 @@
 		<!-- Generator dependencies -->
 		<PackageReference Include="Stubble.Core" Version="1.9.3" GeneratePathProperty="true" PrivateAssets="all" />
 	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\Gobie.Attributes\Gobie.Attributes.csproj" />
-	</ItemGroup>
 
 	<PropertyGroup>
 		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>

@@ -319,24 +319,23 @@ public class UserTemplateTests
 
         namespace MyNamespace;
 
-        [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        [GobieGeneratorName(""PkGen"")]
+        public sealed class PrimaryKeyGenerator : GobieFieldGenerator
         {
             [GobieTemplate]
-            private const string KeyString = ""public int Id {get; set;}"";
+            private const string KeyString = ""public int Id { get; set; } // This is a key"";
         }
 
-        [GobieGeneratorName]
-        public sealed class NamePropertyGenerator : Gobie.GobieFieldGenerator
+        public sealed class NamePropertyGenerator : GobieFieldGenerator
         {
             [GobieTemplate]
-            private const string KeyString = ""public string Name {get; set;}"";
+            private const string KeyString = ""public string Name { get; set; }"";
         }
 
-        [PrimaryKeyGenerator]
+        [PkGen]
         [NamePropertyGenerator]
-        public partial class GenTarget { }
-";
+        public partial class GenTarget
+        { }";
 
         return TestHelper.Verify(source);
     }
