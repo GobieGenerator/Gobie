@@ -36,16 +36,18 @@ namespace Gobie
             DiagnosticsReporting.Report(context, userGeneratorsOrDiagnostics);
             var userGenerators = ExtractData(userGeneratorsOrDiagnostics);
 
-            //### Generate attributes for the defined templates.
+            //### Target Discovery Workflow
 
             var cwa = TargetDiscovery.FindClassesWithAttributes(context);
             var cwaAndGenerators = cwa.Combine(userGenerators.Collect());
             var probableTargets = TargetDiscovery.FindProbableTargets(cwaAndGenerators);
+            var compliationAndProbleTargets = probableTargets.Where(x => x is not null).Combine(context.CompilationProvider);
+            var targetsOrDiagnostics = TargetDiscovery.GetTargetsOrDiagnostics(compliationAndProbleTargets);
+            DiagnosticsReporting.Report(context, targetsOrDiagnostics);
+            var targets = ExtractData(targetsOrDiagnostics);
 
             //! Seems like the syntax provider won't run unless downstream we output text or something. So we report nonsense.
-            context.RegisterSourceOutput(probableTargets, static (spc, source) => { });
-
-            //### Find usage of the user's attributes and generate their code.
+            context.RegisterSourceOutput(targets, static (spc, source) => CodeGeneration.Output(spc, source));
 
             //////### Andrew lock's example
             ////IncrementalValuesProvider<EnumDeclarationSyntax> enumDeclarations =
