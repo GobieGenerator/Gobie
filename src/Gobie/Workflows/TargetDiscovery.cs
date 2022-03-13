@@ -64,11 +64,11 @@ public class TargetDiscovery
         {
             var a = att.AttributeClass;
             var b = a.ContainingNamespace.Name; // TODO this could be a global namespace which is an empty string
-            var ctypeName = a.Name;
+            var ctypeName = a.Name + (a.Name.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute");
 
             foreach (var template in templates)
             {
-                if (ctypeName == template.AttributeData.DefinitionIdentifier.ClassName)
+                if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
                 {
                     var ti = typeInfo.Name;
                     var tin = typeInfo.ContainingNamespace.Name;
@@ -101,12 +101,13 @@ public class TargetDiscovery
             ClassDeclarationSyntax cds,
         ImmutableArray<UserGeneratorTemplateData> userGenerators)
     {
+        var n = cds.ToFullString();
         foreach (var item in cds.AttributeLists.SelectMany(x => x.Attributes))
         {
             foreach (var gen in userGenerators)
             {
                 var a = ((IdentifierNameSyntax)item.Name).Identifier.Text;
-                if (userGenerators.Any(x => x.AttributeData.AttributeIdentifier.ClassName == a + "Attribute"))
+                if (gen.AttributeData.AttributeIdentifier.ClassName == a)
                 {
                     return (cds, userGenerators);
                 }

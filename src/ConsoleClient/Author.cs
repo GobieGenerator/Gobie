@@ -17,7 +17,7 @@ namespace ConsoleClient.Models
     }
 
     [PkGen]
-    [NamePropertyGenerator]
+    [NameProperty]
     public partial class GenTarget
     { }
 

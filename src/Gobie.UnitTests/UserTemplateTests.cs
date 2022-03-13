@@ -333,12 +333,12 @@ public class UserTemplateTests
         }
 
         [PkGen]
-        [NamePropertyGenerator]
+        [NameProperty]
         public partial class GenTarget
         { }
 
         [PkGen]
-        [NamePropertyGenerator]
+        [NameProperty]
         public partial class GenTarget2
         { }";
 

@@ -35,6 +35,7 @@ public class UserGeneratorAttributeData
     public UserGeneratorAttributeData WithName(string identifier, string? namespaceName)
     {
         namespaceName = string.IsNullOrWhiteSpace(namespaceName) ? AttributeIdentifier.NamespaceName : namespaceName;
+        identifier += identifier.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute";
 
         AttributeIdentifier = new ClassIdentifier(namespaceName!, identifier);
 
