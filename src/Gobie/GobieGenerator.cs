@@ -38,6 +38,13 @@ namespace Gobie
 
             //### Generate attributes for the defined templates.
 
+            var cwa = TargetDiscovery.FindClassesWithAttributes(context);
+            var cwaAndGenerators = cwa.Combine(userGenerators.Collect());
+            var targets = TargetDiscovery.FindTargets(cwaAndGenerators);
+
+            //! Seems like the syntax provider won't run unless downstream we output text or something. So we report nonsense.
+            context.RegisterSourceOutput(targets, static (spc, source) => { });
+
             //### Find usage of the user's attributes and generate their code.
 
             //////### Andrew lock's example

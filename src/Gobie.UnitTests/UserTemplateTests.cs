@@ -321,12 +321,19 @@ public class UserTemplateTests
         public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
         {
             [GobieTemplate]
-            private const string EncapsulationTemplate = ""public int Id {get; set;}"";
+            private const string KeyString = ""public int Id {get; set;}"";
+        }
+
+        [GobieGeneratorName]
+        public sealed class NamePropertyGenerator : Gobie.GobieFieldGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""public string Name {get; set;}"";
         }
 
         [PrimaryKey]
+        [NameProperty]
         public partial class GenTarget { }
-
 ";
 
         return TestHelper.Verify(source);
