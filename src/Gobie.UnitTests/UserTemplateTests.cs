@@ -314,8 +314,6 @@ public class UserTemplateTests
     [Test]
     public Task SimpleValidGenerator_WithUsage_GeneratesOutput()
     {
-        Assert.Fail("Not workign yet");
-
         var source = @"
         using Gobie;
 

@@ -50,7 +50,17 @@ public class UserGeneratorAttributeData
 /// Class that contains all the data about the generator required to run the generatorion.
 /// </summary>
 public class UserGeneratorTemplateData
-{ }
+{
+    public UserGeneratorTemplateData(UserGeneratorAttributeData data, List<string> templates)
+    {
+        AttributeData = data;
+        Templates = templates;
+    }
+
+    public List<string> Templates { get; }
+
+    public UserGeneratorAttributeData AttributeData { get; }
+}
 
 public class RequiredParameter
 {

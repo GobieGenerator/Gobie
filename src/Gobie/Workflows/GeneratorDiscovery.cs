@@ -41,14 +41,53 @@
             var (data, compliation) = (s.Item1, s.Item2);
             var diagnostics = new List<Diagnostic>();
 
-            ////GetTemplates(data.ClassDeclarationSyntax, classSymbol, genData);
+            var model = compliation.GetSemanticModel(data.ClassDeclarationSyntax.SyntaxTree);
+            var symbol = model.GetDeclaredSymbol(data.ClassDeclarationSyntax);
 
-            ////if (cds.ToFullString().Contains("GobieTemplate") == false)
-            ////{
-            ////    diagnostics.Add(Diagnostic.Create(Warnings.UserTemplateIsEmpty, classLocation));
-            ////}
+            if (symbol is null)
+            {
+                return new(diagnostics);
+            }
 
-            return new DataOrDiagnostics<UserGeneratorTemplateData>(diagnostics);
+            var templates = GetTemplates(data.ClassDeclarationSyntax, symbol, data, compliation);
+
+            var td = new UserGeneratorTemplateData(data, templates);
+
+            return new(td, diagnostics);
+        }
+
+        private static List<string> GetTemplates(ClassDeclarationSyntax cds, ISymbol classSymbol, UserGeneratorAttributeData genData, Compilation compliation)
+        {
+            var templates = new List<string>();
+
+            foreach (var child in cds.ChildNodes())
+            {
+                if (child is FieldDeclarationSyntax f)
+                {
+                    foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
+                    {
+                        var a = ((IdentifierNameSyntax)att.Name).Identifier;
+                        if (a.Text == "GobieTemplate")
+                        {
+                            foreach (var variable in f.Declaration.Variables)
+                            {
+                                var model = compliation.GetSemanticModel(f.SyntaxTree);
+                                var fieldSymbol = model.GetDeclaredSymbol(variable);
+
+                                if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                                {
+                                    templates.Add(fs.ConstantValue.ToString());
+                                    goto DoneWithField;
+                                }
+                            }
+                        }
+                    }
+                }
+
+            DoneWithField:;
+            }
+
+            return templates;
         }
 
         private static bool IsClassDeclaration(SyntaxNode node) => node is ClassDeclarationSyntax;

@@ -68,23 +68,6 @@ namespace Gobie
         private static bool IsSyntaxTargetForGeneration(SyntaxNode node) =>
             node is EnumDeclarationSyntax m && m.AttributeLists.Count > 0;
 
-        private static void GetTemplates(ClassDeclarationSyntax cds, ISymbol classSymbol, UserGeneratorAttributeData genData)
-        {
-            foreach (var child in cds.ChildNodes())
-            {
-                if (child is FieldDeclarationSyntax f)
-                {
-                    foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
-                    {
-                        var a = ((IdentifierNameSyntax)att.Name).Identifier;
-                        if (a.Text == "GobieTemplate")
-                        {
-                        }
-                    }
-                }
-            }
-        }
-
         private static EnumDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
         {
             // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
