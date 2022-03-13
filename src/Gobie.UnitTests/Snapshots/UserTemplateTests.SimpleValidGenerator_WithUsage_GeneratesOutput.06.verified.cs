@@ -1,4 +1,4 @@
-﻿//HintName: NamePropertyGenerator_GenTarget2.g.cs
+﻿//HintName: NamePropertyAttribute_GenTarget2.g.cs
 namespace SomeNamespace
 {
     public partial class GenTarget2

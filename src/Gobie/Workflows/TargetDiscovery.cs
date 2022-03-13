@@ -104,10 +104,13 @@ public class TargetDiscovery
         var n = cds.ToFullString();
         foreach (var item in cds.AttributeLists.SelectMany(x => x.Attributes))
         {
+            var classAttName = ((IdentifierNameSyntax)item.Name).Identifier.Text;
+            classAttName += classAttName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute";
+
             foreach (var gen in userGenerators)
             {
-                var a = ((IdentifierNameSyntax)item.Name).Identifier.Text;
-                if (gen.AttributeData.AttributeIdentifier.ClassName == a)
+                var genAttName = gen.AttributeData.AttributeIdentifier.ClassName;
+                if (genAttName == classAttName)
                 {
                     return (cds, userGenerators);
                 }
