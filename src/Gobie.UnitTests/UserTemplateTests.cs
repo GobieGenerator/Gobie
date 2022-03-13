@@ -331,8 +331,8 @@ public class UserTemplateTests
             private const string KeyString = ""public string Name {get; set;}"";
         }
 
-        [PrimaryKey]
-        [NameProperty]
+        [PrimaryKeyGenerator]
+        [NamePropertyGenerator]
         public partial class GenTarget { }
 ";
 

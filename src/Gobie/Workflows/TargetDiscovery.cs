@@ -21,15 +21,33 @@ public class TargetDiscovery
             .Where(static x => x is not null)!;
     }
 
-    public static IncrementalValuesProvider<string> FindTargets(
+    /// <summary>
+    /// Tries to find targets without relying on any complex operations.
+    /// </summary>
+    public static IncrementalValuesProvider<(ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)?> FindProbableTargets(
         IncrementalValuesProvider<(ClassDeclarationSyntax Left, ImmutableArray<UserGeneratorTemplateData> Right)> cwaAndGenerators)
     {
-        return cwaAndGenerators.Select(selector: static (s, _) => FindTargets(s.Left, s.Right));
+        return cwaAndGenerators
+                    .Select(selector: static (s, _) => FindProbableTargets(s.Left, s.Right));
     }
 
-    private static string FindTargets(ClassDeclarationSyntax cds, ImmutableArray<UserGeneratorTemplateData> userGenerators)
+    private static (ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableTargets(
+        ClassDeclarationSyntax cds,
+        ImmutableArray<UserGeneratorTemplateData> userGenerators)
     {
-        return "Foo";
+        foreach (var item in cds.AttributeLists.SelectMany(x => x.Attributes))
+        {
+            foreach (var gen in userGenerators)
+            {
+                var a = ((IdentifierNameSyntax)item.Name).Identifier.Text;
+                if (userGenerators.Any(x => x.AttributeData.AttributeIdentifier == a + "Attribute"))
+                {
+                    return (cds, userGenerators);
+                }
+            }
+        }
+
+        return null;
     }
 
     private static bool IsSyntaxTargetForGeneration(SyntaxNode node)

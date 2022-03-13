@@ -40,10 +40,10 @@ namespace Gobie
 
             var cwa = TargetDiscovery.FindClassesWithAttributes(context);
             var cwaAndGenerators = cwa.Combine(userGenerators.Collect());
-            var targets = TargetDiscovery.FindTargets(cwaAndGenerators);
+            var probableTargets = TargetDiscovery.FindProbableTargets(cwaAndGenerators);
 
             //! Seems like the syntax provider won't run unless downstream we output text or something. So we report nonsense.
-            context.RegisterSourceOutput(targets, static (spc, source) => { });
+            context.RegisterSourceOutput(probableTargets, static (spc, source) => { });
 
             //### Find usage of the user's attributes and generate their code.
 
@@ -72,82 +72,82 @@ namespace Gobie
                 .Select(selector: (s, _) => s.Data!);
         }
 
-        private static bool IsSyntaxTargetForGeneration(SyntaxNode node) =>
-            node is EnumDeclarationSyntax m && m.AttributeLists.Count > 0;
+        ////private static bool IsSyntaxTargetForGeneration(SyntaxNode node) =>
+        ////    node is EnumDeclarationSyntax m && m.AttributeLists.Count > 0;
 
-        private static EnumDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
-        {
-            // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
-            var enumDeclarationSyntax = (EnumDeclarationSyntax)context.Node;
+        ////private static EnumDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
+        ////{
+        ////    // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
+        ////    var enumDeclarationSyntax = (EnumDeclarationSyntax)context.Node;
 
-            // loop through all the attributes on the method
-            foreach (AttributeListSyntax attributeListSyntax in enumDeclarationSyntax.AttributeLists)
-            {
-                foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
-                {
-                    if (context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
-                    {
-                        // weird, we couldn't get the symbol, ignore it
-                        continue;
-                    }
+        ////    // loop through all the attributes on the method
+        ////    foreach (AttributeListSyntax attributeListSyntax in enumDeclarationSyntax.AttributeLists)
+        ////    {
+        ////        foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
+        ////        {
+        ////            if (context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
+        ////            {
+        ////                // weird, we couldn't get the symbol, ignore it
+        ////                continue;
+        ////            }
 
-                    INamedTypeSymbol attributeContainingTypeSymbol = attributeSymbol.ContainingType;
-                    string fullName = attributeContainingTypeSymbol.ToDisplayString();
+        ////            INamedTypeSymbol attributeContainingTypeSymbol = attributeSymbol.ContainingType;
+        ////            string fullName = attributeContainingTypeSymbol.ToDisplayString();
 
-                    // Is the attribute the [EnumExtensions] attribute?
-                    if (fullName == "NetEscapades.EnumGenerators.EnumExtensionsAttribute")
-                    {
-                        // return the enum
-                        return enumDeclarationSyntax;
-                    }
-                }
-            }
+        ////            // Is the attribute the [EnumExtensions] attribute?
+        ////            if (fullName == "NetEscapades.EnumGenerators.EnumExtensionsAttribute")
+        ////            {
+        ////                // return the enum
+        ////                return enumDeclarationSyntax;
+        ////            }
+        ////        }
+        ////    }
 
-            // we didn't find the attribute we were looking for
-            return null;
-        }
+        ////    // we didn't find the attribute we were looking for
+        ////    return null;
+        ////}
 
-        private static void A(FieldDeclarationSyntax field)
-        {
-            ////SemanticModel model = compilation.GetSemanticModel(field.SyntaxTree);
-            ////foreach (VariableDeclaratorSyntax variable in field.Declaration.Variables)
-            ////{
-            ////    Trace.WriteLine("variable " + variable);
+        ////private static void A(FieldDeclarationSyntax field)
+        ////{
+        ////    ////SemanticModel model = compilation.GetSemanticModel(field.SyntaxTree);
+        ////    ////foreach (VariableDeclaratorSyntax variable in field.Declaration.Variables)
+        ////    ////{
+        ////    ////    Trace.WriteLine("variable " + variable);
 
-            ////    // Get the symbol being decleared by the field, and keep it if its annotated
-            ////    IFieldSymbol? fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
-            ////    if (fieldSymbol is null)
-            ////    {
-            ////        context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find field symbol"), a.GetLocation()));
-            ////        continue;
-            ////    }
+        ////    ////    // Get the symbol being decleared by the field, and keep it if its annotated
+        ////    ////    IFieldSymbol? fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
+        ////    ////    if (fieldSymbol is null)
+        ////    ////    {
+        ////    ////        context.ReportDiagnostic(Diagnostic.Create(Diagnostics.GobieUnknownError("Couldn't find field symbol"), a.GetLocation()));
+        ////    ////        continue;
+        ////    ////    }
 
-            ////    partialClass = fieldSymbol.ContainingType;
+        ////    ////    partialClass = fieldSymbol.ContainingType;
 
-            ////    Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
-            ////    var attributeData = fieldSymbol.GetAttributes().Single(ad => ad.AttributeClass.Equals(attributeSymbol, SymbolEqualityComparer.Default));
+        ////    ////    Trace.WriteLine("Annotated Field is: '" + fieldSymbol?.Name + "'");
+        ////    ////    var attributeData = fieldSymbol.GetAttributes().Single(ad => ad.AttributeClass.Equals(attributeSymbol, SymbolEqualityComparer.Default));
 
-            ////    fieldName = fieldSymbol?.Name;
-            ////    if (fieldName?.Length > 0)
-            ////    {
-            ////        dict.Add("field", fieldName);
-            ////        dict.Add("Property", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(fieldName));
+        ////    ////    fieldName = fieldSymbol?.Name;
+        ////    ////    if (fieldName?.Length > 0)
+        ////    ////    {
+        ////    ////        dict.Add("field", fieldName);
+        ////    ////        dict.Add("Property", CultureInfo.InvariantCulture.TextInfo.ToTitleCase(fieldName));
 
-            ////        foreach (var na in attributeData.NamedArguments)
-            ////        {
-            ////            Trace.WriteLine($"NamedArgument {na.Key}='{na.Value.Value.ToString()}'");
-            ////            if (na.Key == "TemplateDebug")
-            ////            {
-            ////                templateDebug = bool.Parse(na.Value.Value.ToString());
-            ////            }
-            ////            else
-            ////            {
-            ////                dict.Add(na.Key, na.Value.Value.ToString());
-            ////            }
-            ////        }
-            ////    }
-            ////}
-        }
+        ////    ////        foreach (var na in attributeData.NamedArguments)
+        ////    ////        {
+        ////    ////            Trace.WriteLine($"NamedArgument {na.Key}='{na.Value.Value.ToString()}'");
+        ////    ////            if (na.Key == "TemplateDebug")
+        ////    ////            {
+        ////    ////                templateDebug = bool.Parse(na.Value.Value.ToString());
+        ////    ////            }
+        ////    ////            else
+        ////    ////            {
+        ////    ////                dict.Add(na.Key, na.Value.Value.ToString());
+        ////    ////            }
+        ////    ////        }
+        ////    ////    }
+        ////    ////}
+        ////}
 
         ////private static void Execute(Compilation compilation, ImmutableArray<EnumDeclarationSyntax> enums, SourceProductionContext context)
         ////{
