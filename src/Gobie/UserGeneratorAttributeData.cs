@@ -121,6 +121,10 @@ public class RequiredParameter
 {
     public RequiredParameter(int requestedOrder, Location location, int declaredOrder, string name, string csharpTypeName)
     {
+        // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/classes#144-constants
+        // The type specified in a constant declaration shall be sbyte, byte, short, ushort, int,
+        // uint, long, ulong, char, float, double, decimal, bool, string, an enum_type, or a reference_type.
+
         name = name ?? throw new ArgumentNullException(nameof(name));
 
         RequestedOrder = requestedOrder;
