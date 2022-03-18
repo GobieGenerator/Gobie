@@ -11,9 +11,9 @@ namespace Gobie
             this.ReqParamTheSecond = reqParamTheSecond;
         }
 
-        public string ReqParam { get; set; }
+        public string ReqParam { get; }
 
-        public int ReqParamTheSecond { get; set; }
+        public int ReqParamTheSecond { get; }
 
         public string MyParam { get; set; }
 

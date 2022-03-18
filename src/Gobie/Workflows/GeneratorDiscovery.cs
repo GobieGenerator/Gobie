@@ -203,6 +203,12 @@
                     continue;
                 }
 
+                var propertyInitalizer = string.Empty;
+                if (node.Initializer is not null && node.Initializer.Value is LiteralExpressionSyntax les)
+                {
+                    propertyInitalizer = les.Token.Text;
+                }
+
                 var propertySymbol = context.SemanticModel.GetDeclaredSymbol(node);
                 if (propertySymbol is null)
                 {
@@ -238,7 +244,8 @@
                 genData.OptionalParameters.Add(
                     new OptionalParameter(
                                 node.Identifier.Text,
-                                propertyType));
+                                propertyType,
+                                propertyInitalizer));
             RequiredPropertyHandeled:;
             }
 

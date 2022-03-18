@@ -10,7 +10,7 @@ namespace Gobie
             this.ReqParam = reqParam;
         }
 
-        public string ReqParam { get; set; }
+        public string ReqParam { get; }
 
         public string MyParam { get; set; }
 
