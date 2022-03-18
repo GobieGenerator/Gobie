@@ -25,7 +25,7 @@ public class UserGeneratorAttributeData
 
     public ClassDeclarationSyntax ClassDeclarationSyntax { get; }
 
-    public List<string> OptionalParameters { get; private set; } = new List<string>();
+    public List<OptionalParameter> OptionalParameters { get; private set; } = new List<OptionalParameter>();
 
     public IEnumerable<RequiredParameter> RequiredParameters =>
         requiredParameters.OrderBy(x => x.RequestedOrder).ThenBy(x => x.DeclaredOrder);
@@ -148,9 +148,33 @@ public class RequiredParameter
 
     public string CsharpTypeName { get; }
 
-    public string PropertyString => $"public {CsharpTypeName} {NamePascal} {{ get; set; }}";
+    public string PropertyString => $"public {CsharpTypeName} {NamePascal} {{ get; }}";
 
     public string CtorArgumentString => $"{CsharpTypeName} {NameCamel}";
 
     public string CtorAssignmentString => $"this.{NamePascal} = {NameCamel};";
+}
+
+public class OptionalParameter
+{
+    public OptionalParameter(string name, string csharpTypeName)
+    {
+        // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/classes#144-constants
+        // The type specified in a constant declaration shall be sbyte, byte, short, ushort, int,
+        // uint, long, ulong, char, float, double, decimal, bool, string, an enum_type, or a reference_type.
+
+        name = name ?? throw new ArgumentNullException(nameof(name));
+
+        CsharpTypeName = csharpTypeName ?? throw new ArgumentNullException(nameof(csharpTypeName));
+
+        NamePascal = name[0].ToString().ToUpperInvariant() + name.Substring(1);
+    }
+
+
+    public string NamePascal { get; }
+
+
+    public string CsharpTypeName { get; }
+
+    public string PropertyString => $"public {CsharpTypeName} {NamePascal} {{ get; set; }}";
 }

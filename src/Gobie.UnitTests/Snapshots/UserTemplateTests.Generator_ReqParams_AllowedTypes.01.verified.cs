@@ -11,8 +11,8 @@ namespace Gobie
             this.MyString = myString;
         }
 
-        public int MyInt { get; set; }
+        public int MyInt { get; }
 
-        public string MyString { get; set; }
+        public string MyString { get; }
     }
 }

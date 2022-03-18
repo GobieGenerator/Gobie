@@ -11,8 +11,8 @@ namespace Gobie
             this.ReqRequestedFifth = reqRequestedFifth;
         }
 
-        public int ReqRequestedFirst { get; set; }
+        public int ReqRequestedFirst { get; }
 
-        public string ReqRequestedFifth { get; set; }
+        public string ReqRequestedFifth { get; }
     }
 }

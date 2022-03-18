@@ -13,12 +13,12 @@ namespace Gobie
             this.AnotherReqRequestedFifth = anotherReqRequestedFifth;
         }
 
-        public int ReqRequestedFirst { get; set; }
+        public int ReqRequestedFirst { get; }
 
-        public string ReqRequestedFifth { get; set; }
+        public string ReqRequestedFifth { get; }
 
-        public int AlsoReqRequestedFifth { get; set; }
+        public int AlsoReqRequestedFifth { get; }
 
-        public int AnotherReqRequestedFifth { get; set; }
+        public int AnotherReqRequestedFifth { get; }
     }
 }

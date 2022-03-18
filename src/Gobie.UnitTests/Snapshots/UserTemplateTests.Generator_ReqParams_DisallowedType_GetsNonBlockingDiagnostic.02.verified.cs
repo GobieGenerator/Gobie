@@ -10,6 +10,6 @@ namespace Gobie
             this.MyString = myString;
         }
 
-        public string MyString { get; set; }
+        public string MyString { get; }
     }
 }

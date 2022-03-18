@@ -11,8 +11,8 @@ namespace Gobie
             this.ReqNoPositionRequest = reqNoPositionRequest;
         }
 
-        public int ReqRequestedFirst { get; set; }
+        public int ReqRequestedFirst { get; }
 
-        public string ReqNoPositionRequest { get; set; }
+        public string ReqNoPositionRequest { get; }
     }
 }

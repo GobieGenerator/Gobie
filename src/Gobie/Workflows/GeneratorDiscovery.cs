@@ -196,12 +196,13 @@
             var requiredPropertyNumber = 1;
             foreach (PropertyDeclarationSyntax node in cds.ChildNodes().Where(x => x is PropertyDeclarationSyntax))
             {
-                if (ConstantTypes.IsAllowedConstantType(node.Type) == false)
+                if (ConstantTypes.IsAllowedConstantType(node.Type, out var propertyType) == false)
                 {
                     // We don't need to break the whole template when they do this wrong.
                     diagnostics.Add(Diagnostic.Create(Errors.DisallowedTemplateParameterType("TODO"), node.Type.GetLocation()));
                     continue;
                 }
+
                 var propertySymbol = context.SemanticModel.GetDeclaredSymbol(node);
                 if (propertySymbol is null)
                 {
@@ -225,7 +226,7 @@
                                 node.GetLocation(),
                                 requiredPropertyNumber,
                                 node.Identifier.Text,
-                                ((PredefinedTypeSyntax)node.Type).Keyword.Text));
+                                propertyType));
 
                         requiredPropertyNumber++;
 
@@ -234,7 +235,10 @@
                 }
 
                 // If we get here it isn't a required property, so we setup the optional one
-                genData.OptionalParameters.Add(node.ToString());
+                genData.OptionalParameters.Add(
+                    new OptionalParameter(
+                                node.Identifier.Text,
+                                propertyType));
             RequiredPropertyHandeled:;
             }
 
@@ -260,7 +264,7 @@
 
                     {string.Join(Environment.NewLine, data.RequiredParameters.Select(x => x.PropertyString))}
 
-                    {string.Join(Environment.NewLine, data.OptionalParameters)}
+                    {string.Join(Environment.NewLine, data.OptionalParameters.Select(x => x.PropertyString))}
                 }}
             }}
             ";
