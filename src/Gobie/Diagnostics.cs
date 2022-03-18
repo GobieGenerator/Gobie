@@ -24,6 +24,9 @@ namespace Gobie.Diagnostics
         public static DiagnosticDescriptor GeneratorNameInvalid =>
             new("GB0012", "Gobie", "Generator names are expected to end with 'Generator'. You may use th....", "Gobie Usage", Severity, true);
 
+        public static DiagnosticDescriptor DisallowedTemplateParameterType(string typeName) =>
+            new("GB1001", "Gobie", $"The specified type name '{typeName}' is not one of the types supported by Gobie.", "Gobie", Severity, true);
+
         public static DiagnosticDescriptor GobieCrashed(string exMessage) =>
             new("GB1001", "Gobie", $"Gobie Crashed. {exMessage}", "Gobie", Severity, true);
 

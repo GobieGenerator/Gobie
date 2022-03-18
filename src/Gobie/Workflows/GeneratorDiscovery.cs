@@ -212,17 +212,24 @@
                         var orderArg = att.ConstructorArguments[0].Value;
                         var order = orderArg is int i ? i : int.MaxValue;
 
-                        var allowed = ConstantTypes.IsAllowedConstantType(node.Type);
+                        if (ConstantTypes.IsAllowedConstantType(node.Type))
+                        {
+                            genData.AddRequiredParameter(
+                                new RequiredParameter(
+                                    order,
+                                    node.GetLocation(),
+                                    requiredPropertyNumber,
+                                    node.Identifier.Text,
+                                    ((PredefinedTypeSyntax)node.Type).Keyword.Text));
 
-                        genData.AddRequiredParameter(
-                            new RequiredParameter(
-                                order,
-                                node.GetLocation(),
-                                requiredPropertyNumber,
-                                node.Identifier.Text,
-                                ((PredefinedTypeSyntax)node.Type).Keyword.Text));
+                            requiredPropertyNumber++;
+                        }
+                        else
+                        {
+                            // We don't need to break the whole template when they do this wrong.
+                            diagnostics.Add(Diagnostic.Create(Errors.DisallowedTemplateParameterType("TODO"), node.Type.GetLocation()));
+                        }
 
-                        requiredPropertyNumber++;
                         goto RequiredPropertyHandeled;
                     }
                 }
