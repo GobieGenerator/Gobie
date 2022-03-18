@@ -196,6 +196,12 @@
             var requiredPropertyNumber = 1;
             foreach (PropertyDeclarationSyntax node in cds.ChildNodes().Where(x => x is PropertyDeclarationSyntax))
             {
+                if (ConstantTypes.IsAllowedConstantType(node.Type) == false)
+                {
+                    // We don't need to break the whole template when they do this wrong.
+                    diagnostics.Add(Diagnostic.Create(Errors.DisallowedTemplateParameterType("TODO"), node.Type.GetLocation()));
+                    continue;
+                }
                 var propertySymbol = context.SemanticModel.GetDeclaredSymbol(node);
                 if (propertySymbol is null)
                 {
@@ -212,23 +218,16 @@
                         var orderArg = att.ConstructorArguments[0].Value;
                         var order = orderArg is int i ? i : int.MaxValue;
 
-                        if (ConstantTypes.IsAllowedConstantType(node.Type))
-                        {
-                            genData.AddRequiredParameter(
-                                new RequiredParameter(
-                                    order,
-                                    node.GetLocation(),
-                                    requiredPropertyNumber,
-                                    node.Identifier.Text,
-                                    ((PredefinedTypeSyntax)node.Type).Keyword.Text));
 
-                            requiredPropertyNumber++;
-                        }
-                        else
-                        {
-                            // We don't need to break the whole template when they do this wrong.
-                            diagnostics.Add(Diagnostic.Create(Errors.DisallowedTemplateParameterType("TODO"), node.Type.GetLocation()));
-                        }
+                        genData.AddRequiredParameter(
+                            new RequiredParameter(
+                                order,
+                                node.GetLocation(),
+                                requiredPropertyNumber,
+                                node.Identifier.Text,
+                                ((PredefinedTypeSyntax)node.Type).Keyword.Text));
+
+                        requiredPropertyNumber++;
 
                         goto RequiredPropertyHandeled;
                     }

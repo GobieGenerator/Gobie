@@ -354,6 +354,25 @@ public class UserTemplateTests
     }
 
     [Test]
+    public Task Generator_OptionalParams_DisallowedType_GetsNonBlockingDiagnostic()
+    {
+        var source = @"
+        using Gobie;
+
+        public class CustomType {}
+
+        [GobieGeneratorName]
+        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        {
+            public double BadProp {get; set;}
+
+            public string MyString {get; set;}
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task SimpleValidGenerator_WithUsage_GeneratesOutput()
     {
         var source = @"
