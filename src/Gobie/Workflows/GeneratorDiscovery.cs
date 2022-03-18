@@ -1,6 +1,7 @@
 ﻿namespace Gobie.Workflows
 {
     using Gobie.Diagnostics;
+    using Gobie.Helpers;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -210,6 +211,8 @@
                         // complaining to the user about providing an invalid value.
                         var orderArg = att.ConstructorArguments[0].Value;
                         var order = orderArg is int i ? i : int.MaxValue;
+
+                        var allowed = ConstantTypes.IsAllowedConstantType(node.Type);
 
                         genData.AddRequiredParameter(
                             new RequiredParameter(
