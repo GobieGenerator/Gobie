@@ -225,14 +225,14 @@
                         var orderArg = att.ConstructorArguments[0].Value;
                         var order = orderArg is int i ? i : int.MaxValue;
 
-
                         genData.AddRequiredParameter(
                             new RequiredParameter(
                                 order,
                                 node.GetLocation(),
                                 requiredPropertyNumber,
                                 node.Identifier.Text,
-                                propertyType));
+                                propertyType,
+                                propertyInitalizer));
 
                         requiredPropertyNumber++;
 

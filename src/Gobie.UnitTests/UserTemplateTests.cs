@@ -354,6 +354,51 @@ public class UserTemplateTests
     }
 
     [Test]
+    public Task Generator_ReqParams_WithInitalizersInOrder_Generates()
+    {
+        var source = @"
+        using Gobie;
+
+        public class CustomType {}
+
+        [GobieGeneratorName]
+        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        {
+            [Required]
+            public int MyInt {get; set;} = 4;
+
+            [Required(1)]
+            public string MyString {get; set;}
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task Generator_ReqParams_WithInitalizersOutOfOrder_NoGobieDiagnostic()
+    {
+        // This generates invalid constructor, but Roslyn will point out the issue. 
+        // if we need to we can add some hand holding.
+
+        var source = @"
+        using Gobie;
+
+        public class CustomType {}
+
+        [GobieGeneratorName]
+        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        {
+            [Required]
+            public int MyInt {get; set;} = 4;
+
+            [Required]
+            public string MyString {get; set;}
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task Generator_OptionalParams_DisallowedType_GetsNonBlockingDiagnostic()
     {
         var source = @"
