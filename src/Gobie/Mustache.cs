@@ -29,6 +29,14 @@ public class Mustache
         Period
     }
 
+    public enum TemplateSyntaxType
+    {
+        Literal,
+        If,
+        Not,
+        Identifier,
+    }
+
     public static ReadOnlySpan<Token> Tokenize(ReadOnlySpan<char> template)
     {
         var tokens = new Span<Token>(new Token[template.Length]);
@@ -114,10 +122,23 @@ public class Mustache
         return tokens.Slice(0, t + 1);
     }
 
+    public static DataOrDiagnostics<TemplateSyntax> Parse(ReadOnlySpan<char> template, ReadOnlySpan<Token> tokens)
+    {
+        var root = new TemplateSyntax();
+
+        var currentNode = root;
+
+        foreach (var token in tokens)
+        {
+        }
+
+        return new(root);
+    }
+
     [DebuggerDisplay("{Start}-{End} {TokenType}")]
     public readonly struct Token
     {
-        public Token(int start, int end, TokenType tokenType)
+        public Token(int start, int end, TokenType tokenType, ReadOnlySpan<Char> chars)
         {
             Start = start;
             End = end;
@@ -129,5 +150,18 @@ public class Mustache
         public int End { get; }
 
         public TokenType TokenType { get; }
+    }
+
+    public class TemplateSyntax
+    {
+        public TemplateSyntaxType Type { get; set; }
+
+        public string LiteralText { get; set; }
+
+        public string Identifier { get; set; }
+
+        public TemplateSyntax? Parent { get; set; }
+
+        public List<TemplateSyntax> Children { get; set; } = new();
     }
 }
