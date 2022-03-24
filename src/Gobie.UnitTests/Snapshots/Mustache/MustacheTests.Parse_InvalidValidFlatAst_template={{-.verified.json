@@ -11,8 +11,8 @@
         "Location": ": (0,0)-(0,0)",
         "Description": "",
         "HelpLink": "",
-        "MessageFormat": "The token '{{/' was not expected. There is no corresponding if or not tag (i.e. {{#name}} or {{^name}} for this to close",
-        "Message": "The token '{{/' was not expected. There is no corresponding if or not tag (i.e. {{#name}} or {{^name}} for this to close",
+        "MessageFormat": "The template is incomplete. Template is incomplete",
+        "Message": "The template is incomplete. Template is incomplete",
         "Category": "Gobie",
         "CustomTags": []
       }
