@@ -1,5 +1,5 @@
 ﻿{
-  "Template": "\n {{ name }} ",
+  "Template": "\n {{ name }}  ",
   "Result": {
     "Data": {
       "Type": "Root",
@@ -16,6 +16,11 @@
           "Type": "Identifier",
           "LiteralText": "",
           "Identifier": "name"
+        },
+        {
+          "Type": "Literal",
+          "LiteralText": "  ",
+          "Identifier": ""
         }
       ]
     }

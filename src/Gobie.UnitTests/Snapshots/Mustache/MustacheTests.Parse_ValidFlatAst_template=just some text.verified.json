@@ -1,0 +1,38 @@
+﻿{
+  "Template": "just some text",
+  "Result": {
+    "Data": {
+      "Type": "Root",
+      "LiteralText": "",
+      "Identifier": "",
+      "Parent": null,
+      "Children": [
+        {
+          "Type": "Literal",
+          "LiteralText": "just",
+          "Identifier": ""
+        },
+        {
+          "Type": "Literal",
+          "LiteralText": " ",
+          "Identifier": ""
+        },
+        {
+          "Type": "Literal",
+          "LiteralText": "some",
+          "Identifier": ""
+        },
+        {
+          "Type": "Literal",
+          "LiteralText": " ",
+          "Identifier": ""
+        },
+        {
+          "Type": "Literal",
+          "LiteralText": "text",
+          "Identifier": ""
+        }
+      ]
+    }
+  }
+}

@@ -2,15 +2,12 @@
 
 public class MustacheTests
 {
-    [Test]
-    public Task SimpleAst()
-    {
-        const string template = "\n {{ name }}  ";
-
-        var ast = Mustache.Parse(template, Mustache.Tokenize(template));
-
-        return Verify(new ParseResult(template, ast));
-    }
+    [TestCase("")]
+    [TestCase("just some text")]
+    [TestCase("\n {{ name }}  ")]
+    public Task Parse_ValidFlatAst(string template) =>
+        Verify(new ParseResult(template, Mustache.Parse(template)))
+            .UseDirectory("Snapshots\\Mustache");
 
     private record ParseResult(string Template, DataOrDiagnostics<Mustache.TemplateSyntax> Result);
 }

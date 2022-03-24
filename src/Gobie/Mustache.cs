@@ -123,8 +123,9 @@ public class Mustache
         return tokens.Slice(0, t + 1);
     }
 
-    public static DataOrDiagnostics<TemplateSyntax> Parse(ReadOnlySpan<char> template, ReadOnlySpan<Token> tokens)
+    public static DataOrDiagnostics<TemplateSyntax> Parse(ReadOnlySpan<char> template)
     {
+        var tokens = Tokenize(template);
         var root = new TemplateSyntax(null, TemplateSyntaxType.Root);
         var diagnostics = new List<Diagnostic>();
 
@@ -196,7 +197,7 @@ public class Mustache
                     {
                         var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier);
                         currentNode.Children.Add(ts);
-                        currentNode = ts.Type == TemplateSyntaxType.Identifier ? ts : currentNode;
+                        currentNode = ts.Type == TemplateSyntaxType.Identifier ? currentNode : ts;
                     }
                     else
                     {
