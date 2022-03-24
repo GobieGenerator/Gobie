@@ -55,7 +55,8 @@
             foreach (var template in templates)
             {
                 var foo = Mustache.Parse(template.AsSpan());
-                diagnostics.AddRange(foo.Diagnostics);
+                if (foo.Diagnostics is not null)
+                    diagnostics.AddRange(foo.Diagnostics);
             }
 
             if (diagnostics.Any())
