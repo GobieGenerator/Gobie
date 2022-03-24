@@ -1,0 +1,17 @@
+﻿{
+  "Diagnostics": [
+    {
+      "Id": "GB1001",
+      "Title": "Gobie",
+      "Severity": "Error",
+      "WarningLevel": 0,
+      "Location": ": (8,19)-(8,25)",
+      "Description": "",
+      "HelpLink": "",
+      "MessageFormat": "The specified type name 'TODO' is not one of the types supported by Gobie.",
+      "Message": "The specified type name 'TODO' is not one of the types supported by Gobie.",
+      "Category": "Gobie",
+      "CustomTags": []
+    }
+  ]
+}

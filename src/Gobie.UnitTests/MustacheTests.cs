@@ -1,23 +1,16 @@
 ﻿namespace Gobie.UnitTests;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 public class MustacheTests
 {
     [Test]
-    public void T()
+    public Task SimpleAst()
     {
-        const string template = @"{{#name}}
-  <b>{{name}}</b>
-{{/name}}
-{{^name}}
-  No name. 
-{{/name}}";
+        const string template = "\n {{ name }}  ";
 
-        Mustache.Tokenize(template);
+        var ast = Mustache.Parse(template, Mustache.Tokenize(template));
+
+        return Verify(new ParseResult(template, ast));
     }
+
+    private record ParseResult(string Template, DataOrDiagnostics<Mustache.TemplateSyntax> Result);
 }

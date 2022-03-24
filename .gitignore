@@ -352,5 +352,6 @@ MigrationBackup/
 # Verified files from failing tests.
 *.received.cs
 *.received.txt
+*.received.json
 
 src/.cr/personal/

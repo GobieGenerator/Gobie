@@ -1,5 +1,6 @@
 ﻿namespace Gobie;
 
+using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +13,6 @@ public class Mustache
     public enum TokenType
     {
         None = 0,
-        Open,
         Close,
         LogicIfOpen,
         LogicNotOpen,
@@ -31,6 +31,7 @@ public class Mustache
 
     public enum TemplateSyntaxType
     {
+        Root,
         Literal,
         If,
         Not,
@@ -124,21 +125,135 @@ public class Mustache
 
     public static DataOrDiagnostics<TemplateSyntax> Parse(ReadOnlySpan<char> template, ReadOnlySpan<Token> tokens)
     {
-        var root = new TemplateSyntax();
+        var root = new TemplateSyntax(null, TemplateSyntaxType.Root);
+        var diagnostics = new List<Diagnostic>();
+
+        string GetText(ReadOnlySpan<char> template, Token token)
+        {
+            return template.Slice(token.Start, token.End - token.Start + 1).ToString();
+        }
 
         var currentNode = root;
 
-        foreach (var token in tokens)
+        for (int i = 0; i < tokens.Length; i++)
         {
+            if (currentNode.Type == TemplateSyntaxType.Root)
+            {
+                if (tokens[i].TokenType is TokenType.General or TokenType.Identifier or TokenType.Whitespace)
+                {
+                    currentNode.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, GetText(template, tokens[i])));
+                }
+                else if (tokens[i].TokenType is TokenType.Close or TokenType.LogicEndOpen)
+                {
+                    // Diagnostic b/c we have close without open.
+                }
+                else
+                {
+                    // Here, the only remaining types are opening tokens.
+                    var tagClosed = false;
+                    var identiferFound = false;
+                    var identifier = string.Empty;
+
+                    // Get the opening tag syntax type
+                    var tst = tokens[i].TokenType switch
+                    {
+                        TokenType.TemplateTokenOpen => TemplateSyntaxType.Identifier,
+                        TokenType.LogicIfOpen => TemplateSyntaxType.If,
+                        TokenType.LogicNotOpen => TemplateSyntaxType.Not,
+                        _ => throw new InvalidOperationException("Shouldn't be possible"),
+                    };
+
+                    if (TrySeekNonWhitespace(tokens, ref i, out var t))
+                    {
+                        if (t.TokenType == TokenType.Identifier)
+                        {
+                            // This is our only good case.
+                            identiferFound = true;
+                            identifier = GetText(template, t);
+                        }
+                        else
+                        {
+                            // TODO issue diagnostic b/c we found an unexpected token.
+                        }
+                    }
+
+                    if (TrySeekNonWhitespace(tokens, ref i, out var t2))
+                    {
+                        if (t2.TokenType == TokenType.Close)
+                        {
+                            // This is our only good case. The tag was closed
+                            tagClosed = true;
+                        }
+                        else
+                        {
+                            // TODO issue diagnostic b/c we found an unexpected token and expected
+                            // exactly a close.
+                        }
+                    }
+
+                    // TODO, maybe bail early if we issue diagnostics?
+                    if (identiferFound && tagClosed)
+                    {
+                        var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier);
+                        currentNode.Children.Add(ts);
+                        currentNode = ts.Type == TemplateSyntaxType.Identifier ? ts : currentNode;
+                    }
+                    else
+                    {
+                        // We already issued dagnostics.
+                    }
+                }
+            }
+            else if (currentNode.Type == TemplateSyntaxType.If)
+            {
+            }
+            else if (currentNode.Type == TemplateSyntaxType.Not)
+            {
+            }
+            else if (currentNode.Type == TemplateSyntaxType.Identifier)
+            {
+            }
+            else if (currentNode.Type == TemplateSyntaxType.Literal)
+            {
+                throw new InvalidOperationException("Literal shouldn't ever be a current 'parent' node");
+            }
         }
 
         return new(root);
     }
 
+    /// <summary>
+    /// Seeks the next non whitespace, if one exists. Advances <paramref name="i"/> as needed to
+    /// move past white space.
+    /// </summary>
+    /// <param name="tokens"></param>
+    /// <param name="i"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    private static bool TrySeekNonWhitespace(ReadOnlySpan<Token> tokens, ref int i, out Token token)
+    {
+        token = default;
+        if (i + 1 < tokens.Length)
+        {
+            i++;
+            if (tokens[i].TokenType != TokenType.Whitespace)
+            {
+                token = tokens[i];
+                return true;
+            }
+
+            return TrySeekNonWhitespace(tokens, ref i, out token);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     [DebuggerDisplay("{Start}-{End} {TokenType}")]
     public readonly struct Token
     {
-        public Token(int start, int end, TokenType tokenType, ReadOnlySpan<Char> chars)
+        public Token(int start, int end, TokenType tokenType)
         {
             Start = start;
             End = end;
@@ -154,11 +269,19 @@ public class Mustache
 
     public class TemplateSyntax
     {
+        public TemplateSyntax(TemplateSyntax? parent, TemplateSyntaxType type, string literalText = "", string identifier = "")
+        {
+            Parent = parent;
+            Type = type;
+            LiteralText = literalText ?? throw new ArgumentNullException(nameof(literalText));
+            Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+        }
+
         public TemplateSyntaxType Type { get; set; }
 
-        public string LiteralText { get; set; }
+        public string LiteralText { get; set; } = string.Empty;
 
-        public string Identifier { get; set; }
+        public string Identifier { get; set; } = string.Empty;
 
         public TemplateSyntax? Parent { get; set; }
 
