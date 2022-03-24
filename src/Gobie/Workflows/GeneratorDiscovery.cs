@@ -52,6 +52,17 @@
 
             var templates = GetTemplates(data.ClassDeclarationSyntax, symbol, data, compliation);
 
+            foreach (var template in templates)
+            {
+                var foo = Mustache.Parse(template.AsSpan());
+                diagnostics.AddRange(foo.Diagnostics);
+            }
+
+            if (diagnostics.Any())
+            {
+                return new(diagnostics);
+            }
+
             var td = new UserGeneratorTemplateData(data, templates);
 
             return new(td, diagnostics);

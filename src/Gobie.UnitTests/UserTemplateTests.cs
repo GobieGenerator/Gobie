@@ -377,8 +377,8 @@ public class UserTemplateTests
     [Test]
     public Task Generator_ReqParams_WithInitalizersOutOfOrder_NoGobieDiagnostic()
     {
-        // This generates invalid constructor, but Roslyn will point out the issue. 
-        // if we need to we can add some hand holding.
+        // This generates invalid constructor, but Roslyn will point out the issue. if we need to we
+        // can add some hand holding.
 
         var source = @"
         using Gobie;
@@ -413,6 +413,28 @@ public class UserTemplateTests
 
             public string MyString {get; set;}
         }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task Generator_WithTemplateSyntaxIssue_SkipsOutputGeneration()
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        [GobieGeneratorName(""PkGen"")]
+        public sealed class PrimaryKeyGenerator : GobieFieldGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""{{"";
+        }
+
+        [PkGenAttribute]
+        public partial class GenTarget
+        { }";
 
         return TestHelper.Verify(source);
     }

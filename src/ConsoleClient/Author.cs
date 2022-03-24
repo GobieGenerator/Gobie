@@ -7,7 +7,7 @@ namespace ConsoleClient.Models
     public sealed class PrimaryKeyGenerator : GobieFieldGenerator
     {
         [GobieTemplate]
-        private const string KeyString = "public int Id { get; set; } // This is a key";
+        private const string KeyString = "public int Id { get; set; } {{name} // This is a key";
     }
 
     public sealed class NamePropertyGenerator : GobieFieldGenerator
@@ -18,12 +18,10 @@ namespace ConsoleClient.Models
         [Required(5)]
         public int MyProperty34 { get; set; }
 
-
         [Required(6)]
         public int MyProperty2 { get; set; } = 42;
 
         public string OptionalString { get; set; } = "favorite quote: \"Hello from the magic tavern\"";
-
     }
 
     [PkGen]
