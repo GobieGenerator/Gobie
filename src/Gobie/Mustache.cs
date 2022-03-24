@@ -139,46 +139,72 @@ public class Mustache
 
         for (int i = 0; i < tokens.Length; i++)
         {
-            if (currentNode.Type == TemplateSyntaxType.Root)
+            if (tokens[i].TokenType is TokenType.General or TokenType.Identifier or TokenType.Whitespace)
             {
-                if (tokens[i].TokenType is TokenType.General or TokenType.Identifier or TokenType.Whitespace)
+                currentNode!.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, GetText(template, tokens[i])));
+            }
+            else if (tokens[i].TokenType is TokenType.Close)
+            {
+                diagnostics.Add(
+                    Diagnostic.Create(
+                        Errors.UnexpectedToken(
+                            GetText(template, tokens[i]),
+                            "There is no corresponding open token"),
+                        null));
+            }
+            else
+            {
+                // Here, the only remaining types are opening tokens.
+                var tagClosed = false;
+                var identiferFound = false;
+                var identifier = string.Empty;
+                var initialToken = tokens[i];
+                bool continueSeeking = false;
+
+                if (TrySeekNonWhitespace(tokens, ref i, out var t))
                 {
-                    currentNode.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, GetText(template, tokens[i])));
-                }
-                else if (tokens[i].TokenType is TokenType.Close)
-                {
-                    diagnostics.Add(
-                        Diagnostic.Create(
-                            Errors.UnexpectedToken(
-                                GetText(template, tokens[i]),
-                                "There is no corresponding open token"),
-                            null));
+                    if (t.TokenType == TokenType.Identifier)
+                    {
+                        // This is our only good case.
+                        continueSeeking = true;
+                        identiferFound = true;
+                        identifier = GetText(template, t);
+                    }
+                    else
+                    {
+                        diagnostics.Add(
+                            Diagnostic.Create(
+                                Errors.UnexpectedToken(
+                                    GetText(template, t),
+                                    "Expected an identifier string, which contains only letters, numbers, and underscores"),
+                                null));
+                    }
                 }
                 else
                 {
-                    // Here, the only remaining types are opening tokens.
-                    var tagClosed = false;
-                    var identiferFound = false;
-                    var identifier = string.Empty;
-                    var initialToken = tokens[i];
-                    bool continueSeeking = false;
+                    diagnostics.Add(
+                          Diagnostic.Create(
+                              Errors.UnfinishedTemplate(
+                                  "Template is incomplete"),
+                              null));
+                }
 
-                    if (TrySeekNonWhitespace(tokens, ref i, out var t))
+                if (continueSeeking)
+                {
+                    if (TrySeekNonWhitespace(tokens, ref i, out var t2))
                     {
-                        if (t.TokenType == TokenType.Identifier)
+                        if (t2.TokenType == TokenType.Close)
                         {
-                            // This is our only good case.
-                            continueSeeking = true;
-                            identiferFound = true;
-                            identifier = GetText(template, t);
+                            // This is our only good case. The tag was closed
+                            tagClosed = true;
                         }
                         else
                         {
                             diagnostics.Add(
                                 Diagnostic.Create(
                                     Errors.UnexpectedToken(
-                                        GetText(template, t),
-                                        "Expected an identifier string, which contains only letters, numbers, and underscores"),
+                                        GetText(template, t2),
+                                        "Expected closing '}}' token. Note, identifiers cannot have white space."),
                                     null));
                         }
                     }
@@ -190,119 +216,76 @@ public class Mustache
                                       "Template is incomplete"),
                                   null));
                     }
+                }
 
-                    if (continueSeeking)
+                if (identiferFound && tagClosed && initialToken.TokenType != TokenType.LogicEndOpen)
+                {
+                    // Here we found a complete valid tag for an identifier or an opening logical
+                    // tag, so we can go ahead and create a new syntax node. If this tag represents
+                    // the opening of a logical node, then that becomes the new current node.
+
+                    var tst = initialToken.TokenType switch
                     {
-                        if (TrySeekNonWhitespace(tokens, ref i, out var t2))
+                        TokenType.TemplateTokenOpen => TemplateSyntaxType.Identifier,
+                        TokenType.LogicIfOpen => TemplateSyntaxType.If,
+                        TokenType.LogicNotOpen => TemplateSyntaxType.Not,
+                        _ => throw new InvalidOperationException("Shouldn't be possible"),
+                    };
+
+                    var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier);
+                    currentNode.Children.Add(ts);
+                    currentNode = ts.Type == TemplateSyntaxType.Identifier ? currentNode : ts;
+                }
+                if (identiferFound && tagClosed && initialToken.TokenType == TokenType.LogicEndOpen)
+                {
+                    // Here we found a complete valid tag which ends a logical tag. We need to check
+                    // if the currentNode is the matching opening tag (the good case) and move the
+                    // current node back to be its parent. If not we need to report diagnostics.
+
+                    if (currentNode.Type is TemplateSyntaxType.If or TemplateSyntaxType.Not)
+                    {
+                        if (currentNode.Identifier.Equals(identifier, StringComparison.Ordinal))
                         {
-                            if (t2.TokenType == TokenType.Close)
-                            {
-                                // This is our only good case. The tag was closed
-                                tagClosed = true;
-                            }
-                            else
+                            // The node matches, so we close it, by navigating back to the parent
+                            currentNode = currentNode.Parent;
+                        }
+                        else
+                        {
+                            // The logical end doesn't match, so we issue a diagnostic.
+                            if (currentNode.Identifier.Equals(identifier, StringComparison.OrdinalIgnoreCase))
                             {
                                 diagnostics.Add(
                                     Diagnostic.Create(
-                                        Errors.UnexpectedToken(
-                                            GetText(template, t2),
-                                            "Expected closing '}}' token. Note, identifiers cannot have white space."),
+                                        Errors.UnexpectedIdentifier(
+                                            identifier,
+                                            $"The provided identifier differs only in case from '{currentNode.Identifier}'. Identifier matching is case sensitive."),
                                         null));
-                            }
-                        }
-                        else
-                        {
-                            diagnostics.Add(
-                                  Diagnostic.Create(
-                                      Errors.UnfinishedTemplate(
-                                          "Template is incomplete"),
-                                      null));
-                        }
-                    }
-
-                    if (identiferFound && tagClosed && initialToken.TokenType != TokenType.LogicEndOpen)
-                    {
-                        // Here we found a complete valid tag for an identifier or an opening
-                        // logical tag, so we can go ahead and create a new syntax node. If this tag
-                        // represents the opening of a logical node, then that becomes the new
-                        // current node.
-
-                        var tst = initialToken.TokenType switch
-                        {
-                            TokenType.TemplateTokenOpen => TemplateSyntaxType.Identifier,
-                            TokenType.LogicIfOpen => TemplateSyntaxType.If,
-                            TokenType.LogicNotOpen => TemplateSyntaxType.Not,
-                            _ => throw new InvalidOperationException("Shouldn't be possible"),
-                        };
-
-                        var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier);
-                        currentNode.Children.Add(ts);
-                        currentNode = ts.Type == TemplateSyntaxType.Identifier ? currentNode : ts;
-                    }
-                    if (identiferFound && tagClosed && initialToken.TokenType == TokenType.LogicEndOpen)
-                    {
-                        // Here we found a complete valid tag which ends a logical tag. We need to
-                        // check if the currentNode is the matching opening tag (the good case) and
-                        // move the current node back to be its parent. If not we need to report diagnostics.
-
-                        if (currentNode.Type is TemplateSyntaxType.If or TemplateSyntaxType.Not)
-                        {
-                            if (currentNode.Identifier.Equals(identifier, StringComparison.Ordinal))
-                            {
-                                // The node matches, so we close it, by navigating back to the parent
-                                currentNode = currentNode.Parent;
                             }
                             else
                             {
-                                // The logical end doesn't match, so we issue a diagnostic.
-                                if (currentNode.Identifier.Equals(identifier, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    diagnostics.Add(
-                                        Diagnostic.Create(
-                                            Errors.UnexpectedIdentifier(
-                                                identifier,
-                                                $"The provided identifier differs only in case from '{currentNode.Identifier}'. Identifier matching is case sensitive."),
-                                            null));
-                                }
-                                else
-                                {
-                                    // The node doesn't match at all, so show what we expect.
-                                    diagnostics.Add(
-                                       Diagnostic.Create(
-                                           Errors.LogicalEndMissing("{{\\" + currentNode.Identifier + "}}"),
-                                           null));
-                                }
+                                // The node doesn't match at all, so show what we expect.
+                                diagnostics.Add(
+                                   Diagnostic.Create(
+                                       Errors.LogicalEndMissing("{{\\" + currentNode.Identifier + "}}"),
+                                       null));
                             }
-                        }
-                        else
-                        {
-                            // Here, we aren't able to close a node. So we issue a diagnostic.
-                            diagnostics.Add(
-                                Diagnostic.Create(
-                                    Errors.UnexpectedToken(
-                                        GetText(template, tokens[i]),
-                                        "There is no corresponding if or not tag (i.e. {{#name}} or {{^name}} for this to close"),
-                                    null));
                         }
                     }
                     else
                     {
-                        // TODO do we stop? We already issued dagnostics.
+                        // Here, we aren't able to close a node. So we issue a diagnostic.
+                        diagnostics.Add(
+                            Diagnostic.Create(
+                                Errors.UnexpectedToken(
+                                    GetText(template, tokens[i]),
+                                    "There is no corresponding if or not tag (i.e. {{#name}} or {{^name}} for this to close"),
+                                null));
                     }
                 }
-            }
-            else if (currentNode.Type == TemplateSyntaxType.If)
-            {
-            }
-            else if (currentNode.Type == TemplateSyntaxType.Not)
-            {
-            }
-            else if (currentNode.Type == TemplateSyntaxType.Identifier)
-            {
-            }
-            else if (currentNode.Type == TemplateSyntaxType.Literal)
-            {
-                throw new InvalidOperationException("Literal shouldn't ever be a current 'parent' node");
+                else
+                {
+                    // TODO do we stop? We already issued dagnostics.
+                }
             }
         }
 
