@@ -8,7 +8,7 @@ public class MustacheTests
     [TestCase("{{#")]
     [TestCase("}}")]
     [TestCase("{{}}")]
-    [TestCase("{{ a b }}")]
+    [TestCase("{{ a b }}")] // TODO should this have just one diagnostic or two?
     public Task Parse_InvalidValidFlatAst(string template) =>
     Verify(new ParseResult(template, Mustache.Parse(template)))
         .UseDirectory("Snapshots\\Mustache");

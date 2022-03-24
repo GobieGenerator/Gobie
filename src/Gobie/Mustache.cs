@@ -145,9 +145,23 @@ public class Mustache
                 {
                     currentNode.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, GetText(template, tokens[i])));
                 }
-                else if (tokens[i].TokenType is TokenType.Close or TokenType.LogicEndOpen)
+                else if (tokens[i].TokenType is TokenType.Close)
                 {
-                    // Diagnostic b/c we have close without open.
+                    diagnostics.Add(
+                        Diagnostic.Create(
+                            Errors.UnexpectedToken(
+                                GetText(template, tokens[i]),
+                                "There is no corresponding open token"),
+                            null));
+                }
+                else if (tokens[i].TokenType is TokenType.LogicEndOpen)
+                {
+                    diagnostics.Add(
+                        Diagnostic.Create(
+                            Errors.UnexpectedToken(
+                                GetText(template, tokens[i]),
+                                "There is no corresponding if or not tag (i.e. {{#name}} or {{^name}} for this to close"),
+                            null));
                 }
                 else
                 {
