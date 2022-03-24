@@ -39,6 +39,13 @@ public class Mustache
         Identifier,
     }
 
+    private enum IdentifierValidity
+    {
+        Valid,
+        IdentiferUsedWhereItDoesntExist,
+        IdentiferExcludedWhereItDoesExist,
+    }
+
     public static ReadOnlySpan<Token> Tokenize(ReadOnlySpan<char> template)
     {
         var tokens = new Span<Token>(new Token[template.Length]);
@@ -238,8 +245,11 @@ public class Mustache
                 if (identiferFound && tagClosed && initialToken.TokenType != TokenType.LogicEndOpen)
                 {
                     // Here we found a complete valid tag for an identifier or an opening logical
-                    // tag, so we can go ahead and create a new syntax node. If this tag represents
-                    // the opening of a logical node, then that becomes the new current node.
+                    // tag. First, we verify the identifier makes sense in this context (i.e. no
+                    // current or parent node is a NOT with the same identifier, meaning this will
+                    // never render). If thats ok we can go ahead and create a new syntax node. If
+                    // this tag represents the opening of a logical node, then that becomes the new
+                    // current node.
 
                     var tst = initialToken.TokenType switch
                     {
@@ -249,6 +259,28 @@ public class Mustache
                         _ => throw new InvalidOperationException("Shouldn't be possible"),
                     };
 
+                    var identValid = IdentiferValidInThisContext(tst, currentNode, identifier);
+                    if (identValid == IdentifierValidity.IdentiferUsedWhereItDoesntExist)
+                    {
+                        diagnostics.Add(
+                            Diagnostic.Create(
+                                Errors.UnreachableTemplateSection(
+                                    $"You cannot use the identifer '{identifier}' here because it is surrounded " +
+                                    $"by a not node (i.e. {{{{^{identifier}}}}} )"),
+                                null));
+                    }
+                    else if (identValid == IdentifierValidity.IdentiferExcludedWhereItDoesExist)
+                    {
+                        diagnostics.Add(
+                           Diagnostic.Create(
+                              Errors.UnreachableTemplateSection(
+                                  $"You cannot exclude the identifer '{identifier}' here because it is surrounded " +
+                                  $"by an if node (i.e. {{{{#{identifier}}}}} )"),
+                              null));
+                    }
+
+                    // We close the syntax even if identifier isn't valid, b/c we don't want
+                    // inaccurate alerts saying the template is incomplete.
                     var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier);
                     currentNode.Children.Add(ts);
                     currentNode = ts.Type == TemplateSyntaxType.Identifier ? currentNode : ts;
@@ -308,7 +340,7 @@ public class Mustache
 
         // At this point if we aren't at the root or direct child of the root, then the template is
         // incomplete. So it hasn't gotten to the ends of all logical sections.
-        if (currentNode.Type != TemplateSyntaxType.Root && currentNode.Parent!.Type != TemplateSyntaxType.Root)
+        if (currentNode?.Type != TemplateSyntaxType.Root && currentNode?.Parent?.Type != TemplateSyntaxType.Root)
         {
             diagnostics.Add(
               Diagnostic.Create(
@@ -318,6 +350,32 @@ public class Mustache
         }
 
         return diagnostics.Any() ? (new(diagnostics)) : (new(root));
+    }
+
+    /// <summary>
+    /// Check if the identifier makes sense. For example '{{^id}}{{id}}{{/id}}' doesn't make sense
+    /// because we are trying to use id where it doesn't exist.
+    /// </summary>
+    private static IdentifierValidity IdentiferValidInThisContext(TemplateSyntaxType newSyntaxType, TemplateSyntax? parent, string identifier)
+    {
+        if (parent is null)
+        {
+            return IdentifierValidity.Valid;
+        }
+
+        if (parent.Identifier.Equals(identifier, StringComparison.Ordinal))
+        {
+            if (newSyntaxType is TemplateSyntaxType.Identifier or TemplateSyntaxType.If && parent.Type is TemplateSyntaxType.Not)
+            {
+                return IdentifierValidity.IdentiferUsedWhereItDoesntExist;
+            }
+            else if (newSyntaxType is TemplateSyntaxType.Not && parent.Type is TemplateSyntaxType.Identifier or TemplateSyntaxType.If)
+            {
+                return IdentifierValidity.IdentiferExcludedWhereItDoesExist;
+            }
+        }
+
+        return IdentiferValidInThisContext(newSyntaxType, parent.Parent, identifier);
     }
 
     /// <summary>

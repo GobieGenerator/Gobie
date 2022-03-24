@@ -39,6 +39,9 @@ namespace Gobie.Diagnostics
         public static DiagnosticDescriptor UnfinishedTemplate(string details) =>
             new("GB1001", "Gobie", $"The template is incomplete. {details}", "Gobie", Severity, true);
 
+        public static DiagnosticDescriptor UnreachableTemplateSection(string details) =>
+            new("GB1001", "Gobie", $"This section of the template will never be reached. {details}", "Gobie", Severity, true);
+
         public static DiagnosticDescriptor GobieCrashed(string exMessage) =>
             new("GB1001", "Gobie", $"Gobie Crashed. {exMessage}", "Gobie", Severity, true);
 

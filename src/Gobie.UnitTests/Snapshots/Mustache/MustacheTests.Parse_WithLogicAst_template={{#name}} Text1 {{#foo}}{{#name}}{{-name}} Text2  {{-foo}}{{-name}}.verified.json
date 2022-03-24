@@ -1,0 +1,42 @@
+﻿{
+  "Template": "{{#name}} Text1 {{#foo}}{{#name}}{{/name}} Text2  {{/foo}}{{/name}}",
+  "Result": {
+    "Data": {
+      "Type": "Root",
+      "LiteralText": "",
+      "Identifier": "",
+      "Parent": null,
+      "Children": [
+        {
+          "Type": "If",
+          "LiteralText": "",
+          "Identifier": "name",
+          "Children": [
+            {
+              "Type": "Literal",
+              "LiteralText": " Text1 ",
+              "Identifier": ""
+            },
+            {
+              "Type": "If",
+              "LiteralText": "",
+              "Identifier": "foo",
+              "Children": [
+                {
+                  "Type": "If",
+                  "LiteralText": "",
+                  "Identifier": "name"
+                },
+                {
+                  "Type": "Literal",
+                  "LiteralText": " Text2  ",
+                  "Identifier": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

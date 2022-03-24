@@ -1,0 +1,21 @@
+﻿{
+  "Template": "{{#name}} Text1 {{#foo}}{{^name}}{{/name}} Text2  {{/foo}}{{/name}}",
+  "Result": {
+    "Data": null,
+    "Diagnostics": [
+      {
+        "Id": "GB1001",
+        "Title": "Gobie",
+        "Severity": "Error",
+        "WarningLevel": 0,
+        "Location": ": (0,0)-(0,0)",
+        "Description": "",
+        "HelpLink": "",
+        "MessageFormat": "This section of the template will never be reached. You cannot exclude the identifer 'name' here because it is surrounded by an if node (i.e. {{#name}} )",
+        "Message": "This section of the template will never be reached. You cannot exclude the identifer 'name' here because it is surrounded by an if node (i.e. {{#name}} )",
+        "Category": "Gobie",
+        "CustomTags": []
+      }
+    ]
+  }
+}
