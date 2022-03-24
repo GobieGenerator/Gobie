@@ -2,6 +2,17 @@
 
 public class MustacheTests
 {
+    [TestCase("{{")]
+    [TestCase("{{/")]
+    [TestCase("{{^")]
+    [TestCase("{{#")]
+    [TestCase("}}")]
+    [TestCase("{{}}")]
+    [TestCase("{{ a b }}")]
+    public Task Parse_InvalidValidFlatAst(string template) =>
+    Verify(new ParseResult(template, Mustache.Parse(template)))
+        .UseDirectory("Snapshots\\Mustache");
+
     [TestCase("")]
     [TestCase("just some text")]
     [TestCase("\n {{ name }}  ")]
@@ -10,7 +21,7 @@ public class MustacheTests
             .UseDirectory("Snapshots\\Mustache");
 
     [TestCase("{{#name}}Something{{/name}} {{^name}}Something Else{{/name}}")]
-    public Task Parse_WithLogicFlatAst(string template) =>
+    public Task Parse_WithLogicAst(string template) =>
         Verify(new ParseResult(template, Mustache.Parse(template)))
             .UseDirectory("Snapshots\\Mustache");
 

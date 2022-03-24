@@ -27,6 +27,12 @@ namespace Gobie.Diagnostics
         public static DiagnosticDescriptor DisallowedTemplateParameterType(string typeName) =>
             new("GB1001", "Gobie", $"The specified type name '{typeName}' is not one of the types supported by Gobie.", "Gobie", Severity, true);
 
+        public static DiagnosticDescriptor UnexpectedToken(string token, string expected) =>
+            new("GB1001", "Gobie", $"The token '{token}' was not expected. {expected}", "Gobie", Severity, true);
+
+        public static DiagnosticDescriptor UnfinishedTemplate(string details) =>
+            new("GB1001", "Gobie", $"The template is incomplete. {details}", "Gobie", Severity, true);
+
         public static DiagnosticDescriptor GobieCrashed(string exMessage) =>
             new("GB1001", "Gobie", $"Gobie Crashed. {exMessage}", "Gobie", Severity, true);
 

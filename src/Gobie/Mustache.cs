@@ -1,5 +1,6 @@
 ﻿namespace Gobie;
 
+using Gobie.Diagnostics;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
@@ -164,35 +165,64 @@ public class Mustache
                         _ => throw new InvalidOperationException("Shouldn't be possible"),
                     };
 
+                    bool continueSeeking = false;
                     if (TrySeekNonWhitespace(tokens, ref i, out var t))
                     {
                         if (t.TokenType == TokenType.Identifier)
                         {
                             // This is our only good case.
+                            continueSeeking = true;
                             identiferFound = true;
                             identifier = GetText(template, t);
                         }
                         else
                         {
-                            // TODO issue diagnostic b/c we found an unexpected token.
+                            diagnostics.Add(
+                                Diagnostic.Create(
+                                    Errors.UnexpectedToken(
+                                        GetText(template, t),
+                                        "Expected an identifier string, which contains only letters, numbers, and underscores"),
+                                    null));
                         }
                     }
-
-                    if (TrySeekNonWhitespace(tokens, ref i, out var t2))
+                    else
                     {
-                        if (t2.TokenType == TokenType.Close)
+                        diagnostics.Add(
+                              Diagnostic.Create(
+                                  Errors.UnfinishedTemplate(
+                                      "Template is incomplete"),
+                                  null));
+                    }
+
+                    if (continueSeeking)
+                    {
+                        if (TrySeekNonWhitespace(tokens, ref i, out var t2))
                         {
-                            // This is our only good case. The tag was closed
-                            tagClosed = true;
+                            if (t2.TokenType == TokenType.Close)
+                            {
+                                // This is our only good case. The tag was closed
+                                tagClosed = true;
+                            }
+                            else
+                            {
+                                diagnostics.Add(
+                                    Diagnostic.Create(
+                                        Errors.UnexpectedToken(
+                                            GetText(template, t2),
+                                            "Expected closing '}}' token. Note, identifiers cannot have white space."),
+                                        null));
+                            }
                         }
                         else
                         {
-                            // TODO issue diagnostic b/c we found an unexpected token and expected
-                            // exactly a close.
+                            diagnostics.Add(
+                                  Diagnostic.Create(
+                                      Errors.UnfinishedTemplate(
+                                          "Template is incomplete"),
+                                      null));
                         }
                     }
 
-                    // TODO, maybe bail early if we issue diagnostics?
                     if (identiferFound && tagClosed)
                     {
                         var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier);
@@ -201,7 +231,7 @@ public class Mustache
                     }
                     else
                     {
-                        // We already issued dagnostics.
+                        // TODO do we stop? We already issued dagnostics.
                     }
                 }
             }
@@ -220,7 +250,18 @@ public class Mustache
             }
         }
 
-        return new(root);
+        // At this point if we aren't at the root or direct child of the root, then the template is
+        // incomplete. So it hasn't gotten to the ends of all logical sections.
+        if (currentNode.Type != TemplateSyntaxType.Root && currentNode.Parent!.Type != TemplateSyntaxType.Root)
+        {
+            diagnostics.Add(
+              Diagnostic.Create(
+                  Errors.UnfinishedTemplate(
+                      "Template is incomplete"),
+                  null));
+        }
+
+        return diagnostics.Any() ? (new(diagnostics)) : (new(root));
     }
 
     /// <summary>
