@@ -9,27 +9,7 @@
       "Children": [
         {
           "Type": "Literal",
-          "LiteralText": "just",
-          "Identifier": ""
-        },
-        {
-          "Type": "Literal",
-          "LiteralText": " ",
-          "Identifier": ""
-        },
-        {
-          "Type": "Literal",
-          "LiteralText": "some",
-          "Identifier": ""
-        },
-        {
-          "Type": "Literal",
-          "LiteralText": " ",
-          "Identifier": ""
-        },
-        {
-          "Type": "Literal",
-          "LiteralText": "text",
+          "LiteralText": "just some text",
           "Identifier": ""
         }
       ]

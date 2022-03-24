@@ -31,17 +31,7 @@
           "Children": [
             {
               "Type": "Literal",
-              "LiteralText": "Something",
-              "Identifier": ""
-            },
-            {
-              "Type": "Literal",
-              "LiteralText": " ",
-              "Identifier": ""
-            },
-            {
-              "Type": "Literal",
-              "LiteralText": "Else",
+              "LiteralText": "Something Else",
               "Identifier": ""
             }
           ]

@@ -139,9 +139,26 @@ public class Mustache
 
         for (int i = 0; i < tokens.Length; i++)
         {
-            if (tokens[i].TokenType is TokenType.General or TokenType.Identifier or TokenType.Whitespace)
+            if (currentNode is null)
             {
-                currentNode!.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, GetText(template, tokens[i])));
+                break; // Something is wrong so stop.
+            }
+
+            bool TokenIsText(ReadOnlySpan<Token> tokens, int i) => tokens[i].TokenType is TokenType.General or TokenType.Identifier or TokenType.Whitespace;
+            if (TokenIsText(tokens, i))
+            {
+                var sb = new StringBuilder();
+                sb.Append(GetText(template, tokens[i]));
+
+                // Consolidate literal tokens. Might not be the absolute fastest option, but it will
+                // generate a simpler AST.
+                while (i + 1 < tokens.Length && TokenIsText(tokens, i + 1))
+                {
+                    i++;
+                    sb.Append(GetText(template, tokens[i]));
+                }
+
+                currentNode.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, sb.ToString()));
             }
             else if (tokens[i].TokenType is TokenType.Close)
             {
