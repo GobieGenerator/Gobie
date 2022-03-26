@@ -22,6 +22,11 @@ public class MustacheTests
         Verify(new ParseResult(template, Mustache.Parse(template)))
             .UseDirectory("Snapshots\\Mustache");
 
+    [TestCase("{{^name}} Text1 Text2")]
+    public Task Parse_Partial_IssuesDiagnostic(string template) =>
+Verify(new ParseResult(template, Mustache.Parse(template)))
+    .UseDirectory("Snapshots\\Mustache");
+
     [TestCase("{{#name}}Something{{/name}} {{^name}}Something Else{{/name}}")]
     [TestCase("{{#name}}Someone named {{name}} {{#age}} with age of {{age}}{{/age}} {{/name}} is great!!")]
     [TestCase("{{#name}} Text1 {{#foo}}{{#name}}{{/name}} Text2  {{/foo}}{{/name}}")] // Inner if name is redudant.
