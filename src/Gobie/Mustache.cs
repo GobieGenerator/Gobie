@@ -364,6 +364,40 @@ public class Mustache
         }
     }
 
+    public static string RenderTemplate(
+            TemplateDefinition template,
+            ImmutableDictionary<string, RenderData> data)
+    {
+        var sb = new StringBuilder();
+
+        Render(sb, template.Syntax, data);
+
+        return sb.ToString();
+
+        static void Render(StringBuilder sb, TemplateSyntax syntax, ImmutableDictionary<string, RenderData> data)
+        {
+            if (syntax.Type == TemplateSyntaxType.Literal)
+            {
+                sb.Append(syntax.LiteralText);
+                return;
+            }
+            if (syntax.Type == TemplateSyntaxType.Identifier)
+            {
+                sb.Append(data[syntax.Identifier].RenderString);
+                return;
+            }
+            if (syntax.Type == TemplateSyntaxType.If && data[syntax.Identifier].Render == false)
+                return;
+            if (syntax.Type == TemplateSyntaxType.Not && data[syntax.Identifier].Render == true)
+                return;
+
+            foreach (var child in syntax.Children)
+            {
+                Render(sb, child, data);
+            }
+        }
+    }
+
     /// <summary>
     /// Check if the identifier makes sense. For example '{{^id}}{{id}}{{/id}}' doesn't make sense
     /// because we are trying to use id where it doesn't exist.
@@ -433,6 +467,22 @@ public class Mustache
         public int End { get; }
 
         public TokenType TokenType { get; }
+    }
+
+    public readonly struct RenderData
+    {
+        public RenderData(string identity, string renderString, bool render)
+        {
+            Identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            RenderString = renderString ?? throw new ArgumentNullException(nameof(renderString));
+            Render = render;
+        }
+
+        public string Identity { get; }
+
+        public string RenderString { get; }
+
+        public bool Render { get; }
     }
 
     public class TemplateDefinition

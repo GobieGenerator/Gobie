@@ -1,5 +1,7 @@
 ﻿namespace Gobie.UnitTests;
 
+using System.Collections.Immutable;
+
 public class MustacheTests
 {
     [TestCase("{{")]
@@ -35,6 +37,25 @@ public class MustacheTests
     public Task Parse_WithInvalidLogic_IssuesDiagnostics(string template) =>
     Verify(new ParseResult(template, Mustache.Parse(template)))
         .UseDirectory("Snapshots\\Mustache");
+
+    [TestCase("{{#name}}Hello {{name}}{{/name}} {{^name}}No one is here{{/name}}")]
+    [TestCase("Hello {{name}} {{#name}}Who is a person {{#job}}with a job: {{job}}{{/job}}{{/name}}")]
+    [TestCase("Hello {{name}} {{#name}}Who is a person {{#foo}}with a job: {{job}}{{/foo}}{{/name}}")]
+    [TestCase("Hello {{foo}} {{#name}}Who is a person {{#foo}}with a job: {{job}}{{/foo}}{{/name}}")]
+    [TestCase("Hello {{foo}} {{#name}}Who is a person {{^foo}}with a job: {{job}}{{/foo}}{{/name}}")]
+    public Task Render_Succeeds(string template)
+    {
+        var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
+
+        data.Add("name", new Mustache.RenderData("name", "Mike", true));
+        data.Add("job", new Mustache.RenderData("job", "programmer", true));
+        data.Add("foo", new Mustache.RenderData("foo", "", false));
+
+        var parse = Mustache.Parse(template);
+        var render = Mustache.RenderTemplate(parse.Data!, data.ToImmutable());
+
+        return Verify(render).UseDirectory("Snapshots\\Mustache\\Render");
+    }
 
     private record ParseResult(string Template, DataOrDiagnostics<Mustache.TemplateDefinition> Result);
 }
