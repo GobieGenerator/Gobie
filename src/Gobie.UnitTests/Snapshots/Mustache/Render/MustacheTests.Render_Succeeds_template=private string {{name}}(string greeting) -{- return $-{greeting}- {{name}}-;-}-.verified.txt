@@ -1,0 +1,4 @@
+﻿private string Mike(string greeting) 
+{
+ return $"{greeting}: Mike";
+}
