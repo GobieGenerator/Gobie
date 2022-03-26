@@ -2,10 +2,12 @@
   "Template": "",
   "Result": {
     "Data": {
-      "Type": "Root",
-      "LiteralText": "",
-      "Identifier": "",
-      "Parent": null
+      "Syntax": {
+        "Type": "Root",
+        "LiteralText": "",
+        "Identifier": "",
+        "Parent": null
+      }
     }
   }
 }

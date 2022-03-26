@@ -4,6 +4,7 @@ using Gobie.Diagnostics;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -131,7 +132,7 @@ public class Mustache
         return tokens.Slice(0, t + 1);
     }
 
-    public static DataOrDiagnostics<TemplateSyntax> Parse(ReadOnlySpan<char> template)
+    public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template)
     {
         var tokens = Tokenize(template);
         var root = new TemplateSyntax(null, TemplateSyntaxType.Root);
@@ -349,7 +350,16 @@ public class Mustache
                   null));
         }
 
-        return diagnostics.Any() ? (new(diagnostics)) : (new(root));
+        if (diagnostics.Any())
+        {
+            return new(diagnostics);
+        }
+        else
+        {
+            var td = new TemplateDefinition(root, ImmutableHashSet.Create<string>());
+
+            return new(td);
+        }
     }
 
     /// <summary>
@@ -421,6 +431,19 @@ public class Mustache
         public int End { get; }
 
         public TokenType TokenType { get; }
+    }
+
+    public class TemplateDefinition
+    {
+        public TemplateDefinition(TemplateSyntax syntax, ImmutableHashSet<string> identifiers)
+        {
+            Syntax = syntax ?? throw new ArgumentNullException(nameof(syntax));
+            Identifiers = identifiers ?? throw new ArgumentNullException(nameof(identifiers));
+        }
+
+        public TemplateSyntax Syntax { get; }
+
+        public ImmutableHashSet<string> Identifiers { get; }
     }
 
     public class TemplateSyntax

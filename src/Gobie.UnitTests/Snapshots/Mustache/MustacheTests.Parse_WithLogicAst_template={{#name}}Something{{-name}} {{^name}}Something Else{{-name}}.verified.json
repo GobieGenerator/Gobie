@@ -2,41 +2,43 @@
   "Template": "{{#name}}Something{{/name}} {{^name}}Something Else{{/name}}",
   "Result": {
     "Data": {
-      "Type": "Root",
-      "LiteralText": "",
-      "Identifier": "",
-      "Parent": null,
-      "Children": [
-        {
-          "Type": "If",
-          "LiteralText": "",
-          "Identifier": "name",
-          "Children": [
-            {
-              "Type": "Literal",
-              "LiteralText": "Something",
-              "Identifier": ""
-            }
-          ]
-        },
-        {
-          "Type": "Literal",
-          "LiteralText": " ",
-          "Identifier": ""
-        },
-        {
-          "Type": "Not",
-          "LiteralText": "",
-          "Identifier": "name",
-          "Children": [
-            {
-              "Type": "Literal",
-              "LiteralText": "Something Else",
-              "Identifier": ""
-            }
-          ]
-        }
-      ]
+      "Syntax": {
+        "Type": "Root",
+        "LiteralText": "",
+        "Identifier": "",
+        "Parent": null,
+        "Children": [
+          {
+            "Type": "If",
+            "LiteralText": "",
+            "Identifier": "name",
+            "Children": [
+              {
+                "Type": "Literal",
+                "LiteralText": "Something",
+                "Identifier": ""
+              }
+            ]
+          },
+          {
+            "Type": "Literal",
+            "LiteralText": " ",
+            "Identifier": ""
+          },
+          {
+            "Type": "Not",
+            "LiteralText": "",
+            "Identifier": "name",
+            "Children": [
+              {
+                "Type": "Literal",
+                "LiteralText": "Something Else",
+                "Identifier": ""
+              }
+            ]
+          }
+        ]
+      }
     }
   }
 }

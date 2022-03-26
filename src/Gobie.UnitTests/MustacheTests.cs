@@ -36,5 +36,5 @@ public class MustacheTests
     Verify(new ParseResult(template, Mustache.Parse(template)))
         .UseDirectory("Snapshots\\Mustache");
 
-    private record ParseResult(string Template, DataOrDiagnostics<Mustache.TemplateSyntax> Result);
+    private record ParseResult(string Template, DataOrDiagnostics<Mustache.TemplateDefinition> Result);
 }
