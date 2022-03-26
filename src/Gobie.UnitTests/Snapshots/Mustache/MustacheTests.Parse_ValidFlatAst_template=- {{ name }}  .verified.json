@@ -24,7 +24,10 @@
             "Identifier": ""
           }
         ]
-      }
+      },
+      "Identifiers": [
+        "name"
+      ]
     }
   }
 }

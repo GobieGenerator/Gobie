@@ -58,7 +58,11 @@
             "Identifier": ""
           }
         ]
-      }
+      },
+      "Identifiers": [
+        "name",
+        "age"
+      ]
     }
   }
 }

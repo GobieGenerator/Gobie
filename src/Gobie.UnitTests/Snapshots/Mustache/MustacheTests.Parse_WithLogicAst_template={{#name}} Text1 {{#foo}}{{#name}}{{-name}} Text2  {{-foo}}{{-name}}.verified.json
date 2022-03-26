@@ -38,7 +38,11 @@
             ]
           }
         ]
-      }
+      },
+      "Identifiers": [
+        "name",
+        "foo"
+      ]
     }
   }
 }

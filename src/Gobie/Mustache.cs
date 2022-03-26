@@ -137,6 +137,7 @@ public class Mustache
         var tokens = Tokenize(template);
         var root = new TemplateSyntax(null, TemplateSyntaxType.Root);
         var diagnostics = new List<Diagnostic>();
+        var identifiers = ImmutableHashSet.CreateBuilder<string>();
 
         string GetText(ReadOnlySpan<char> template, Token token)
         {
@@ -282,6 +283,7 @@ public class Mustache
 
                     // We close the syntax even if identifier isn't valid, b/c we don't want
                     // inaccurate alerts saying the template is incomplete.
+                    identifiers.Add(identifier);
                     var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier);
                     currentNode.Children.Add(ts);
                     currentNode = ts.Type == TemplateSyntaxType.Identifier ? currentNode : ts;
@@ -356,7 +358,7 @@ public class Mustache
         }
         else
         {
-            var td = new TemplateDefinition(root, ImmutableHashSet.Create<string>());
+            var td = new TemplateDefinition(root, identifiers.ToImmutable());
 
             return new(td);
         }
@@ -456,14 +458,14 @@ public class Mustache
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
         }
 
-        public TemplateSyntaxType Type { get; set; }
+        public TemplateSyntaxType Type { get; }
 
-        public string LiteralText { get; set; } = string.Empty;
+        public string LiteralText { get; } = string.Empty;
 
-        public string Identifier { get; set; } = string.Empty;
+        public string Identifier { get; } = string.Empty;
 
-        public TemplateSyntax? Parent { get; set; }
+        public TemplateSyntax? Parent { get; }
 
-        public List<TemplateSyntax> Children { get; set; } = new();
+        public List<TemplateSyntax> Children { get; } = new();
     }
 }
