@@ -24,8 +24,8 @@ public class MustacheTests
 
     [TestCase("{{^name}} Text1 Text2")]
     public Task Parse_Partial_IssuesDiagnostic(string template) =>
-Verify(new ParseResult(template, Mustache.Parse(template)))
-    .UseDirectory("Snapshots\\Mustache");
+        Verify(new ParseResult(template, Mustache.Parse(template)))
+            .UseDirectory("Snapshots\\Mustache");
 
     [TestCase("{{#name}}Something{{/name}} {{^name}}Something Else{{/name}}")]
     [TestCase("{{#name}}Someone named {{name}} {{#age}} with age of {{age}}{{/age}} {{/name}} is great!!")]

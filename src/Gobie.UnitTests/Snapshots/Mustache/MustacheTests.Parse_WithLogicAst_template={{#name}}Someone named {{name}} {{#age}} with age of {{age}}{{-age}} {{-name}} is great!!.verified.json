@@ -60,8 +60,8 @@
         ]
       },
       "Identifiers": [
-        "name",
-        "age"
+        "age",
+        "name"
       ]
     }
   }

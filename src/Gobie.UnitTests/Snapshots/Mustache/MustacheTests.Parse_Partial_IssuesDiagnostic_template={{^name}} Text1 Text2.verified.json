@@ -1,0 +1,21 @@
+﻿{
+  "Template": "{{^name}} Text1 Text2",
+  "Result": {
+    "Data": null,
+    "Diagnostics": [
+      {
+        "Id": "GB1001",
+        "Title": "Gobie",
+        "Severity": "Error",
+        "WarningLevel": 0,
+        "Location": ": (0,0)-(0,0)",
+        "Description": "",
+        "HelpLink": "",
+        "MessageFormat": "The template is incomplete. Template is incomplete",
+        "Message": "The template is incomplete. Template is incomplete",
+        "Category": "Gobie",
+        "CustomTags": []
+      }
+    ]
+  }
+}

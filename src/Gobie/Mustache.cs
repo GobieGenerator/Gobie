@@ -343,7 +343,7 @@ public class Mustache
 
         // At this point if we aren't at the root or direct child of the root, then the template is
         // incomplete. So it hasn't gotten to the ends of all logical sections.
-        if (currentNode?.Type != TemplateSyntaxType.Root && currentNode?.Parent?.Type != TemplateSyntaxType.Root)
+        if (TemplateComplete(currentNode))
         {
             diagnostics.Add(
               Diagnostic.Create(
@@ -396,6 +396,21 @@ public class Mustache
                 Render(sb, child, data);
             }
         }
+    }
+
+    private static bool TemplateComplete(TemplateSyntax? currentNode)
+    {
+        if (currentNode?.Type == TemplateSyntaxType.Root)
+        {
+            return false;
+        }
+        else if (currentNode?.Parent?.Type != TemplateSyntaxType.Root &&
+            currentNode?.Type is TemplateSyntaxType.Identifier or TemplateSyntaxType.Literal)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>
