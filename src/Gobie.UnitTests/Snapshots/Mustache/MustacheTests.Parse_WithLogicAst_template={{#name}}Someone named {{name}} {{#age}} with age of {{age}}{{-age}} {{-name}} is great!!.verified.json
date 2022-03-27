@@ -1,0 +1,68 @@
+﻿{
+  "Template": "{{#name}}Someone named {{name}} {{#age}} with age of {{age}}{{/age}} {{/name}} is great!!",
+  "Result": {
+    "Data": {
+      "Syntax": {
+        "Type": "Root",
+        "LiteralText": "",
+        "Identifier": "",
+        "Parent": null,
+        "Children": [
+          {
+            "Type": "If",
+            "LiteralText": "",
+            "Identifier": "name",
+            "Children": [
+              {
+                "Type": "Literal",
+                "LiteralText": "Someone named ",
+                "Identifier": ""
+              },
+              {
+                "Type": "Identifier",
+                "LiteralText": "",
+                "Identifier": "name"
+              },
+              {
+                "Type": "Literal",
+                "LiteralText": " ",
+                "Identifier": ""
+              },
+              {
+                "Type": "If",
+                "LiteralText": "",
+                "Identifier": "age",
+                "Children": [
+                  {
+                    "Type": "Literal",
+                    "LiteralText": " with age of ",
+                    "Identifier": ""
+                  },
+                  {
+                    "Type": "Identifier",
+                    "LiteralText": "",
+                    "Identifier": "age"
+                  }
+                ]
+              },
+              {
+                "Type": "Literal",
+                "LiteralText": " ",
+                "Identifier": ""
+              }
+            ]
+          },
+          {
+            "Type": "Literal",
+            "LiteralText": " is great!!",
+            "Identifier": ""
+          }
+        ]
+      },
+      "Identifiers": [
+        "age",
+        "name"
+      ]
+    }
+  }
+}

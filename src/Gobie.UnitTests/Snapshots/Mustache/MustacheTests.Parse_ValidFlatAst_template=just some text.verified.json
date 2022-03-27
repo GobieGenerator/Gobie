@@ -1,0 +1,20 @@
+﻿{
+  "Template": "just some text",
+  "Result": {
+    "Data": {
+      "Syntax": {
+        "Type": "Root",
+        "LiteralText": "",
+        "Identifier": "",
+        "Parent": null,
+        "Children": [
+          {
+            "Type": "Literal",
+            "LiteralText": "just some text",
+            "Identifier": ""
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: GB0012,
+      Title: Gobie,
+      Severity: Warning,
+      WarningLevel: 1,
+      Location: : (3,28)-(3,48),
+      Description: ,
+      HelpLink: ,
+      MessageFormat: You have not defined any of the required info.... The generator won't be able to do anything.,
+      Message: You have not defined any of the required info.... The generator won't be able to do anything.,
+      Category: Gobie Usage,
+      CustomTags: []
+    }
+  ]
+}

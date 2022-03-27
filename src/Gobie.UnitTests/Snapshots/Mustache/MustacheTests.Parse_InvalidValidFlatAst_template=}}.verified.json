@@ -1,0 +1,21 @@
+﻿{
+  "Template": "}}",
+  "Result": {
+    "Data": null,
+    "Diagnostics": [
+      {
+        "Id": "GB1001",
+        "Title": "Gobie",
+        "Severity": "Error",
+        "WarningLevel": 0,
+        "Location": ": (0,0)-(0,0)",
+        "Description": "",
+        "HelpLink": "",
+        "MessageFormat": "The token '}}' was not expected. There is no corresponding open token",
+        "Message": "The token '}}' was not expected. There is no corresponding open token",
+        "Category": "Gobie",
+        "CustomTags": []
+      }
+    ]
+  }
+}

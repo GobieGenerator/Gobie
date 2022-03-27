@@ -1,5 +1,10 @@
 ﻿namespace Gobie
 {
+    public static class SourceGenerationHelper
+    {
+        public const string GobieCore = @"
+namespace Gobie
+{
     using System;
 
     /// <summary>
@@ -23,7 +28,7 @@
     public sealed class GobieFileTemplateAttribute : GobieBaseFieldAttribute
     {
         /// <summary>
-        /// A literal string or mustache template to determine the file name. 
+        /// A literal string or mustache template to determine the file name.
         /// </summary>
         public string FileNameTemplate { get; set; }
     }
@@ -40,15 +45,33 @@
     {
     }
 
-    [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public abstract class GobieFieldGeneratorAttribute : Attribute
-    { }
-
-    /// <summary>
-    /// Attribute produced by gobie. Defined in <see cref="EncapulatedCollectionGenerator"/>.
-    /// </summary>
-    public sealed class EncapulatedCollectionAttribute : GobieFieldGeneratorAttribute
     {
-        public string CustomValidator { get; set; } = null;
+    }
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public sealed class GobieGeneratorNameAttribute : Attribute
+    {
+        public GobieGeneratorNameAttribute(string attributeName)
+        {
+            AttributeName = attributeName ?? throw new ArgumentNullException(nameof(attributeName));
+        }
+
+        public string AttributeName { get; }
+        public string Namespace { get; set; }
+    }
+
+    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    public sealed class Required : Attribute
+    {
+        public Required(int order = int.MaxValue)
+        {
+            Order = order;
+        }
+
+        public int Order { get; }
+    }
+}";
     }
 }

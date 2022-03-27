@@ -1,23 +1,35 @@
 ﻿using Gobie;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleClient.Models
 {
-    public partial class Author
+    [GobieGeneratorName("PkGen")]
+    public sealed class PrimaryKeyGenerator : GobieFieldGenerator
     {
-        [EncapulatedCollection(CustomValidator = nameof(ValidateBooks))]
-        private List<string> books = new();
-
-        [EncapulatedCollection()]
-        private List<string> publishers = new();
-
-        public bool ValidateBooks(string a)
-        {
-            return true;
-        }
+        [GobieTemplate]
+        private const string KeyString = "public int Id { get; set; } // This is a key";
     }
+
+    public sealed class NamePropertyGenerator : GobieFieldGenerator
+    {
+        [GobieTemplate]
+        private const string KeyString = "public string Name { get; set; }";
+
+        [Required(5)]
+        public int MyProperty34 { get; set; }
+
+        [Required(5)]
+        public int MyProperty2 { get; set; } = 42;
+
+        public string OptionalString { get; set; } = "favorite quote: \"Hello from the magic tavern\"";
+    }
+
+    [PkGen]
+    [NameProperty(5, 9)]
+    public partial class GenTarget
+    { }
+
+    [PkGen]
+    public partial class GenTarget2
+    { }
 }

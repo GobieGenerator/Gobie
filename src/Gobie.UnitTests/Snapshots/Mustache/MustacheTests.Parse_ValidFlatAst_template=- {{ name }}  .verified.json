@@ -1,0 +1,33 @@
+﻿{
+  "Template": "\n {{ name }}  ",
+  "Result": {
+    "Data": {
+      "Syntax": {
+        "Type": "Root",
+        "LiteralText": "",
+        "Identifier": "",
+        "Parent": null,
+        "Children": [
+          {
+            "Type": "Literal",
+            "LiteralText": "\n ",
+            "Identifier": ""
+          },
+          {
+            "Type": "Identifier",
+            "LiteralText": "",
+            "Identifier": "name"
+          },
+          {
+            "Type": "Literal",
+            "LiteralText": "  ",
+            "Identifier": ""
+          }
+        ]
+      },
+      "Identifiers": [
+        "name"
+      ]
+    }
+  }
+}
