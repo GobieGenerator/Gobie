@@ -51,12 +51,19 @@
             }
 
             var templates = GetTemplates(data.ClassDeclarationSyntax, symbol, data, compliation);
+            var templateDefs = new List<Mustache.TemplateDefinition>();
 
             foreach (var template in templates)
             {
-                var foo = Mustache.Parse(template.AsSpan());
-                if (foo.Diagnostics is not null)
-                    diagnostics.AddRange(foo.Diagnostics);
+                var res = Mustache.Parse(template.AsSpan());
+                if (res.Diagnostics is not null)
+                {
+                    diagnostics.AddRange(res.Diagnostics);
+                }
+                else if (res.Data is not null)
+                {
+                    templateDefs.Add(res.Data);
+                }
             }
 
             if (diagnostics.Any())
@@ -64,7 +71,7 @@
                 return new(diagnostics);
             }
 
-            var td = new UserGeneratorTemplateData(data, templates);
+            var td = new UserGeneratorTemplateData(data, templateDefs);
 
             return new(td, diagnostics);
         }

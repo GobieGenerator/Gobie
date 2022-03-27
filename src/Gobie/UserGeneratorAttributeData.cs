@@ -65,13 +65,13 @@ public class UserGeneratorAttributeData
 /// </summary>
 public class UserGeneratorTemplateData
 {
-    public UserGeneratorTemplateData(UserGeneratorAttributeData data, List<string> templates)
+    public UserGeneratorTemplateData(UserGeneratorAttributeData data, List<Mustache.TemplateDefinition> templates)
     {
         AttributeData = data;
         Templates = templates;
     }
 
-    public List<string> Templates { get; }
+    public List<Mustache.TemplateDefinition> Templates { get; }
 
     public UserGeneratorAttributeData AttributeData { get; }
 }
@@ -154,6 +154,7 @@ public class RequiredParameter
 
     public string Initalizer =>
         string.IsNullOrWhiteSpace(InitalizerLiteral) ? string.Empty : $" = {InitalizerLiteral}";
+
     public string PropertyString => $"public {CsharpTypeName} {NamePascal} {{ get; }}";
 
     public string CtorArgumentString => $"{CsharpTypeName} {NameCamel}{Initalizer}";
@@ -177,16 +178,14 @@ public class OptionalParameter
         NamePascal = name[0].ToString().ToUpperInvariant() + name.Substring(1);
     }
 
-
     public string NamePascal { get; }
-
 
     public string CsharpTypeName { get; }
 
     public string InitalizerLiteral { get; }
+
     public string Initalizer =>
         string.IsNullOrWhiteSpace(InitalizerLiteral) ? string.Empty : $" = {InitalizerLiteral};";
-
 
     public string PropertyString => $"public {CsharpTypeName} {NamePascal} {{ get; set; }}{Initalizer}";
 }

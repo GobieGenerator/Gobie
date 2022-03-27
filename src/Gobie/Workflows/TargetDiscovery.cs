@@ -72,6 +72,16 @@ public class TargetDiscovery
                 {
                     var ti = typeInfo.Name;
                     var tin = typeInfo.ContainingNamespace.Name;
+
+                    // Get attribute data
+
+                    // Match it to a template. if it matches, get the ctor and named data off the attribute.
+
+                    // TODO later: Get the data off the target attributes
+
+                    // Output some object that can be rendered into source code. We do this as
+                    // multiple steps to support global templates down the road.
+
                     var code = string.Join(Environment.NewLine, template.Templates);
                     output.Add(
                         new TargetAndTemplateData(
@@ -82,15 +92,6 @@ public class TargetDiscovery
                 }
             }
         }
-
-        // Get attribute data
-
-        // Match it to a template. if it matches, get the ctor and named data off the attribute.
-
-        // TODO later: Get the data off the target attributes
-
-        // Output some object that can be rendered into source code. We do this as multiple steps to
-        // support global templates down the road.
 
         var builder = ImmutableArray.CreateBuilder<TargetAndTemplateData>();
         builder.AddRange(output);
