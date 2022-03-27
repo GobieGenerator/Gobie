@@ -472,4 +472,28 @@ public class UserTemplateTests
 
         return TestHelper.Verify(source);
     }
+
+    [Test]
+    public Task SimpleValidGenerator_WithParameterUsage_GeneratesOutput()
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class NamePropertyGenerator : GobieFieldGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""public string Name { get; set; } = \""{{InitialName}}\"";"";
+
+            [Required]
+            public string InitialName { get; set; }
+        }
+
+        [NameProperty(""Mike"")]
+        public partial class Target
+        { }";
+
+        return TestHelper.Verify(source);
+    }
 }
