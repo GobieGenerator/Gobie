@@ -18,7 +18,7 @@ namespace ConsoleClient.Models
         [Required(5)]
         public int Num1 { get; set; }
 
-        [Required(5)]
+        [Required(11)]
         public int Num2 { get; set; } = 42;
 
         public string OptionalString { get; set; } = "favorite quote: \"Hello from the magic tavern\"";

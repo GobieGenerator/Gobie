@@ -1,7 +1,7 @@
-﻿//HintName: NamePropertyAttribute_GenTarget2.g.cs
+﻿//HintName: NamePropertyAttribute_GenTarget.g.cs
 namespace SomeNamespace
 {
-    public partial class GenTarget2
+    public partial class GenTarget
     {
         public string Name { get; set; }
     }

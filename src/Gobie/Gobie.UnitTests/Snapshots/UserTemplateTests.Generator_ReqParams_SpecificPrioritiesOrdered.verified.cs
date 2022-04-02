@@ -5,14 +5,14 @@ namespace Gobie
     /// run <see cref = "Gobie.PrimaryKeyGenerator"/> to run. </summary>
     public sealed class PrimaryKeyAttribute : Gobie.GobieFieldGeneratorAttribute
     {
-        public PrimaryKeyAttribute(string reqRequestedFifth, int reqRequestedFirst)
+        public PrimaryKeyAttribute(int reqRequestedFirst, string reqRequestedFifth)
         {
-            this.ReqRequestedFifth = reqRequestedFifth;
             this.ReqRequestedFirst = reqRequestedFirst;
+            this.ReqRequestedFifth = reqRequestedFifth;
         }
 
-        public string ReqRequestedFifth { get; }
-
         public int ReqRequestedFirst { get; }
+
+        public string ReqRequestedFifth { get; }
     }
 }

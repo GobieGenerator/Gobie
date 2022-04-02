@@ -28,4 +28,5 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Gobie.Attributes\Gobie.Attributes.csproj" PrivateAssets="All" />
 	</ItemGroup>
+
 </Project>
