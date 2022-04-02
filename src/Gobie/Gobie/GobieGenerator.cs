@@ -20,10 +20,6 @@ namespace Gobie
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
-                "__GobieAttributes.g.cs",
-                SourceText.From(SourceGenerationHelper.GobieCore, Encoding.UTF8)));
-
             // Find the user templates and report diagnostics on issues.
             var userTemplateSyntaxOrDiagnostics = GeneratorDiscovery.FindUserTemplates(context);
             DiagnosticsReporting.Report(context, userTemplateSyntaxOrDiagnostics);
