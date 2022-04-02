@@ -237,8 +237,7 @@
 
                 foreach (var att in propertySymbol.GetAttributes())
                 {
-                    // TODO this should look for 'Gobie.Required'
-                    if (att?.AttributeClass?.ToString() == "Required")
+                    if (att?.AttributeClass?.ToString() == "Gobie.Required")
                     {
                         // Get the requested order if one was provided. Or give it the maximum so it
                         // goes at the end. Within values at the end they go in the order they were defined.

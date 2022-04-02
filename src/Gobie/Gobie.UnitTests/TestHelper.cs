@@ -9,7 +9,8 @@ public static class TestHelper
         // Create references for assemblies we require We could add multiple references if required
         IEnumerable<PortableExecutableReference> references = new[]
         {
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(GobieGeneratorBase).Assembly.Location),
         };
 
         // Create a Roslyn compilation for the syntax tree.
