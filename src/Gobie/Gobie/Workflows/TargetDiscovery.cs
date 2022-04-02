@@ -60,6 +60,9 @@ public class TargetDiscovery
             return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(diagnostics);
         }
 
+        var ti = typeInfo.Name;
+        var tin = typeInfo.ContainingNamespace.Name;
+
         foreach (var att in typeInfo.GetAttributes())
         {
             var a = att.AttributeClass;
@@ -69,9 +72,6 @@ public class TargetDiscovery
             {
                 if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
                 {
-                    var ti = typeInfo.Name;
-                    var tin = typeInfo.ContainingNamespace.Name;
-
                     // Based on the output of the diagnostic below it looks like we aren't able to
                     // get the attribute args. This doesn't seem to be isolated to unit testing.
                     // Even in the console client we find zero args when we follow the same process
@@ -79,7 +79,10 @@ public class TargetDiscovery
                     // now is that the semantic model above doesn't (and maybe cannot) have the
                     // definitions of the attributes we create in the generator. (I'm assuming the
                     // register post generation initaliztion code is doign something different,
-                    // because we were able to get the constructor args for those).
+                    // because we were able to get the constructor args for those). Additionally I
+                    // noticed that the SourceAttributeData (att) is missing the namespace and
+                    // doesn't say attribute at the end. So this seems like what happened when the
+                    // unit tests were missing a reference.
 
                     var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
 
