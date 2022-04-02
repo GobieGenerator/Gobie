@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 
 public class DataOrDiagnostics<T>
 {
-    public DataOrDiagnostics(T data, IEnumerable<Diagnostic>? diagnostics = null)
+    public DataOrDiagnostics(T? data, IEnumerable<Diagnostic>? diagnostics = null)
     {
         Data = data;
 
