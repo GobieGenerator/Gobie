@@ -8,7 +8,16 @@
 		<!-- 👇 We don't want to reference the source generator dll directly in consuming projects -->
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<ImplicitUsings>true</ImplicitUsings>
+		<Authors>Siphonophora</Authors>
+		<PackageProjectUrl>https://github.com/Siphonophora/Gobie</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Siphonophora/Gobie</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageVersion>0.1.0-alpha</PackageVersion>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
