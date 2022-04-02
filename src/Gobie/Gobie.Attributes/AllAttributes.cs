@@ -40,13 +40,11 @@
     {
     }
 
-    [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public abstract class GobieFieldGeneratorAttribute : Attribute
     {
     }
 
-    ////[GobieGeneratorName("something")]
-    ////[GobieGeneratorName("something", Namespace = "foo")]
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public sealed class GobieGeneratorNameAttribute : Attribute
     {

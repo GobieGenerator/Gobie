@@ -12,15 +12,20 @@
 		<PackageProjectUrl>https://github.com/Siphonophora/Gobie</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Siphonophora/Gobie</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageVersion>0.1.0-alpha</PackageVersion>
+		<PackageVersion>0.1.1-alpha</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(OutputPath)\Gobie.Attributes.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="true" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Gobie.Attributes\Gobie.Attributes.csproj" PrivateAssets="All" />
 	</ItemGroup>
 </Project>
