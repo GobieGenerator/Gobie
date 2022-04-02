@@ -9,6 +9,7 @@ namespace Gobie
         {
         }
 
+        public int MyInt { get; set; } = 4;
         public string MyString { get; set; }
     }
 }
