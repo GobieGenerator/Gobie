@@ -7,7 +7,7 @@ namespace ConsoleClient.Models
     public sealed class PrimaryKeyGenerator : GobieFieldGenerator
     {
         [GobieTemplate]
-        private const string KeyString = "public int Id { get; set; } // This is a key";
+        private const string KeyString = "public int {{Name}} { get; set; } // This is a key";
     }
 
     public sealed class NamePropertyGenerator : GobieFieldGenerator

@@ -82,13 +82,27 @@ public class TargetDiscovery
                     // Output some object that can be rendered into source code. We do this as
                     // multiple steps to support global templates down the road.
 
-                    var code = string.Join(Environment.NewLine, template.Templates);
+                    var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
+
+                    data.Add("name", new Mustache.RenderData("name", "Mike", true));
+                    data.Add("job", new Mustache.RenderData("job", "programmer", true));
+                    data.Add("foo", new Mustache.RenderData("foo", "", false));
+                    var templateData = data.ToImmutable();
+
+                    var sb = new StringBuilder();
+
+                    foreach (var t in template.Templates)
+                    {
+                        sb.AppendLine(Mustache.RenderTemplate(t, templateData));
+                        sb.AppendLine();
+                    }
+
                     output.Add(
                         new TargetAndTemplateData(
                             TemplateType.Complete,
                             ctypeName,
                             new ClassIdentifier(tin, ti),
-                            code));
+                            sb.ToString()));
                 }
             }
         }

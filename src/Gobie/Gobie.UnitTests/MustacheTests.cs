@@ -63,5 +63,20 @@ public class MustacheTests
         return Verify(render).UseDirectory("Snapshots\\Mustache\\Render");
     }
 
+    [TestCase("{{#name}}Hello {{name}}{{/name}} {{^name}}No one is here{{/name}}")]
+    [TestCase("Hello {{name}} {{#name}}Who is a person {{#job}}with a job: {{job}}{{/job}}{{/name}}")]
+    [TestCase("Hello {{name}} {{#name}}\n\nWho is a person {{#foo}}with a job: {{job}}{{/foo}}{{/name}}")]
+    [TestCase("Hello {{foo}} {{#name}}Who is a person {{#foo}}with a job: {{job}}{{/foo}}{{/name}}")]
+    [TestCase("Hello {{foo}} {{#name}}Who is a person {{^foo}}with a job: {{job}}{{/foo}}{{/name}}")]
+    [TestCase("private string {{name}}(string greeting) \n{\n return $\"{greeting}: {{name}}\";\n}\n")]
+    public void Render_MissingData_DoesNotThrow(string template)
+    {
+        // Its important that if we for some reason render a template missing data that we don't
+        // crash the generator.
+        var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
+        var parse = Mustache.Parse(template);
+        Assert.DoesNotThrow(() => Mustache.RenderTemplate(parse.Data!, data.ToImmutable()));
+    }
+
     private record ParseResult(string Template, DataOrDiagnostics<Mustache.TemplateDefinition> Result);
 }
