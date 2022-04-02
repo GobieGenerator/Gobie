@@ -80,35 +80,10 @@ public class TargetDiscovery
                     // definitions of the attributes we create in the generator. (I'm assuming the
                     // register post generation initaliztion code is doign something different,
                     // because we were able to get the constructor args for those).
-                    diagnostics.Add(Diagnostic.Create(Diagnostics.Errors.GobieUnknownError($"Attribute {ctypeName} has {att.ConstructorArguments.Length} CtorArgs and {att.NamedArguments.Length} NamedArgs"), null));
 
                     var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
-                    if (att.ConstructorArguments.Length > 0)
-                    {
-                        if (att.ConstructorArguments[0].Value is int o)
-                        {
-                            data.Add("Num1", new Mustache.RenderData("Num1", o.ToString(), true));
-                        }
-                        else
-                        {
-                            // Here some arg exists but it isn't an int so the compiler should be
-                            // erroring. So we just return diagnostics if any and stop.
-                            return new(diagnostics);
-                        }
-                    }
-                    if (att.ConstructorArguments.Length > 1)
-                    {
-                        if (att.ConstructorArguments[1].Value is int o)
-                        {
-                            data.Add("Num2", new Mustache.RenderData("Num2", o.ToString(), true));
-                        }
-                        else
-                        {
-                            // Here some arg exists but it isn't an int so the compiler should be
-                            // erroring. So we just return diagnostics if any and stop.
-                            return new(diagnostics);
-                        }
-                    }
+
+                    // TODO, parse the attribute syntax to get the data instead.
 
                     // Output some object that can be rendered into source code. We do this as
                     // multiple steps to support global templates down the road.
