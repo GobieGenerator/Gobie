@@ -486,12 +486,12 @@ public class UserTemplateTests
             [GobieTemplate]
             private const string KeyString = ""public string Name { get; set; } = \""{{InitialName}}\"";"";
 
-            [Required]
+            [Required(1)]
             public string InitialName { get; set; }
         }
 
         [NameProperty(""Mike"")]
-        public partial class Target
+        public partial class TemplateTarget
         { }";
 
         return TestHelper.Verify(source);

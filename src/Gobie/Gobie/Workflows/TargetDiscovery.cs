@@ -63,7 +63,6 @@ public class TargetDiscovery
         foreach (var att in typeInfo.GetAttributes())
         {
             var a = att.AttributeClass;
-            var b = a.ContainingNamespace.Name; // TODO this could be a global namespace which is an empty string
             var ctypeName = a.Name + (a.Name.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute");
 
             foreach (var template in templates)
