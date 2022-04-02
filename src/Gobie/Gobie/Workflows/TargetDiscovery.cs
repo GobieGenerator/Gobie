@@ -72,20 +72,47 @@ public class TargetDiscovery
                     var ti = typeInfo.Name;
                     var tin = typeInfo.ContainingNamespace.Name;
 
-                    // Get attribute data
+                    // Based on the output of the diagnostic below it looks like we aren't able to
+                    // get the attribute args. This doesn't seem to be isolated to unit testing.
+                    // Even in the console client we find zero args when we follow the same process
+                    // we use to get args for required position or generator name. My current guess
+                    // now is that the semantic model above doesn't (and maybe cannot) have the
+                    // definitions of the attributes we create in the generator. (I'm assuming the
+                    // register post generation initaliztion code is doign something different,
+                    // because we were able to get the constructor args for those).
+                    diagnostics.Add(Diagnostic.Create(Diagnostics.Errors.GobieUnknownError($"Attribute {ctypeName} has {att.ConstructorArguments.Length} CtorArgs and {att.NamedArguments.Length} NamedArgs"), null));
 
-                    // Match it to a template. if it matches, get the ctor and named data off the attribute.
-
-                    // TODO later: Get the data off the target attributes
+                    var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
+                    if (att.ConstructorArguments.Length > 0)
+                    {
+                        if (att.ConstructorArguments[0].Value is int o)
+                        {
+                            data.Add("Num1", new Mustache.RenderData("Num1", o.ToString(), true));
+                        }
+                        else
+                        {
+                            // Here some arg exists but it isn't an int so the compiler should be
+                            // erroring. So we just return diagnostics if any and stop.
+                            return new(diagnostics);
+                        }
+                    }
+                    if (att.ConstructorArguments.Length > 1)
+                    {
+                        if (att.ConstructorArguments[1].Value is int o)
+                        {
+                            data.Add("Num2", new Mustache.RenderData("Num2", o.ToString(), true));
+                        }
+                        else
+                        {
+                            // Here some arg exists but it isn't an int so the compiler should be
+                            // erroring. So we just return diagnostics if any and stop.
+                            return new(diagnostics);
+                        }
+                    }
 
                     // Output some object that can be rendered into source code. We do this as
                     // multiple steps to support global templates down the road.
 
-                    var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
-
-                    data.Add("name", new Mustache.RenderData("name", "Mike", true));
-                    data.Add("job", new Mustache.RenderData("job", "programmer", true));
-                    data.Add("foo", new Mustache.RenderData("foo", "", false));
                     var templateData = data.ToImmutable();
 
                     var sb = new StringBuilder();
@@ -108,7 +135,7 @@ public class TargetDiscovery
 
         var builder = ImmutableArray.CreateBuilder<TargetAndTemplateData>();
         builder.AddRange(output);
-        return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(builder.ToImmutable());
+        return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(builder.ToImmutable(), diagnostics);
     }
 
     private static (ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableTargets(
