@@ -7,13 +7,22 @@ namespace ConsoleClient.Models
     public sealed class PrimaryKeyGenerator : GobieFieldGenerator
     {
         [GobieTemplate]
-        private const string KeyString = "public int {{name}} { get; set; } // This is a key";
+        private const string KeyString = "public int Id { get; set; } // This is a key";
     }
 
     public sealed class NamePropertyGenerator : GobieFieldGenerator
     {
         [GobieTemplate]
-        private const string KeyString = "public string Name { get; set; } = \"{{Num1}} {{Num2}}\";";
+        private const string KeyString = "public string Name { get; set; } = \"{{Num1}} of {{Num2}}\";";
+
+        [GobieTemplate]
+        private const string IdString = @"public int IdentNum { get; set; } = {{Num1}};
+
+        private static int Temp             => 3;
+private static int Temp1             => 3;
+private static int Temp2            => 3;
+private static int Temp3             => 3;
+";
 
         [Required(5)]
         public int Num1 { get; set; }
@@ -25,7 +34,7 @@ namespace ConsoleClient.Models
     }
 
     [PkGen]
-    [NameProperty(5, 7)]
+    [NameProperty(25)]
     public partial class GenTarget
     { }
 
