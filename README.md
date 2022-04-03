@@ -1,62 +1,21 @@
 # Gobie
 
+[![NuGet](https://shields.io/nuget/v/Gobie.svg)](https://www.nuget.org/packages/Gobie/)
+
 ## Overview
 
+Source generation in C# is a very powerfull tool, but its complexity reduces how and where it is used. 
 
-[GobieFieldTemplate] should impact fields to which it is specifically applied OR if applied to a class then it will apply to anything where a type filter applies and maybe a type exclude does not match.
-[GobieClassTemplate] would apply to the the class only
-[GobieAssemblyAttribute] this is probably where 'global' templates should be defined.
+This is my attempt to make source generation for low/medium complexity scenarios easily accessable. Gobie allows developers define and use custom source generation without writing any generator code themselves or learning the Roslyn APIs. This happens in two steps. 
+1. Devs define what they want to generate in C#. Typically this would be text templates, along with definitions for what parameters are needed to populate the template.
+    1. From step 1, Gobie creates marker attributes which can be used to tag classes, fields, ... that need code generation.
+2. Using the marker attributes, devs mark their code with the generated attributes, and provide custom arguments where needed. This step work just like consuming any other source generator.
+    1. Code is generated based on the templates provided.
 
+While this is in early development I'm going to keep a dev log [on my blog](https://mjconrad.com/).
 
-* Implementing partial methods.
+## Feedback & Contribution
 
+I am very much looking for feedback at this point. I can see several possible use cases for this approach to generation and am very interested in hearing whether others are interested in this concept or not. There are quite a few remaining technical challenges and substantial development work ahead, so it would be great to learn if this is something the community would find useful. 
 
-* `[Template]` - This would get inserted into the generated partial class.
-  * Exposing a field as a property and or adding methods.
-* `[ClassTemplate]` - This would let you make a whole new class or really any extra file. OR it would let you make a partial for the current class, but implementing an interface or whatever.
-  * Making extra classes.
-* `[GlobalTemplate]` - Something we always generate for the assembly (going to have to test multi assembly?). Like blazor, we assume there is just one spot we can put stuff within the template.
-  * `[GlobalTemplateChild(TemplateName = "Something", TagName = "" defaults to "ChildTemplate")]`. Child templates get written in a deterministic order which cannot be controlled by the user.
-  * Bootstrapping the EFCore stuff
-  * Setting up extension methods
-* Method wrapper. 
-  * If you wanted to time something, maybe log args, maybe check nulls. We could use parameter attributes to let the user define specific templates per parameter. Or maybe you could apply an attribute to a method and it had templates which each have a method filter? 
-
-Type filtering :https://stackoverflow.com/questions/42430974/typeinfo-isassignablefrom-in-roslyn-analyzer
-
-## Field
-
-Dictionary
-* Namespace
-* Class
-* FullClass = Namespace.Class
-* field
-* Property (overridable)
-* PluralProperty (overridable)
-* SingularProperty (overridable)
-* All the named parameters
-
-
-
-
-``` csharp
-
-    [Template]
-```
-
-
-# We shouldn't provide attributes directly
-
-If they get to directly make attributes, the users might think that we are actually going to run their constructors or other code which isn't true.
-
-We can also make it clear that they can create generic versions.
-
-So, we need to create
-* Attributes should be `sealed`
-* We can provide very explicit docs.
-* For now all properties are 
-
-
-# Debug
-
-We should debug 
+Contributors are welcome, but given the early state of this project please open an issue so we can discuss anything you are interested in working on.
