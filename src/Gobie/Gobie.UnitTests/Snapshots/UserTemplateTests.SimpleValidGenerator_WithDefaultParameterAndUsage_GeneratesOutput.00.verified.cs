@@ -5,8 +5,14 @@ namespace Gobie
     /// run <see cref = "Gobie.NamePropertyGenerator"/> to run. </summary>
     public sealed class NamePropertyAttribute : Gobie.GobieFieldGeneratorAttribute
     {
-        public NamePropertyAttribute()
+        public NamePropertyAttribute(string initialName, int id = 2048234)
         {
+            this.InitialName = initialName;
+            this.Id = id;
         }
+
+        public string InitialName { get; }
+
+        public int Id { get; }
     }
 }

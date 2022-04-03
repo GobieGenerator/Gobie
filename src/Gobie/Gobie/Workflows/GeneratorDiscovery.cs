@@ -239,10 +239,22 @@
                 {
                     if (att?.AttributeClass?.ToString() == "Gobie.Required")
                     {
-                        // Get the requested order. If we can't get it presumably the compiler is
-                        // complaining to the user about providing an invalid value.
-                        var orderArg = att.ConstructorArguments[0].Value;
-                        var order = orderArg is int i ? i : int.MaxValue;
+                        // Get the requested order if one was provided. Or give it the maximum so it
+                        // goes at the end. Within values at the end they go in the order they were defined.
+                        var order = int.MaxValue;
+                        if (att.ConstructorArguments.Length > 0)
+                        {
+                            if (att.ConstructorArguments[0].Value is int o)
+                            {
+                                order = o;
+                            }
+                            else
+                            {
+                                // Here some arg exists but it isn't an int so the compiler should
+                                // be erroring. So we just return diagnostics if any and stop.
+                                return new(diagnostics);
+                            }
+                        }
 
                         genData.AddRequiredParameter(
                             new RequiredParameter(

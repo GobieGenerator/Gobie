@@ -1,7 +1,10 @@
 ﻿{
   "Template": "}}",
   "Result": {
-    "Data": null,
+    "Data": {
+      "Syntax": null,
+      "Identifiers": null
+    },
     "Diagnostics": [
       {
         "Id": "GB1001",

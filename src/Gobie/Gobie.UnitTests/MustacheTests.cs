@@ -11,37 +11,27 @@ public class MustacheTests
     [TestCase("}}")]
     [TestCase("{{}}")]
     [TestCase("{{ a b }}")] // TODO should this have just one diagnostic or two?
-    public Task Parse_InvalidValidFlatAst(string template) =>
-    Verify(new ParseResult(template, Mustache.Parse(template)))
-        .UseDirectory("Snapshots\\Mustache");
+    public Task Parse_InvalidValidFlatAst(string template) => TestParsing(template);
 
     [TestCase("")]
     [TestCase("just some text")]
     [TestCase("\n {{ name }}  ")]
-    public Task Parse_ValidFlatAst(string template) =>
-        Verify(new ParseResult(template, Mustache.Parse(template)))
-            .UseDirectory("Snapshots\\Mustache");
+    public Task Parse_ValidFlatAst(string template) => TestParsing(template);
 
     [TestCase("{{^name}} Text1 Text2")]
-    public Task Parse_Partial_IssuesDiagnostic(string template) =>
-        Verify(new ParseResult(template, Mustache.Parse(template)))
-            .UseDirectory("Snapshots\\Mustache");
+    public Task Parse_Partial_IssuesDiagnostic(string template) => TestParsing(template);
 
     [TestCase("{{#name}}Something{{/name}} {{^name}}Something Else{{/name}}")]
     [TestCase("{{#name}}Someone named {{name}} {{#age}} with age of {{age}}{{/age}} {{/name}} is great!!")]
     [TestCase("{{#name}} Text1 {{#foo}}{{#name}}{{/name}} Text2  {{/foo}}{{/name}}")] // Inner if name is redudant.
-    public Task Parse_WithLogicAst(string template) =>
-        Verify(new ParseResult(template, Mustache.Parse(template)))
-            .UseDirectory("Snapshots\\Mustache");
+    public Task Parse_WithLogicAst(string template) => TestParsing(template);
 
     [TestCase("{{^name}} Text1 {{name}} Text2 {{/name}}")]
     [TestCase("{{^name}} Text1 {{#name}}{{/name}} Text2 {{/name}}")]
     [TestCase("{{^name}} Text1 {{#foo}}{{name}} Text2  {{/foo}}{{/name}}")]
     [TestCase("{{^name}} Text1 {{#foo}}{{#name}}{{/name}} Text2  {{/foo}}{{/name}}")]
     [TestCase("{{#name}} Text1 {{#foo}}{{^name}}{{/name}} Text2  {{/foo}}{{/name}}")]
-    public Task Parse_WithInvalidLogic_IssuesDiagnostics(string template) =>
-    Verify(new ParseResult(template, Mustache.Parse(template)))
-        .UseDirectory("Snapshots\\Mustache");
+    public Task Parse_WithInvalidLogic_IssuesDiagnostics(string template) => TestParsing(template);
 
     [TestCase("{{#name}}Hello {{name}}{{/name}} {{^name}}No one is here{{/name}}")]
     [TestCase("Hello {{name}} {{#name}}Who is a person {{#job}}with a job: {{job}}{{/job}}{{/name}}")]
@@ -63,5 +53,51 @@ public class MustacheTests
         return Verify(render).UseDirectory("Snapshots\\Mustache\\Render");
     }
 
-    private record ParseResult(string Template, DataOrDiagnostics<Mustache.TemplateDefinition> Result);
+    [TestCase("{{#name}}Hello {{name}}{{/name}} {{^name}}No one is here{{/name}}")]
+    [TestCase("Hello {{name}} {{#name}}Who is a person {{#job}}with a job: {{job}}{{/job}}{{/name}}")]
+    [TestCase("Hello {{name}} {{#name}}\n\nWho is a person {{#foo}}with a job: {{job}}{{/foo}}{{/name}}")]
+    [TestCase("Hello {{foo}} {{#name}}Who is a person {{#foo}}with a job: {{job}}{{/foo}}{{/name}}")]
+    [TestCase("Hello {{foo}} {{#name}}Who is a person {{^foo}}with a job: {{job}}{{/foo}}{{/name}}")]
+    [TestCase("private string {{name}}(string greeting) \n{\n return $\"{greeting}: {{name}}\";\n}\n")]
+    public void Render_MissingData_DoesNotThrow(string template)
+    {
+        // Its important that if we for some reason render a template missing data that we don't
+        // crash the generator.
+        var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
+        var parse = Mustache.Parse(template);
+        Assert.DoesNotThrow(() => Mustache.RenderTemplate(parse.Data!, data.ToImmutable()));
+    }
+
+    private static Task TestParsing(string template)
+    {
+        var parsed = Mustache.Parse(template);
+
+        return Verify(new ParseResult(template, new(parsed.Data, parsed.Diagnostics)))
+              .UseDirectory("Snapshots\\Mustache");
+    }
+
+    private record ParseResult(string Template, DataOrDiagnostics<SeralizableTemplateDef> Result);
+
+    /// <summary>
+    /// The <see cref="Mustache.TemplateDefinition.Identifiers"/> does not seralize in a
+    /// determinstic order. So this is here as a helper for verification.
+    /// </summary>
+    private class SeralizableTemplateDef
+    {
+        private readonly Mustache.TemplateDefinition? definition;
+
+        public SeralizableTemplateDef(Mustache.TemplateDefinition? definition)
+        {
+            this.definition = definition;
+        }
+
+        public Mustache.TemplateSyntax? Syntax => definition?.Syntax;
+
+        public IEnumerable<string>? Identifiers => definition?.Identifiers.OrderBy(x => x);
+
+        public static implicit operator SeralizableTemplateDef(Mustache.TemplateDefinition? definition)
+        {
+            return new SeralizableTemplateDef(definition);
+        }
+    }
 }

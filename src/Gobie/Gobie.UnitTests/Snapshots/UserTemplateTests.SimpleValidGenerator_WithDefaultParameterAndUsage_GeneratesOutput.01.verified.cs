@@ -3,6 +3,6 @@ namespace SomeNamespace
 {
     public partial class TemplateTarget
     {
-        public string RobotName { get; set; } = "Mike-521351";
+        public string RobotName { get; set; } = "Mike-2048234";
     }
 }

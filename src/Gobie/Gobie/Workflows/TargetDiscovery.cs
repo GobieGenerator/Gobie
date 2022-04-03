@@ -60,42 +60,108 @@ public class TargetDiscovery
             return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(diagnostics);
         }
 
-        foreach (var att in typeInfo.GetAttributes())
+        var ti = typeInfo.Name;
+        var tin = typeInfo.ContainingNamespace.Name;
+
+        // It looks like we aren't able to get the attribute args off of SourceAttributeData (from
+        // typeInfo.GetAttributes()). This doesn't seem to be isolated to unit testing. Even in the
+        // console client we find zero args when we follow the same process we use to get args for
+        // required position or generator name. My current guess now is that the semantic model
+        // above doesn't (and maybe cannot) have the definitions of the attributes we create in the
+        // generator. (I'm assuming the register post generation initaliztion code is doign
+        // something different, because we were able to get the constructor args for those).
+        // Additionally I noticed that the SourceAttributeData (att) is missing the namespace and
+        // doesn't say attribute at the end. So this seems like what happened when the unit tests
+        // were missing a reference.
+        foreach (var att in cds.AttributeLists.SelectMany(x => x.Attributes))
         {
-            var a = att.AttributeClass;
-            var b = a.ContainingNamespace.Name; // TODO this could be a global namespace which is an empty string
-            var ctypeName = a.Name + (a.Name.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute");
+            // TODO, maybe we should test that we can't resolve the specific attribute details and
+            // then look to the syntax? I wonder if we define a generator in one lib and use it in
+            // another whether that is even viable. And in that case we might be able to see the
+            // full class when the dependant lib compiles.
+            var attName = att.Name.ToFullString();
+            var ctypeName = attName + (attName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute");
 
             foreach (var template in templates)
             {
                 if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
                 {
-                    var ti = typeInfo.Name;
-                    var tin = typeInfo.ContainingNamespace.Name;
+                    var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
 
-                    // Get attribute data
+                    if (att.ArgumentList is not null)
+                    {
+                        for (int i = 0; i < att.ArgumentList.Arguments.Count; i++)
+                        {
+                            var arg = att.ArgumentList.Arguments[i];
+                            var constValArg = sm.GetConstantValue(arg.Expression);
+                            if (arg.NameEquals is null && constValArg.HasValue && i < template.AttributeData.RequiredParameters.Count())
+                            {
+                                // This is a required argument either with or without colon equals
+                                var ident = template.AttributeData.RequiredParameters.ElementAt(i).NamePascal;
 
-                    // Match it to a template. if it matches, get the ctor and named data off the attribute.
+                                if (arg.Expression.Kind() == Microsoft.CodeAnalysis.CSharp.SyntaxKind.NullLiteralExpression)
+                                {
+                                    data.Add(ident, new Mustache.RenderData(ident, string.Empty, false));
+                                }
+                                else
+                                {
+                                    data.Add(ident, new Mustache.RenderData(ident, constValArg.Value!.ToString(), true));
+                                }
+                            }
+                            else if (arg.NameEquals is not null && constValArg.HasValue)
+                            {
+                                // This is a named parameter (i.e. optional value prefixed by 'Name
+                                // = '
+                                var n = arg.NameEquals.Name.ToFullString().Trim();
+                                if (arg.Expression.Kind() == Microsoft.CodeAnalysis.CSharp.SyntaxKind.NullLiteralExpression)
+                                {
+                                    data.Add(n, new Mustache.RenderData(n, string.Empty, false));
+                                }
+                                else
+                                {
+                                    data.Add(
+                                   n,
+                                   new Mustache.RenderData(n, constValArg.Value!.ToString(), true));
+                                }
+                            }
+                        }
 
-                    // TODO later: Get the data off the target attributes
+                        if (data.Count < template.AttributeData.RequiredParameters.Count())
+                        {
+                            for (int i = data.Count; i < template.AttributeData.RequiredParameters.Count(); i++)
+                            {
+                                var param = template.AttributeData.RequiredParameters.ElementAt(i);
+                                var ident = param.NamePascal;
+                                data.Add(
+                                    ident,
+                                    new Mustache.RenderData(ident, param.InitalizerLiteral, true));
+                            }
+                        }
+                    }
 
-                    // Output some object that can be rendered into source code. We do this as
-                    // multiple steps to support global templates down the road.
+                    var templateData = data.ToImmutable();
 
-                    var code = string.Join(Environment.NewLine, template.Templates);
+                    var sb = new StringBuilder();
+
+                    foreach (var t in template.Templates)
+                    {
+                        sb.AppendLine(Mustache.RenderTemplate(t, templateData));
+                        sb.AppendLine();
+                    }
+
                     output.Add(
                         new TargetAndTemplateData(
                             TemplateType.Complete,
                             ctypeName,
                             new ClassIdentifier(tin, ti),
-                            code));
+                            sb.ToString()));
                 }
             }
         }
 
         var builder = ImmutableArray.CreateBuilder<TargetAndTemplateData>();
         builder.AddRange(output);
-        return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(builder.ToImmutable());
+        return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(builder.ToImmutable(), diagnostics);
     }
 
     private static (ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableTargets(

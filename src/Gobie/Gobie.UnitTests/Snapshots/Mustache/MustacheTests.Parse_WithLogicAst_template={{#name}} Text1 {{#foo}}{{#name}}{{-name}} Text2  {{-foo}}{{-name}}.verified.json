@@ -40,8 +40,8 @@
         ]
       },
       "Identifiers": [
-        "name",
-        "foo"
+        "foo",
+        "name"
       ]
     }
   }

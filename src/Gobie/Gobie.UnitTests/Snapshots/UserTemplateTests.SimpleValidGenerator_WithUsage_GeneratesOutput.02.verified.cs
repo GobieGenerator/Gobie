@@ -1,12 +1,8 @@
-﻿//HintName: _Gobie.NamePropertyAttribute.g.cs
-namespace Gobie
+﻿//HintName: PkGenAttribute_GenTarget.g.cs
+namespace SomeNamespace
 {
-    /// <summary> This attribute will cause the generator defined by this thing here to
-    /// run <see cref = "Gobie.NamePropertyGenerator"/> to run. </summary>
-    public sealed class NamePropertyAttribute : Gobie.GobieFieldGeneratorAttribute
+    public partial class GenTarget
     {
-        public NamePropertyAttribute()
-        {
-        }
+        public int Id { get; set; } // This is a key
     }
 }

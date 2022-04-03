@@ -484,14 +484,96 @@ public class UserTemplateTests
         public sealed class NamePropertyGenerator : GobieFieldGenerator
         {
             [GobieTemplate]
-            private const string KeyString = ""public string Name { get; set; } = \""{{InitialName}}\"";"";
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
 
-            [Required]
+            [Required(1)]
             public string InitialName { get; set; }
+
+            [Required(2)]
+            public int Id { get; set; }
+        }
+
+        [NameProperty(""Mike"", 521351)]
+        public partial class TemplateTarget
+        { }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task SimpleValidGenerator_WithDefaultParameterAndUsage_GeneratesOutput()
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class NamePropertyGenerator : GobieFieldGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
+
+            [Required(1)]
+            public string InitialName { get; set; }
+
+            [Required(2)]
+            public int Id { get; set; } = 2048234;
         }
 
         [NameProperty(""Mike"")]
-        public partial class Target
+        public partial class TemplateTarget
+        { }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task SimpleValidGenerator_WithNamedParameterUsage_GeneratesOutput()
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class NamePropertyGenerator : GobieFieldGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
+
+            [Required(1)]
+            public string InitialName { get; set; }
+
+            public int Id { get; set; }
+        }
+
+        [NameProperty(initialName: ""Mike"", Id = 2048234)]
+        public partial class TemplateTarget
+        { }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task SimpleValidGenerator_WithNullParameterUsage_GeneratesOutput()
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class NamePropertyGenerator : GobieFieldGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
+
+            [Required(1)]
+            public string InitialName { get; set; }
+
+            public string Id { get; set; }
+        }
+
+        [NameProperty(null, Id = null)]
+        public partial class TemplateTarget
         { }";
 
         return TestHelper.Verify(source);

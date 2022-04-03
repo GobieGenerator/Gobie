@@ -7,10 +7,12 @@ public static class TestHelper
         // Parse the provided string into a C# syntax tree
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source);
         // Create references for assemblies we require We could add multiple references if required
-        IEnumerable<PortableExecutableReference> references = new[]
-        {
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
-        };
+        var references = AppDomain.CurrentDomain.GetAssemblies()
+                       .Where(_ => !_.IsDynamic && !string.IsNullOrWhiteSpace(_.Location))
+                       .Select(_ => MetadataReference.CreateFromFile(_.Location))
+                       .Concat(new[] { MetadataReference.CreateFromFile(typeof(GobieGenerator).Assembly.Location) })
+                       .Concat(new[] { MetadataReference.CreateFromFile(typeof(GobieGeneratorBase).Assembly.Location) })
+                       .OrderBy(x => x.FilePath);
 
         // Create a Roslyn compilation for the syntax tree.
         CSharpCompilation compilation = CSharpCompilation.Create(

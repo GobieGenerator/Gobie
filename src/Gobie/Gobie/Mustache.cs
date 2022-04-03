@@ -381,15 +381,20 @@ public class Mustache
                 sb.Append(syntax.LiteralText);
                 return;
             }
-            if (syntax.Type == TemplateSyntaxType.Identifier)
+
+            if (data.TryGetValue(syntax.Identifier, out var renderData))
             {
-                sb.Append(data[syntax.Identifier].RenderString);
-                return;
+                if (syntax.Type == TemplateSyntaxType.Identifier)
+                {
+                    sb.Append(renderData.RenderString);
+                    return;
+                }
+
+                if (syntax.Type == TemplateSyntaxType.If && renderData.Render == false)
+                    return;
+                if (syntax.Type == TemplateSyntaxType.Not && renderData.Render == true)
+                    return;
             }
-            if (syntax.Type == TemplateSyntaxType.If && data[syntax.Identifier].Render == false)
-                return;
-            if (syntax.Type == TemplateSyntaxType.Not && data[syntax.Identifier].Render == true)
-                return;
 
             foreach (var child in syntax.Children)
             {
