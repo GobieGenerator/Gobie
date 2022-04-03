@@ -98,18 +98,31 @@ public class TargetDiscovery
                             {
                                 // This is a required argument either with or without colon equals
                                 var ident = template.AttributeData.RequiredParameters.ElementAt(i).NamePascal;
-                                data.Add(
-                                    ident,
-                                    new Mustache.RenderData(ident, constValArg.Value!.ToString(), true));
+
+                                if (arg.Expression.Kind() == Microsoft.CodeAnalysis.CSharp.SyntaxKind.NullLiteralExpression)
+                                {
+                                    data.Add(ident, new Mustache.RenderData(ident, string.Empty, false));
+                                }
+                                else
+                                {
+                                    data.Add(ident, new Mustache.RenderData(ident, constValArg.Value!.ToString(), true));
+                                }
                             }
                             else if (arg.NameEquals is not null && constValArg.HasValue)
                             {
                                 // This is a named parameter (i.e. optional value prefixed by 'Name
                                 // = '
                                 var n = arg.NameEquals.Name.ToFullString().Trim();
-                                data.Add(
+                                if (arg.Expression.Kind() == Microsoft.CodeAnalysis.CSharp.SyntaxKind.NullLiteralExpression)
+                                {
+                                    data.Add(n, new Mustache.RenderData(n, string.Empty, false));
+                                }
+                                else
+                                {
+                                    data.Add(
                                    n,
                                    new Mustache.RenderData(n, constValArg.Value!.ToString(), true));
+                                }
                             }
                         }
 

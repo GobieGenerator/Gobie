@@ -484,7 +484,7 @@ public class UserTemplateTests
         public sealed class NamePropertyGenerator : GobieFieldGenerator
         {
             [GobieTemplate]
-            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}-{{Id}}\"";"";
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
 
             [Required(1)]
             public string InitialName { get; set; }
@@ -511,7 +511,7 @@ public class UserTemplateTests
         public sealed class NamePropertyGenerator : GobieFieldGenerator
         {
             [GobieTemplate]
-            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}-{{Id}}\"";"";
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
 
             [Required(1)]
             public string InitialName { get; set; }
@@ -538,7 +538,7 @@ public class UserTemplateTests
         public sealed class NamePropertyGenerator : GobieFieldGenerator
         {
             [GobieTemplate]
-            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}-{{Id}}\"";"";
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
 
             [Required(1)]
             public string InitialName { get; set; }
@@ -547,6 +547,32 @@ public class UserTemplateTests
         }
 
         [NameProperty(initialName: ""Mike"", Id = 2048234)]
+        public partial class TemplateTarget
+        { }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task SimpleValidGenerator_WithNullParameterUsage_GeneratesOutput()
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class NamePropertyGenerator : GobieFieldGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
+
+            [Required(1)]
+            public string InitialName { get; set; }
+
+            public string Id { get; set; }
+        }
+
+        [NameProperty(null, Id = null)]
         public partial class TemplateTarget
         { }";
 
