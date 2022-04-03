@@ -94,13 +94,34 @@ public class TargetDiscovery
                         {
                             var arg = att.ArgumentList.Arguments[i];
                             var constValArg = sm.GetConstantValue(arg.Expression);
-                            if (constValArg.HasValue && i < template.AttributeData.RequiredParameters.Count())
+                            if (arg.NameEquals is null && constValArg.HasValue && i < template.AttributeData.RequiredParameters.Count())
                             {
+                                // This is a required argument either with or without colon equals
                                 var ident = template.AttributeData.RequiredParameters.ElementAt(i).NamePascal;
                                 data.Add(
                                     ident,
-                                    new Mustache.RenderData(ident, constValArg.Value!.ToString(),
-                                    true));
+                                    new Mustache.RenderData(ident, constValArg.Value!.ToString(), true));
+                            }
+                            else if (arg.NameEquals is not null && constValArg.HasValue)
+                            {
+                                // This is a named parameter (i.e. optional value prefixed by 'Name
+                                // = '
+                                var n = arg.NameEquals.Name.ToFullString().Trim();
+                                data.Add(
+                                   n,
+                                   new Mustache.RenderData(n, constValArg.Value!.ToString(), true));
+                            }
+                        }
+
+                        if (data.Count < template.AttributeData.RequiredParameters.Count())
+                        {
+                            for (int i = data.Count; i < template.AttributeData.RequiredParameters.Count(); i++)
+                            {
+                                var param = template.AttributeData.RequiredParameters.ElementAt(i);
+                                var ident = param.NamePascal;
+                                data.Add(
+                                    ident,
+                                    new Mustache.RenderData(ident, param.InitalizerLiteral, true));
                             }
                         }
                     }
