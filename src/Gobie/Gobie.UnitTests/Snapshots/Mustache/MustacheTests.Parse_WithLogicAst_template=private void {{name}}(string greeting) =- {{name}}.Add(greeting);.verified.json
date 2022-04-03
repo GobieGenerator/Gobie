@@ -1,0 +1,43 @@
+﻿{
+  "Template": "private void {{name}}(string greeting) => {{name}}.Add(greeting);",
+  "Result": {
+    "Data": {
+      "Syntax": {
+        "Type": "Root",
+        "LiteralText": "",
+        "Identifier": "",
+        "Parent": null,
+        "Children": [
+          {
+            "Type": "Literal",
+            "LiteralText": "private void ",
+            "Identifier": ""
+          },
+          {
+            "Type": "Identifier",
+            "LiteralText": "",
+            "Identifier": "name"
+          },
+          {
+            "Type": "Literal",
+            "LiteralText": "(string greeting) => ",
+            "Identifier": ""
+          },
+          {
+            "Type": "Identifier",
+            "LiteralText": "",
+            "Identifier": "name"
+          },
+          {
+            "Type": "Literal",
+            "LiteralText": ".Add(greeting);",
+            "Identifier": ""
+          }
+        ]
+      },
+      "Identifiers": [
+        "name"
+      ]
+    }
+  }
+}

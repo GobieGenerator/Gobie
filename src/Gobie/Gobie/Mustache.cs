@@ -153,7 +153,7 @@ public class Mustache
                 break; // Something is wrong so stop.
             }
 
-            bool TokenIsText(ReadOnlySpan<Token> tokens, int i) => tokens[i].TokenType is TokenType.General or TokenType.Identifier or TokenType.Whitespace;
+            bool TokenIsText(ReadOnlySpan<Token> tokens, int i) => tokens[i].TokenType is TokenType.General or TokenType.Identifier or TokenType.Whitespace or TokenType.Period;
             if (TokenIsText(tokens, i))
             {
                 var sb = new StringBuilder();

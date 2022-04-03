@@ -24,6 +24,7 @@ public class MustacheTests
     [TestCase("{{#name}}Something{{/name}} {{^name}}Something Else{{/name}}")]
     [TestCase("{{#name}}Someone named {{name}} {{#age}} with age of {{age}}{{/age}} {{/name}} is great!!")]
     [TestCase("{{#name}} Text1 {{#foo}}{{#name}}{{/name}} Text2  {{/foo}}{{/name}}")] // Inner if name is redudant.
+    [TestCase("private void {{name}}(string greeting) => {{name}}.Add(greeting);")]
     public Task Parse_WithLogicAst(string template) => TestParsing(template);
 
     [TestCase("{{^name}} Text1 {{name}} Text2 {{/name}}")]
@@ -39,6 +40,7 @@ public class MustacheTests
     [TestCase("Hello {{foo}} {{#name}}Who is a person {{#foo}}with a job: {{job}}{{/foo}}{{/name}}")]
     [TestCase("Hello {{foo}} {{#name}}Who is a person {{^foo}}with a job: {{job}}{{/foo}}{{/name}}")]
     [TestCase("private string {{name}}(string greeting) \n{\n return $\"{greeting}: {{name}}\";\n}\n")]
+    [TestCase("private void {{name}}(string greeting) => {{name}}.Add(greeting);")]
     public Task Render_Succeeds(string template)
     {
         var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
