@@ -8,6 +8,8 @@
 		<!-- 👇 We don't want to reference the source generator dll directly in consuming projects -->
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<ImplicitUsings>true</ImplicitUsings>
+		<PackageId>Gobie</PackageId>
+		<Description>Simple C# source generation using templates.</Description>
 		<Authors>Siphonophora</Authors>
 		<PackageProjectUrl>https://github.com/Siphonophora/Gobie</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Siphonophora/Gobie</RepositoryUrl>
