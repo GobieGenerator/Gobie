@@ -12,7 +12,7 @@
 		<PackageProjectUrl>https://github.com/Siphonophora/Gobie</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Siphonophora/Gobie</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageVersion>0.1.1-alpha</PackageVersion>
+		<PackageVersion>0.2.0-alpha</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
