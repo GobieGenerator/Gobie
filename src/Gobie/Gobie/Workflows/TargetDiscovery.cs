@@ -63,33 +63,47 @@ public class TargetDiscovery
         var ti = typeInfo.Name;
         var tin = typeInfo.ContainingNamespace.Name;
 
-        foreach (var att in typeInfo.GetAttributes())
+        // It looks like we aren't able to get the attribute args off of SourceAttributeData (from
+        // typeInfo.GetAttributes()). This doesn't seem to be isolated to unit testing. Even in the
+        // console client we find zero args when we follow the same process we use to get args for
+        // required position or generator name. My current guess now is that the semantic model
+        // above doesn't (and maybe cannot) have the definitions of the attributes we create in the
+        // generator. (I'm assuming the register post generation initaliztion code is doign
+        // something different, because we were able to get the constructor args for those).
+        // Additionally I noticed that the SourceAttributeData (att) is missing the namespace and
+        // doesn't say attribute at the end. So this seems like what happened when the unit tests
+        // were missing a reference.
+        foreach (var att in cds.AttributeLists.SelectMany(x => x.Attributes))
         {
-            var a = att.AttributeClass;
-            var ctypeName = a.Name + (a.Name.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute");
+            // TODO, maybe we should test that we can't resolve the specific attribute details and
+            // then look to the syntax? I wonder if we define a generator in one lib and use it in
+            // another whether that is even viable. And in that case we might be able to see the
+            // full class when the dependant lib compiles.
+            var attName = att.Name.ToFullString();
+            var ctypeName = attName + (attName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute");
 
             foreach (var template in templates)
             {
                 if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
                 {
-                    // Based on the output of the diagnostic below it looks like we aren't able to
-                    // get the attribute args. This doesn't seem to be isolated to unit testing.
-                    // Even in the console client we find zero args when we follow the same process
-                    // we use to get args for required position or generator name. My current guess
-                    // now is that the semantic model above doesn't (and maybe cannot) have the
-                    // definitions of the attributes we create in the generator. (I'm assuming the
-                    // register post generation initaliztion code is doign something different,
-                    // because we were able to get the constructor args for those). Additionally I
-                    // noticed that the SourceAttributeData (att) is missing the namespace and
-                    // doesn't say attribute at the end. So this seems like what happened when the
-                    // unit tests were missing a reference.
-
                     var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
 
-                    // TODO, parse the attribute syntax to get the data instead.
-
-                    // Output some object that can be rendered into source code. We do this as
-                    // multiple steps to support global templates down the road.
+                    if (att.ArgumentList is not null)
+                    {
+                        for (int i = 0; i < att.ArgumentList.Arguments.Count; i++)
+                        {
+                            var arg = att.ArgumentList.Arguments[i];
+                            var constValArg = sm.GetConstantValue(arg.Expression);
+                            if (constValArg.HasValue && i < template.AttributeData.RequiredParameters.Count())
+                            {
+                                var ident = template.AttributeData.RequiredParameters.ElementAt(i).NamePascal;
+                                data.Add(
+                                    ident,
+                                    new Mustache.RenderData(ident, constValArg.Value!.ToString(),
+                                    true));
+                            }
+                        }
+                    }
 
                     var templateData = data.ToImmutable();
 

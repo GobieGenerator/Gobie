@@ -27,6 +27,9 @@ public class UserGeneratorAttributeData
 
     public List<OptionalParameter> OptionalParameters { get; private set; } = new List<OptionalParameter>();
 
+    /// <summary>
+    /// Required parameters, in the same order as the constructor.
+    /// </summary>
     public IEnumerable<RequiredParameter> RequiredParameters =>
         requiredParameters.OrderBy(x => x.RequestedOrder).ThenBy(x => x.DeclaredOrder);
 
