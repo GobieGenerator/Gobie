@@ -25,11 +25,11 @@ namespace ConsoleClient.Models
                 {{#CustomValidator}}
                 if({{CustomValidator}}(s))
                 {
-{{Field}}
+{{Field}}.Add(s);
                 }
                 {{/CustomValidator}}
                 {{^CustomValidator}}
-{{Field}}
+{{Field}}.Add(s);
                 {{/CustomValidator}}
             }";
 
