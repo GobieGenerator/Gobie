@@ -28,7 +28,7 @@ public class Mustache
         Identifier,
 
         Whitespace,
-        Period
+        Colon,
     }
 
     public enum TemplateSyntaxType
@@ -65,9 +65,9 @@ public class Mustache
                 || TryMatch(tokens, template, "}}", TokenType.Close))
             {
             }
-            else if (template[i] == '.')
+            else if (template[i] == ':')
             {
-                AddOrCombine(tokens, new Token(i, i, TokenType.Period));
+                AddOrCombine(tokens, new Token(i, i, TokenType.Colon));
             }
             else if (char.IsWhiteSpace(template[i]))
             {
@@ -153,7 +153,7 @@ public class Mustache
                 break; // Something is wrong so stop.
             }
 
-            bool TokenIsText(ReadOnlySpan<Token> tokens, int i) => tokens[i].TokenType is TokenType.General or TokenType.Identifier or TokenType.Whitespace or TokenType.Period;
+            bool TokenIsText(ReadOnlySpan<Token> tokens, int i) => tokens[i].TokenType is TokenType.General or TokenType.Identifier or TokenType.Whitespace or TokenType.Colon;
             if (TokenIsText(tokens, i))
             {
                 var sb = new StringBuilder();
@@ -208,11 +208,7 @@ public class Mustache
                 }
                 else
                 {
-                    diagnostics.Add(
-                          Diagnostic.Create(
-                              Errors.UnfinishedTemplate(
-                                  "Template is incomplete"),
-                              null));
+                    AddTemplateIncomplete(diagnostics);
                 }
 
                 if (continueSeeking)
@@ -236,11 +232,7 @@ public class Mustache
                     }
                     else
                     {
-                        diagnostics.Add(
-                              Diagnostic.Create(
-                                  Errors.UnfinishedTemplate(
-                                      "Template is incomplete"),
-                                  null));
+                        AddTemplateIncomplete(diagnostics);
                     }
                 }
 
@@ -345,11 +337,7 @@ public class Mustache
         // incomplete. So it hasn't gotten to the ends of all logical sections.
         if (TemplateComplete(currentNode))
         {
-            diagnostics.Add(
-              Diagnostic.Create(
-                  Errors.UnfinishedTemplate(
-                      "Template is incomplete"),
-                  null));
+            AddTemplateIncomplete(diagnostics);
         }
 
         if (diagnostics.Any())
@@ -362,6 +350,13 @@ public class Mustache
 
             return new(td);
         }
+
+        static void AddTemplateIncomplete(List<Diagnostic> diagnostics) =>
+           diagnostics.Add(
+              Diagnostic.Create(
+                  Errors.UnfinishedTemplate(
+                      "Template is incomplete"),
+                  null));
     }
 
     public static string RenderTemplate(
@@ -445,14 +440,12 @@ public class Mustache
     }
 
     /// <summary>
-    /// Seeks the next non whitespace, if one exists. Advances <paramref name="i"/> as needed to
-    /// move past white space.
+    /// Look forward for the next non white space after <paramref name="i"/>.
     /// </summary>
-    /// <param name="tokens"></param>
-    /// <param name="i"></param>
-    /// <param name="token"></param>
-    /// <returns></returns>
-    private static bool TrySeekNonWhitespace(ReadOnlySpan<Token> tokens, ref int i, out Token token)
+    /// <param name="tokens">Token collection</param>
+    /// <param name="i">Starting index</param>
+    /// <returns>Index and token of the next token, or null if none exists.</returns>
+    private static (int index, Token token)? PeekNonWhitespace(ReadOnlySpan<Token> tokens, int i)
     {
         token = default;
         if (i + 1 < tokens.Length)
