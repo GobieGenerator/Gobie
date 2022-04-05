@@ -13,19 +13,17 @@ public class MustacheTests
     [TestCase("{{ a b }}")] // TODO should this have just one diagnostic or two?
     public Task Parse_InvalidValidFlatAst(string template) => TestParsing(template);
 
-    [TestCase("")]
-    [TestCase("just some text")]
-    [TestCase("\n {{ name }}  ")]
-    public Task Parse_ValidFlatAst(string template) => TestParsing(template);
-
     [TestCase("{{^name}} Text1 Text2")]
     public Task Parse_Partial_IssuesDiagnostic(string template) => TestParsing(template);
 
+    [TestCase("")]
+    [TestCase("just some text")]
+    [TestCase("\n {{ name }}  ")]
     [TestCase("{{#name}}Something{{/name}} {{^name}}Something Else{{/name}}")]
     [TestCase("{{#name}}Someone named {{name}} {{#age}} with age of {{age}}{{/age}} {{/name}} is great!!")]
     [TestCase("{{#name}} Text1 {{#foo}}{{#name}}{{/name}} Text2  {{/foo}}{{/name}}")] // Inner if name is redudant.
     [TestCase("private void {{name}}(string greeting) => {{name}}.Add(greeting);")]
-    public Task Parse_WithLogicAst(string template) => TestParsing(template);
+    public Task Parse_Succeeds(string template) => TestParsing(template);
 
     [TestCase("{{^name}} Text1 {{name}} Text2 {{/name}}")]
     [TestCase("{{^name}} Text1 {{#name}}{{/name}} Text2 {{/name}}")]
@@ -75,7 +73,7 @@ public class MustacheTests
         var parsed = Mustache.Parse(template);
 
         return Verify(new ParseResult(template, new(parsed.Data, parsed.Diagnostics)))
-              .UseDirectory("Snapshots\\Mustache");
+              .UseDirectory("Snapshots\\Mustache\\Parsing");
     }
 
     private record ParseResult(string Template, DataOrDiagnostics<SeralizableTemplateDef> Result);
