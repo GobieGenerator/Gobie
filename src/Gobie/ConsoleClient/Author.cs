@@ -3,42 +3,48 @@ using System.Collections.Generic;
 
 namespace ConsoleClient.Models
 {
-    [GobieGeneratorName("PkGen")]
-    public sealed class PrimaryKeyGenerator : GobieFieldGenerator
+    public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
     {
         [GobieTemplate]
-        private const string KeyString = "public int Id { get; set; } // This is a key";
+        private const string EncapsulationTemplate =
+@"
+            private readonly List<{{TypeName}}> {{Field}} = new List<{{TypeName}}>();
+            public IEnumerable<{{TypeName}}> {{PropertyName}} => {{Field}}.AsReadOnly();
+            public IEnumerable<int> {{ Property }}Lengths => {{ Field }}.Select(x => x.Length);
+        ";
+
+        [GobieTemplate]
+        private const string AddMethod =
+    @"      public void Add{{ Property }}({{TypeName}} s)
+            {
+                {{#CustomValidator}}
+                if({{CustomValidator}}(s))
+                {
+                    {{Field}}.Add(s);
+                }
+                {{/CustomValidator}}
+
+                {{^CustomValidator}}
+                    {{Field}}.Add(s);
+                {{/CustomValidator}}
+            }";
+
+        [Required]
+        public string PropertyName { get; set; }
+
+        [Required]
+        public string Field { get; set; }
+
+        [Required]
+        public string TypeName { get; set; }
+
+        [Required]
+        public string CustomValidator { get; set; } = null;
     }
 
-    public sealed class NamePropertyGenerator : GobieFieldGenerator
-    {
-        [GobieTemplate]
-        private const string KeyString = "public string Name { get; set; } = \"{{Num1}} of {{Num2}}\";";
-
-        [GobieTemplate]
-        private const string IdString = @"public int IdentNum { get; set; } = {{Num1}};
-
-        private static int Temp             => 3;
-private static int Temp1             => 3;
-private static int Temp2            => 3;
-private static int Temp3             => 3;
-";
-
-        [Required(5)]
-        public int Num1 { get; set; }
-
-        [Required(11)]
-        public int Num2 { get; set; } = 42;
-
-        public string OptionalString { get; set; } = "favorite quote: \"Hello from the magic tavern\"";
-    }
-
-    [PkGen]
-    [NameProperty(25)]
+    [EncapsulatedCollection("Books", "books", "string", nameof(ValidateBooks))]
     public partial class GenTarget
-    { }
-
-    [PkGen]
-    public partial class GenTarget2
-    { }
+    {
+        public bool ValidateBooks(string s) => s.Length > 0;
+    }
 }
