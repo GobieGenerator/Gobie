@@ -6,32 +6,38 @@
         "Type": "Root",
         "LiteralText": "",
         "Identifier": "",
+        "Format": "None",
         "Parent": null,
         "Children": [
           {
             "Type": "If",
             "LiteralText": "",
             "Identifier": "name",
+            "Format": "None",
             "Children": [
               {
                 "Type": "Literal",
                 "LiteralText": " Text1 ",
-                "Identifier": ""
+                "Identifier": "",
+                "Format": "None"
               },
               {
                 "Type": "If",
                 "LiteralText": "",
                 "Identifier": "foo",
+                "Format": "None",
                 "Children": [
                   {
                     "Type": "If",
                     "LiteralText": "",
-                    "Identifier": "name"
+                    "Identifier": "name",
+                    "Format": "None"
                   },
                   {
                     "Type": "Literal",
                     "LiteralText": " Text2  ",
-                    "Identifier": ""
+                    "Identifier": "",
+                    "Format": "None"
                   }
                 ]
               }

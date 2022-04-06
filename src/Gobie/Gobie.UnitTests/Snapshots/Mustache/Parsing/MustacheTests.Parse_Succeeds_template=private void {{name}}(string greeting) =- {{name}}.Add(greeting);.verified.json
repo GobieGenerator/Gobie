@@ -6,32 +6,38 @@
         "Type": "Root",
         "LiteralText": "",
         "Identifier": "",
+        "Format": "None",
         "Parent": null,
         "Children": [
           {
             "Type": "Literal",
             "LiteralText": "private void ",
-            "Identifier": ""
+            "Identifier": "",
+            "Format": "None"
           },
           {
             "Type": "Identifier",
             "LiteralText": "",
-            "Identifier": "name"
+            "Identifier": "name",
+            "Format": "None"
           },
           {
             "Type": "Literal",
             "LiteralText": "(string greeting) => ",
-            "Identifier": ""
+            "Identifier": "",
+            "Format": "None"
           },
           {
             "Type": "Identifier",
             "LiteralText": "",
-            "Identifier": "name"
+            "Identifier": "name",
+            "Format": "None"
           },
           {
             "Type": "Literal",
             "LiteralText": ".Add(greeting);",
-            "Identifier": ""
+            "Identifier": "",
+            "Format": "None"
           }
         ]
       },

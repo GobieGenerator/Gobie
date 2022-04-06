@@ -6,12 +6,14 @@
         "Type": "Root",
         "LiteralText": "",
         "Identifier": "",
+        "Format": "None",
         "Parent": null,
         "Children": [
           {
             "Type": "Literal",
             "LiteralText": "just some text",
-            "Identifier": ""
+            "Identifier": "",
+            "Format": "None"
           }
         ]
       },

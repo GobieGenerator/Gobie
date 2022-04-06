@@ -6,22 +6,26 @@
         "Type": "Root",
         "LiteralText": "",
         "Identifier": "",
+        "Format": "None",
         "Parent": null,
         "Children": [
           {
             "Type": "Literal",
             "LiteralText": "\n ",
-            "Identifier": ""
+            "Identifier": "",
+            "Format": "None"
           },
           {
             "Type": "Identifier",
             "LiteralText": "",
-            "Identifier": "name"
+            "Identifier": "name",
+            "Format": "None"
           },
           {
             "Type": "Literal",
             "LiteralText": "  ",
-            "Identifier": ""
+            "Identifier": "",
+            "Format": "None"
           }
         ]
       },

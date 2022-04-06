@@ -40,6 +40,13 @@ public class Mustache
         Identifier,
     }
 
+    public enum FormatSetting
+    {
+        None = 0,
+        Camel,
+        Pascal,
+    }
+
     private enum IdentifierValidity
     {
         Valid,
@@ -187,8 +194,12 @@ public class Mustache
                 var initialToken = tokens[i];
                 bool continueSeeking = false;
 
-                if (TrySeekNonWhitespace(tokens, ref i, out var t))
+                var possibleToken = PeekNonWhitespace(tokens, i);
+                if (possibleToken is not null)
                 {
+                    var t = possibleToken.Value.token;
+                    i = possibleToken.Value.index;
+
                     if (t.TokenType == TokenType.Identifier)
                     {
                         // This is our only good case.
@@ -213,8 +224,12 @@ public class Mustache
 
                 if (continueSeeking)
                 {
-                    if (TrySeekNonWhitespace(tokens, ref i, out var t2))
+                    possibleToken = PeekNonWhitespace(tokens, i);
+                    if (possibleToken is not null)
                     {
+                        var t2 = possibleToken.Value.token;
+                        i = possibleToken.Value.index;
+
                         if (t2.TokenType == TokenType.Close)
                         {
                             // This is our only good case. The tag was closed
@@ -447,21 +462,19 @@ public class Mustache
     /// <returns>Index and token of the next token, or null if none exists.</returns>
     private static (int index, Token token)? PeekNonWhitespace(ReadOnlySpan<Token> tokens, int i)
     {
-        token = default;
         if (i + 1 < tokens.Length)
         {
             i++;
             if (tokens[i].TokenType != TokenType.Whitespace)
             {
-                token = tokens[i];
-                return true;
+                return (i, tokens[i]);
             }
 
-            return TrySeekNonWhitespace(tokens, ref i, out token);
+            return PeekNonWhitespace(tokens, i);
         }
         else
         {
-            return false;
+            return null;
         }
     }
 
@@ -513,12 +526,18 @@ public class Mustache
 
     public class TemplateSyntax
     {
-        public TemplateSyntax(TemplateSyntax? parent, TemplateSyntaxType type, string literalText = "", string identifier = "")
+        public TemplateSyntax(
+            TemplateSyntax? parent,
+            TemplateSyntaxType type,
+            string literalText = "",
+            string identifier = "",
+            FormatSetting format = 0)
         {
             Parent = parent;
             Type = type;
             LiteralText = literalText ?? throw new ArgumentNullException(nameof(literalText));
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+            Format = format;
         }
 
         public TemplateSyntaxType Type { get; }
@@ -526,6 +545,8 @@ public class Mustache
         public string LiteralText { get; } = string.Empty;
 
         public string Identifier { get; } = string.Empty;
+
+        public FormatSetting Format { get; }
 
         public TemplateSyntax? Parent { get; }
 
