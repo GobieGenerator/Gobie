@@ -20,6 +20,10 @@ public class Mustache
         LogicNotOpen,
         LogicEndOpen,
         General,
+
+        /// <summary>
+        /// This is the start of a token with an identifier that is rendered.
+        /// </summary>
         TemplateTokenOpen,
 
         /// <summary>
@@ -142,7 +146,7 @@ public class Mustache
     public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template)
     {
         var tokens = Tokenize(template);
-        var root = new TemplateSyntax(null, TemplateSyntaxType.Root);
+        var root = new TemplateSyntax(null, TemplateSyntaxType.Root, string.Empty, string.Empty, FormatSetting.None);
         var diagnostics = new List<Diagnostic>();
         var identifiers = ImmutableHashSet.CreateBuilder<string>();
 
@@ -174,7 +178,7 @@ public class Mustache
                     sb.Append(GetText(template, tokens[i]));
                 }
 
-                currentNode.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, sb.ToString()));
+                currentNode.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, sb.ToString(), string.Empty, FormatSetting.None));
             }
             else if (tokens[i].TokenType is TokenType.Close)
             {
@@ -189,79 +193,84 @@ public class Mustache
             {
                 // Here, the only remaining types are opening tokens, which should be followed by
                 // either 2 or 4 additional tokens in the following patterns: 'Identifier Close' or
-                // 'Identifier Colon Format Close'
+                // 'Identifier Colon Identifier[Matches format token] Close'
                 var tagClosed = false;
                 var identiferFound = false;
                 var identifier = string.Empty;
+                var formatSetting = FormatSetting.None;
                 var initialToken = tokens[i];
-                bool continueSeeking = false;
 
-                var possibleToken = PeekNonWhitespace(tokens, i);
-                if (possibleToken is null)
+                var upcommingTokens = PeekNonWhitespace(tokens, i, 4);
+
+                if (initialToken.TokenType == TokenType.TemplateTokenOpen &&
+                    TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Colon, TokenType.Identifier, TokenType.Close))
                 {
-                    AddTemplateIncomplete(diagnostics);
-                    continue;
+                    tagClosed = true;
+                    identifier = GetText(template, upcommingTokens[0].token);
+
+                    if (IdentifierIsFormatToken(upcommingTokens[2], out FormatSetting f))
+                    {
+                        // We do have a valid formatted identifier
+                        formatSetting = f;
+                    }
+                    else
+                    {
+                        // The identifier where we expect a format token is not valid and needs a
+                        // custom diagnostic.
+                        diagnostics.Add(
+                            Diagnostic.Create(
+                                Errors.UnexpectedToken(
+                                    GetText(template, upcommingTokens[0].token),
+                                    "Expected a format string ('camel' or 'pascal'). Case insensitive"),
+                                null));
+                    }
                 }
-
-                var t = possibleToken.Value.token;
-                i = possibleToken.Value.index;
-
-                if (t.TokenType == TokenType.Identifier)
+                if (initialToken.TokenType == TokenType.TemplateTokenOpen &&
+                    TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Colon, TokenType.Identifier))
                 {
-                    // This is our only good case.
-                    continueSeeking = true;
-                    identiferFound = true;
-                    identifier = GetText(template, t);
+                    if (upcommingTokens.Count == 4)
+                    {
+                        // We have an unexpected token where we expect the closing token
+                        AddExpectedClosingToken(diagnostics, GetText(template, upcommingTokens[3].token));
+                    }
+                    else
+                    {
+                        // Tokens ended and we are missing the closing token.
+                        AddMissingToken(diagnostics, "}}");
+                    }
+                }
+                else if (TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Close))
+                {
+                    // We have a complete and finalized token
+                    tagClosed = true;
+                    identifier = GetText(template, upcommingTokens[0].token);
+                }
+                else if (TokenKindsMatch(upcommingTokens, TokenType.Identifier))
+                {
+                    if (upcommingTokens.Count == 2)
+                    {
+                        // We have an unexpected token where we expect the closing token
+                        AddExpectedClosingToken(diagnostics, GetText(template, upcommingTokens[1].token));
+                    }
+                    else
+                    {
+                        // Tokens ended and we are missing the closing token.
+                        AddMissingToken(diagnostics, "}}");
+                    }
                 }
                 else
                 {
-                    diagnostics.Add(
-                        Diagnostic.Create(
-                            Errors.UnexpectedToken(
-                                GetText(template, t),
-                                "Expected an identifier string, which contains only letters, numbers, and underscores"),
-                            null));
-                }
-
-                if (continueSeeking)
-                {
-                    possibleToken = PeekNonWhitespace(tokens, i);
-                    if (possibleToken is null)
-                    {
-                        AddTemplateIncomplete(diagnostics);
-                        continue;
-                    }
-
-                    var t2 = possibleToken.Value.token;
-                    i = possibleToken.Value.index;
-
-                    if (t2.TokenType == TokenType.Colon)
-                    {
-                        // If there is a colon, then we expect a format token and then a close token
-                        possibleToken = PeekNonWhitespace(tokens, i);
-                        if (possibleToken is null)
-                        {
-                            AddTemplateIncomplete(diagnostics);
-                            continue;
-                        }
-                        else
-                        {
-                        }
-                    }
-                    else if (t2.TokenType == TokenType.Close)
-                    {
-                        // This is our only other good case. The tag was closed
-                        tagClosed = true;
-                    }
-                    else
+                    // The first token should be an identifier but isn't.
+                    if (upcommingTokens.Count == 1)
                     {
                         diagnostics.Add(
                             Diagnostic.Create(
                                 Errors.UnexpectedToken(
-                                    GetText(template, t2),
-                                    "Expected closing '}}' token. Note, identifiers cannot have white space."),
+                                    GetText(template, upcommingTokens[0].token),
+                                    "Expected an identifier string, which contains only letters, numbers, and underscores"),
                                 null));
                     }
+                    // Else we should get the incomplete template diagnostic below.
                 }
 
                 if (identiferFound && tagClosed && initialToken.TokenType != TokenType.LogicEndOpen)
@@ -304,7 +313,7 @@ public class Mustache
                     // We close the syntax even if identifier isn't valid, b/c we don't want
                     // inaccurate alerts saying the template is incomplete.
                     identifiers.Add(identifier);
-                    var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier);
+                    var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier, formatSetting);
                     currentNode.Children.Add(ts);
                     currentNode = ts.Type == TemplateSyntaxType.Identifier ? currentNode : ts;
                 }
@@ -382,9 +391,19 @@ public class Mustache
         static void AddTemplateIncomplete(List<Diagnostic> diagnostics) =>
            diagnostics.Add(
               Diagnostic.Create(
-                  Errors.UnfinishedTemplate(
-                      "Template is incomplete"),
-                  null));
+                  Errors.UnfinishedTemplate("Template is incomplete"), null));
+
+        static void AddExpectedClosingToken(List<Diagnostic> diagnostics, string actualText) =>
+            diagnostics.Add(
+                Diagnostic.Create(
+                    Errors.UnexpectedToken(actualText, "Expected closing '}}' token."),
+                    null));
+
+        static void AddMissingToken(List<Diagnostic> diagnostics, string missingToken) =>
+            diagnostics.Add(
+                Diagnostic.Create(
+                    Errors.MissingToken(missingToken),
+                    null));
     }
 
     public static string RenderTemplate(
@@ -423,6 +442,33 @@ public class Mustache
             {
                 Render(sb, child, data);
             }
+        }
+    }
+
+    private static bool IdentifierIsFormatToken((int index, Token token) p, out FormatSetting f)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static bool TokenKindsMatch(IEnumerable<(int i, Token t)> tokens, params TokenType[] types)
+    {
+        if (types.Any() == false)
+        {
+            throw new InvalidOperationException("This should never be called with nothiung in types");
+        }
+
+        if (tokens.Any() == false)
+        {
+            return false; // We are out of tokens
+        }
+
+        if (tokens.First().t.TokenType == types.First())
+        {
+            return TokenKindsMatch(tokens.Skip(1), types.Skip(1).ToArray());
+        }
+        else
+        {
+            return false;
         }
     }
 
@@ -473,21 +519,32 @@ public class Mustache
     /// <param name="tokens">Token collection</param>
     /// <param name="i">Starting index</param>
     /// <returns>Index and token of the next token, or null if none exists.</returns>
-    private static (int index, Token token)? PeekNonWhitespace(ReadOnlySpan<Token> tokens, int i)
+    private static List<(int index, Token token)> PeekNonWhitespace(
+        ReadOnlySpan<Token> tokens,
+        int i,
+        int tokenCount,
+        List<(int index, Token token)>? nonWhitespaceTokens = null)
     {
+        nonWhitespaceTokens ??= new();
+
         if (i + 1 < tokens.Length)
         {
             i++;
             if (tokens[i].TokenType != TokenType.Whitespace)
             {
-                return (i, tokens[i]);
+                nonWhitespaceTokens.Add((i, tokens[i]));
             }
 
-            return PeekNonWhitespace(tokens, i);
+            if (nonWhitespaceTokens.Count == tokenCount)
+            {
+                return nonWhitespaceTokens;
+            }
+
+            return PeekNonWhitespace(tokens, i, tokenCount, nonWhitespaceTokens);
         }
         else
         {
-            return null;
+            return nonWhitespaceTokens;
         }
     }
 
@@ -542,9 +599,9 @@ public class Mustache
         public TemplateSyntax(
             TemplateSyntax? parent,
             TemplateSyntaxType type,
-            string literalText = "",
-            string identifier = "",
-            FormatSetting format = 0)
+            string literalText,
+            string identifier,
+            FormatSetting format)
         {
             Parent = parent;
             Type = type;
