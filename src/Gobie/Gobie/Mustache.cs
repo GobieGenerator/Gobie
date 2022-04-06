@@ -187,7 +187,9 @@ public class Mustache
             }
             else
             {
-                // Here, the only remaining types are opening tokens.
+                // Here, the only remaining types are opening tokens, which should be followed by
+                // either 2 or 4 additional tokens in the following patterns: 'Identifier Close' or
+                // 'Identifier Colon Format Close'
                 var tagClosed = false;
                 var identiferFound = false;
                 var identifier = string.Empty;
@@ -195,59 +197,70 @@ public class Mustache
                 bool continueSeeking = false;
 
                 var possibleToken = PeekNonWhitespace(tokens, i);
-                if (possibleToken is not null)
+                if (possibleToken is null)
                 {
-                    var t = possibleToken.Value.token;
+                    AddTemplateIncomplete(diagnostics);
+                    continue;
+                }
+
+                var t = possibleToken.Value.token;
+                i = possibleToken.Value.index;
+
+                if (t.TokenType == TokenType.Identifier)
+                {
+                    // This is our only good case.
+                    continueSeeking = true;
+                    identiferFound = true;
+                    identifier = GetText(template, t);
+                }
+                else
+                {
+                    diagnostics.Add(
+                        Diagnostic.Create(
+                            Errors.UnexpectedToken(
+                                GetText(template, t),
+                                "Expected an identifier string, which contains only letters, numbers, and underscores"),
+                            null));
+                }
+
+                if (continueSeeking)
+                {
+                    possibleToken = PeekNonWhitespace(tokens, i);
+                    if (possibleToken is null)
+                    {
+                        AddTemplateIncomplete(diagnostics);
+                        continue;
+                    }
+
+                    var t2 = possibleToken.Value.token;
                     i = possibleToken.Value.index;
 
-                    if (t.TokenType == TokenType.Identifier)
+                    if (t2.TokenType == TokenType.Colon)
                     {
-                        // This is our only good case.
-                        continueSeeking = true;
-                        identiferFound = true;
-                        identifier = GetText(template, t);
+                        // If there is a colon, then we expect a format token and then a close token
+                        possibleToken = PeekNonWhitespace(tokens, i);
+                        if (possibleToken is null)
+                        {
+                            AddTemplateIncomplete(diagnostics);
+                            continue;
+                        }
+                        else
+                        {
+                        }
+                    }
+                    else if (t2.TokenType == TokenType.Close)
+                    {
+                        // This is our only other good case. The tag was closed
+                        tagClosed = true;
                     }
                     else
                     {
                         diagnostics.Add(
                             Diagnostic.Create(
                                 Errors.UnexpectedToken(
-                                    GetText(template, t),
-                                    "Expected an identifier string, which contains only letters, numbers, and underscores"),
+                                    GetText(template, t2),
+                                    "Expected closing '}}' token. Note, identifiers cannot have white space."),
                                 null));
-                    }
-                }
-                else
-                {
-                    AddTemplateIncomplete(diagnostics);
-                }
-
-                if (continueSeeking)
-                {
-                    possibleToken = PeekNonWhitespace(tokens, i);
-                    if (possibleToken is not null)
-                    {
-                        var t2 = possibleToken.Value.token;
-                        i = possibleToken.Value.index;
-
-                        if (t2.TokenType == TokenType.Close)
-                        {
-                            // This is our only good case. The tag was closed
-                            tagClosed = true;
-                        }
-                        else
-                        {
-                            diagnostics.Add(
-                                Diagnostic.Create(
-                                    Errors.UnexpectedToken(
-                                        GetText(template, t2),
-                                        "Expected closing '}}' token. Note, identifiers cannot have white space."),
-                                    null));
-                        }
-                    }
-                    else
-                    {
-                        AddTemplateIncomplete(diagnostics);
                     }
                 }
 
