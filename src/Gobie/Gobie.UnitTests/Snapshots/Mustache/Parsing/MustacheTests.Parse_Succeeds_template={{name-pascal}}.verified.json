@@ -1,0 +1,25 @@
+﻿{
+  "Template": "{{name:pascal}}",
+  "Result": {
+    "Data": {
+      "Syntax": {
+        "Type": "Root",
+        "LiteralText": "",
+        "Identifier": "",
+        "Format": "None",
+        "Parent": null,
+        "Children": [
+          {
+            "Type": "Identifier",
+            "LiteralText": "",
+            "Identifier": "name",
+            "Format": "Pascal"
+          }
+        ]
+      },
+      "Identifiers": [
+        "name"
+      ]
+    }
+  }
+}

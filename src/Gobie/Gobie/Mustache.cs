@@ -195,7 +195,6 @@ public class Mustache
                 // either 2 or 4 additional tokens in the following patterns: 'Identifier Close' or
                 // 'Identifier Colon Identifier[Matches format token] Close'
                 var tagClosed = false;
-                var identiferFound = false;
                 var identifier = string.Empty;
                 var formatSetting = FormatSetting.None;
                 var initialToken = tokens[i];
@@ -207,8 +206,10 @@ public class Mustache
                 {
                     tagClosed = true;
                     identifier = GetText(template, upcommingTokens[0].token);
+                    var formatToken = GetText(template, upcommingTokens[2].token);
+                    i = upcommingTokens[3].index;
 
-                    if (IdentifierIsFormatToken(upcommingTokens[2], out FormatSetting f))
+                    if (IdentifierIsFormatToken(formatToken, out FormatSetting f))
                     {
                         // We do have a valid formatted identifier
                         formatSetting = f;
@@ -225,7 +226,7 @@ public class Mustache
                                 null));
                     }
                 }
-                if (initialToken.TokenType == TokenType.TemplateTokenOpen &&
+                else if (initialToken.TokenType == TokenType.TemplateTokenOpen &&
                     TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Colon, TokenType.Identifier))
                 {
                     if (upcommingTokens.Count == 4)
@@ -243,6 +244,7 @@ public class Mustache
                 {
                     // We have a complete and finalized token
                     tagClosed = true;
+                    i = upcommingTokens[1].index;
                     identifier = GetText(template, upcommingTokens[0].token);
                 }
                 else if (TokenKindsMatch(upcommingTokens, TokenType.Identifier))
@@ -273,7 +275,7 @@ public class Mustache
                     // Else we should get the incomplete template diagnostic below.
                 }
 
-                if (identiferFound && tagClosed && initialToken.TokenType != TokenType.LogicEndOpen)
+                if (tagClosed && initialToken.TokenType != TokenType.LogicEndOpen)
                 {
                     // Here we found a complete valid tag for an identifier or an opening logical
                     // tag. First, we verify the identifier makes sense in this context (i.e. no
@@ -317,7 +319,7 @@ public class Mustache
                     currentNode.Children.Add(ts);
                     currentNode = ts.Type == TemplateSyntaxType.Identifier ? currentNode : ts;
                 }
-                if (identiferFound && tagClosed && initialToken.TokenType == TokenType.LogicEndOpen)
+                if (tagClosed && initialToken.TokenType == TokenType.LogicEndOpen)
                 {
                     // Here we found a complete valid tag which ends a logical tag. We need to check
                     // if the currentNode is the matching opening tag (the good case) and move the
@@ -445,25 +447,43 @@ public class Mustache
         }
     }
 
-    private static bool IdentifierIsFormatToken((int index, Token token) p, out FormatSetting f)
+    private static bool IdentifierIsFormatToken(string identifier, out FormatSetting f)
     {
-        throw new NotImplementedException();
+        f = FormatSetting.None;
+
+        if ("pascal".Equals(identifier, StringComparison.OrdinalIgnoreCase))
+        {
+            f = FormatSetting.Pascal;
+            return true;
+        }
+        else if ("camel".Equals(identifier, StringComparison.OrdinalIgnoreCase))
+        {
+            f = FormatSetting.Camel;
+            return true;
+        }
+
+        return false;
     }
 
     private static bool TokenKindsMatch(IEnumerable<(int i, Token t)> tokens, params TokenType[] types)
     {
-        if (types.Any() == false)
-        {
-            throw new InvalidOperationException("This should never be called with nothiung in types");
-        }
-
         if (tokens.Any() == false)
         {
             return false; // We are out of tokens
         }
 
+        if (types.Any() == false)
+        {
+            throw new InvalidOperationException("There must be types if there are tokens.");
+        }
+
         if (tokens.First().t.TokenType == types.First())
         {
+            if (types.Length == 1)
+            {
+                return true; // Were done.
+            }
+
             return TokenKindsMatch(tokens.Skip(1), types.Skip(1).ToArray());
         }
         else
