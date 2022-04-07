@@ -13,7 +13,7 @@ public class MustacheTests
     [TestCase("{{ a b }}")]
     [TestCase("{{ a pascal }}")]
     [TestCase("{{ a camel }}")]
-    public Task Parse_InvalidValidFlatAst(string template) => TestParsing(template);
+    public Task Parse_InvalidFlatAst(string template) => TestParsing(template);
 
     [TestCase("{{^name}} Text1 Text2")]
     public Task Parse_Partial_IssuesDiagnostic(string template) => TestParsing(template);
