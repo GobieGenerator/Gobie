@@ -430,7 +430,15 @@ public class Mustache
             {
                 if (syntax.Type == TemplateSyntaxType.Identifier)
                 {
-                    sb.Append(renderData.RenderString);
+                    var formatted = syntax.Format switch
+                    {
+                        FormatSetting.None => renderData.RenderString,
+                        FormatSetting.Pascal => ToPascal(renderData.RenderString),
+                        FormatSetting.Camel => ToCamel(renderData.RenderString),
+                        _ => throw new InvalidOperationException($"Unknown Format Setting: {syntax.Format}"),
+                    };
+
+                    sb.Append(formatted);
                     return;
                 }
 
@@ -443,6 +451,34 @@ public class Mustache
             foreach (var child in syntax.Children)
             {
                 Render(sb, child, data);
+            }
+
+            static string ToPascal(string text)
+            {
+                if (char.IsUpper(text[0]))
+                {
+                    return text;
+                }
+                else if (text.Length == 1)
+                {
+                    return char.ToUpperInvariant(text[0]).ToString();
+                }
+
+                return char.ToUpperInvariant(text[0]) + text.Substring(1);
+            }
+
+            static string ToCamel(string text)
+            {
+                if (char.IsLower(text[0]))
+                {
+                    return text;
+                }
+                else if (text.Length == 1)
+                {
+                    return char.ToLowerInvariant(text[0]).ToString();
+                }
+
+                return char.ToLowerInvariant(text[0]) + text.Substring(1);
             }
         }
     }

@@ -1,0 +1,1 @@
+﻿private void Mike(string greeting) => mike.Add(Programmer = programmer);

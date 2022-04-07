@@ -41,6 +41,7 @@ public class MustacheTests
     [TestCase("Hello {{foo}} {{#name}}Who is a person {{^foo}}with a job: {{job}}{{/foo}}{{/name}}")]
     [TestCase("private string {{name}}(string greeting) \n{\n return $\"{greeting}: {{name}}\";\n}\n")]
     [TestCase("private void {{name}}(string greeting) => {{name}}.Add(greeting);")]
+    [TestCase("private void {{name : Pascal}}(string greeting) => {{name:camel}}.Add({{job:pascal}} = {{job:camel}});")]
     public Task Render_Succeeds(string template)
     {
         var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
