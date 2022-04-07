@@ -1,7 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-namespace Gobie.Helpers
+﻿namespace Gobie.Helpers
 {
     public static class SyntaxHelpers
     {

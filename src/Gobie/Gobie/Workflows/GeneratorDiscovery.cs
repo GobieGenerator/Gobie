@@ -1,6 +1,5 @@
 ﻿namespace Gobie.Workflows
 {
-    using Gobie.Diagnostics;
     using Gobie.Helpers;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -8,8 +7,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     public static class GeneratorDiscovery
     {
@@ -177,15 +174,6 @@
                     }
 
                     var genName = attribute!.ConstructorArguments[0].Value!.ToString();
-
-                    string G(AttributeData d, int index)
-                    {
-                        if (d.ConstructorArguments.Length > index)
-                        {
-                        }
-
-                        return string.Empty;
-                    }
 
                     string? namespaceName = null;
                     var namespaceVal = attribute.NamedArguments.SingleOrDefault(x => x.Key == "Namespace").Value;

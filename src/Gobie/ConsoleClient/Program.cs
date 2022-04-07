@@ -1,7 +1,5 @@
 ﻿namespace ConsoleClient
 {
-    using Models;
-
     internal class Program
     {
         private static void Main(string[] args)

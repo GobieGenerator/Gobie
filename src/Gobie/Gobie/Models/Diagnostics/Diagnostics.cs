@@ -1,6 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-
-namespace Gobie.Diagnostics
+﻿namespace Gobie.Models.Diagnostics
 {
     public static class Errors
     {
@@ -37,7 +35,7 @@ namespace Gobie.Diagnostics
             new("GB1001", "Gobie", $"The identifier '{token}' was not expected. {expected}", "Gobie", Severity, true);
 
         public static DiagnosticDescriptor LogicalEndMissing(string details) =>
-        new("GB1001", "Gobie", $"The template is missing a closing tag. We expect '{details}' at or before this point in the template.", "Gobie", Severity, true);
+            new("GB1001", "Gobie", $"The template is missing a closing tag. We expect '{details}' at or before this point in the template.", "Gobie", Severity, true);
 
         public static DiagnosticDescriptor UnfinishedTemplate(string details) =>
             new("GB1001", "Gobie", $"The template is incomplete. {details}", "Gobie", Severity, true);

@@ -1,6 +1,4 @@
-﻿namespace Gobie;
-
-using Microsoft.CodeAnalysis;
+﻿namespace Gobie.Models.Unions;
 
 public class DataOrDiagnostics<T>
 {
