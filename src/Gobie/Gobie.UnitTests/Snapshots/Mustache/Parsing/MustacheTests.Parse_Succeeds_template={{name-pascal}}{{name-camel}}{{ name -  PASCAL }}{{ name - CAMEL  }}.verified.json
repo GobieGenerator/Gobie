@@ -1,0 +1,43 @@
+﻿{
+  "Template": "{{name:pascal}}{{name:camel}}{{ name :  PASCAL }}{{ name : CAMEL  }}",
+  "Result": {
+    "Data": {
+      "Syntax": {
+        "Type": "Root",
+        "LiteralText": "",
+        "Identifier": "",
+        "Format": "None",
+        "Parent": null,
+        "Children": [
+          {
+            "Type": "Identifier",
+            "LiteralText": "",
+            "Identifier": "name",
+            "Format": "Pascal"
+          },
+          {
+            "Type": "Identifier",
+            "LiteralText": "",
+            "Identifier": "name",
+            "Format": "Camel"
+          },
+          {
+            "Type": "Identifier",
+            "LiteralText": "",
+            "Identifier": "name",
+            "Format": "Pascal"
+          },
+          {
+            "Type": "Identifier",
+            "LiteralText": "",
+            "Identifier": "name",
+            "Format": "Camel"
+          }
+        ]
+      },
+      "Identifiers": [
+        "name"
+      ]
+    }
+  }
+}

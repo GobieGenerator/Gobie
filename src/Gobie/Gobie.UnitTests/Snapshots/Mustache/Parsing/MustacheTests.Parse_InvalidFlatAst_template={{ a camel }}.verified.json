@@ -1,0 +1,24 @@
+﻿{
+  "Template": "{{ a camel }}",
+  "Result": {
+    "Data": {
+      "Syntax": null,
+      "Identifiers": null
+    },
+    "Diagnostics": [
+      {
+        "Id": "GB1001",
+        "Title": "Gobie",
+        "Severity": "Error",
+        "WarningLevel": 0,
+        "Location": ": (0,0)-(0,0)",
+        "Description": "",
+        "HelpLink": "",
+        "MessageFormat": "The expected token ':' was not found.",
+        "Message": "The expected token ':' was not found.",
+        "Category": "Gobie",
+        "CustomTags": []
+      }
+    ]
+  }
+}

@@ -8,32 +8,29 @@ namespace ConsoleClient.Models
         [GobieTemplate]
         private const string EncapsulationTemplate =
 @"
-            private readonly List<{{TypeName}}> {{Field}} = new List<{{TypeName}}>();
-            public IEnumerable<{{TypeName}}> {{PropertyName}} => {{Field}}.AsReadOnly();
-            public IEnumerable<int> {{ Property }}Lengths => {{ Field }}.Select(x => x.Length);
+            private readonly List<{{TypeName}}> {{PropertyName : camel}} = new List<{{TypeName}}>();
+            public IEnumerable<{{TypeName}}> {{PropertyName : pascal}} => {{PropertyName : camel}}.AsReadOnly();
+            public IEnumerable<int> {{ PropertyName : pascal }}Lengths => {{PropertyName : camel}}.Select(x => x.Length);
         ";
 
         [GobieTemplate]
         private const string AddMethod =
-    @"      public void Add{{ Property }}({{TypeName}} s)
+    @"      public void Add{{ PropertyName }}({{TypeName}} s)
             {
                 {{#CustomValidator}}
                 if({{CustomValidator}}(s))
                 {
-                    {{Field}}.Add(s);
+                    {{PropertyName : camel}}.Add(s);
                 }
                 {{/CustomValidator}}
 
                 {{^CustomValidator}}
-                    {{Field}}.Add(s);
+                    {{PropertyName : camel}}.Add(s);
                 {{/CustomValidator}}
             }";
 
         [Required]
         public string PropertyName { get; set; }
-
-        [Required]
-        public string Field { get; set; }
 
         [Required]
         public string TypeName { get; set; }
@@ -42,7 +39,7 @@ namespace ConsoleClient.Models
         public string CustomValidator { get; set; } = null;
     }
 
-    [EncapsulatedCollection("Books", "books", "string", nameof(ValidateBooks))]
+    [EncapsulatedCollection("Books", "string", nameof(ValidateBooks))]
     public partial class GenTarget
     {
         public bool ValidateBooks(string s) => s.Length > 0;
