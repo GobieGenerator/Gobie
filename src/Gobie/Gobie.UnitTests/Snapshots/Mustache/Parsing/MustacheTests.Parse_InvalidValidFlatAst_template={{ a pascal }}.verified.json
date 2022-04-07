@@ -1,5 +1,5 @@
 ﻿{
-  "Template": "{{ a b }}",
+  "Template": "{{ a pascal }}",
   "Result": {
     "Data": {
       "Syntax": null,
@@ -14,8 +14,8 @@
         "Location": ": (0,0)-(0,0)",
         "Description": "",
         "HelpLink": "",
-        "MessageFormat": "The token 'b' was not expected. This is either missing a colon or has a second unexpected identifier",
-        "Message": "The token 'b' was not expected. This is either missing a colon or has a second unexpected identifier",
+        "MessageFormat": "The expected token ':' was not found.",
+        "Message": "The expected token ':' was not found.",
         "Category": "Gobie",
         "CustomTags": []
       }

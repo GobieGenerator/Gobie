@@ -227,6 +227,32 @@ public class Mustache
                     }
                 }
                 else if (initialToken.TokenType == TokenType.TemplateTokenOpen &&
+                    TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Identifier, TokenType.Close))
+                {
+                    // Looks like {{ a b }}. Either missing a colon or two
+                    var formatToken = GetText(template, upcommingTokens[1].token);
+                    i = upcommingTokens[2].index;
+
+                    if (IdentifierIsFormatToken(formatToken, out FormatSetting _))
+                    {
+                        // We should just be missing a colon
+                        diagnostics.Add(
+                            Diagnostic.Create(
+                                Errors.MissingToken(":"),
+                                null));
+                    }
+                    else
+                    {
+                        // Not sure what is wrong
+                        diagnostics.Add(
+                            Diagnostic.Create(
+                                Errors.UnexpectedToken(
+                                    GetText(template, upcommingTokens[1].token),
+                                    "This is either missing a colon or has a second unexpected identifier"),
+                                null));
+                    }
+                }
+                else if (initialToken.TokenType == TokenType.TemplateTokenOpen &&
                     TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Colon, TokenType.Identifier))
                 {
                     if (upcommingTokens.Count == 4)
@@ -260,19 +286,21 @@ public class Mustache
                         AddMissingToken(diagnostics, "}}");
                     }
                 }
-                else
+                else if (upcommingTokens.Count == 1)
                 {
                     // The first token should be an identifier but isn't.
-                    if (upcommingTokens.Count == 1)
-                    {
-                        diagnostics.Add(
-                            Diagnostic.Create(
-                                Errors.UnexpectedToken(
-                                    GetText(template, upcommingTokens[0].token),
-                                    "Expected an identifier string, which contains only letters, numbers, and underscores"),
-                                null));
-                    }
-                    // Else we should get the incomplete template diagnostic below.
+                    i = upcommingTokens[0].index;
+                    diagnostics.Add(
+                        Diagnostic.Create(
+                            Errors.UnexpectedToken(
+                                GetText(template, upcommingTokens[0].token),
+                                "Expected an identifier string, which contains only letters, numbers, and underscores"),
+                            null));
+                }
+                else
+                {
+                    // Else, this is just an opening token.
+                    AddTemplateIncomplete(diagnostics);
                 }
 
                 if (tagClosed && initialToken.TokenType != TokenType.LogicEndOpen)

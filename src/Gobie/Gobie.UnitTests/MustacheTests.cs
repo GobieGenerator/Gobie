@@ -10,7 +10,9 @@ public class MustacheTests
     [TestCase("{{#")]
     [TestCase("}}")]
     [TestCase("{{}}")]
-    [TestCase("{{ a b }}")] // TODO should this have just one diagnostic or two?
+    [TestCase("{{ a b }}")]
+    [TestCase("{{ a pascal }}")]
+    [TestCase("{{ a camel }}")]
     public Task Parse_InvalidValidFlatAst(string template) => TestParsing(template);
 
     [TestCase("{{^name}} Text1 Text2")]
