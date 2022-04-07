@@ -1,6 +1,6 @@
 ﻿namespace ConsoleClient
 {
-    using ConsoleClient.Models;
+    using Models;
 
     internal class Program
     {

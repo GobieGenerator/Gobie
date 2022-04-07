@@ -1,16 +1,15 @@
 ﻿using Gobie;
 using System.Collections.Generic;
 
-namespace ConsoleClient.Models
+namespace Models
 {
     public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
     {
         [GobieTemplate]
         private const string EncapsulationTemplate =
 @"
-            private readonly List<{{TypeName}}> {{PropertyName : camel}} = new List<{{TypeName}}>();
-            public IEnumerable<{{TypeName}}> {{PropertyName : pascal}} => {{PropertyName : camel}}.AsReadOnly();
-            public IEnumerable<int> {{ PropertyName : pascal }}Lengths => {{PropertyName : camel}}.Select(x => x.Length);
+            private readonly System.Collections.Generic.List<{{TypeName}}> {{PropertyName : camel}} = new System.Collections.Generic.List<{{TypeName}}>();
+            public System.Collections.Generic.IEnumerable<{{TypeName}}> {{PropertyName : pascal}} => {{PropertyName : camel}}.AsReadOnly();
         ";
 
         [GobieTemplate]
