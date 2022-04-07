@@ -538,7 +538,7 @@ public class UserTemplateTests
         public sealed class NamePropertyGenerator : GobieFieldGenerator
         {
             [GobieTemplate]
-            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName : camel}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
 
             [Required(1)]
             public string InitialName { get; set; }
