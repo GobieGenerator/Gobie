@@ -40,6 +40,13 @@
     {
     }
 
+    /// <summary>
+    /// Base class Gobie ALWAYS generates.
+    /// </summary>
+    public abstract class GobieClassGenerator : GobieGeneratorBase
+    {
+    }
+
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public abstract class GobieFieldGeneratorAttribute : Attribute
     {

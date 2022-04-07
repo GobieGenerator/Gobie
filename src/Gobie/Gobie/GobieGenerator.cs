@@ -14,8 +14,8 @@ namespace Gobie
     {
         public static readonly HashSet<string> GobieGeneratorBaseClasses = new()
         {
-            "GobieFieldGenerator",
-            "Gobie.GobieFieldGenerator",
+            "GobieClassGenerator",
+            "Gobie.GobieClassGenerator",
         };
 
         public void Initialize(IncrementalGeneratorInitializationContext context)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Models
 {
-    public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
+    public sealed class EncapsulatedCollectionGenerator : GobieClassGenerator
     {
         [GobieTemplate]
         private const string EncapsulationTemplate =

@@ -50,7 +50,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public partial sealed class UserDefinedGenerator : GobieFieldGenerator" + TrivialTemplate;
+        public partial sealed class UserDefinedGenerator : GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -61,7 +61,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public class UserDefinedGenerator : GobieFieldGenerator" + TrivialTemplate;
+        public class UserDefinedGenerator : GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -72,7 +72,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public partial class UserDefinedGenerator : Gobie.GobieFieldGenerator" + TrivialTemplate;
+        public partial class UserDefinedGenerator : Gobie.GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -84,7 +84,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public sealed class UserDefinedGenerator : Gobie.GobieFieldGenerator
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
         {
         }";
 
@@ -97,7 +97,7 @@ public class UserTemplateTests
         var source = @"
         using Gobie;
 
-        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
+        public sealed class UserDefined : Gobie.GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -109,7 +109,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""MyGenerator"")]
-        public sealed class UserDefinedGenerator : Gobie.GobieFieldGenerator" + TrivialTemplate;
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -121,7 +121,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""MyGenerator"")]
-        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
+        public sealed class UserDefined : Gobie.GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -133,7 +133,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""MyGeneratorAttribute"")]
-        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
+        public sealed class UserDefined : Gobie.GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -145,7 +145,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""MyGenerator"", Namespace = ""MyNamespace"")]
-        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
+        public sealed class UserDefined : Gobie.GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -158,7 +158,7 @@ public class UserTemplateTests
 
         [GobieGeneratorName(""MyGenerator"", Namespace = ""MyNamespace"")]
         [GobieGeneratorName(""SeconGen"", Namespace = ""SecondNamespace"")]
-        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
+        public sealed class UserDefined : Gobie.GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -171,7 +171,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName(""PartialName
-        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
+        public sealed class UserDefined : Gobie.GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -183,7 +183,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName
-        public sealed class UserDefined : Gobie.GobieFieldGenerator" + TrivialTemplate;
+        public sealed class UserDefined : Gobie.GobieClassGenerator" + TrivialTemplate;
 
         return TestHelper.Verify(source);
     }
@@ -195,7 +195,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             public string MyParam {get; set;}
 
@@ -212,7 +212,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             [Required]
             public string ReqParam {get; set;}
@@ -232,7 +232,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             [Required]
             public string ReqParam {get; set;}
@@ -255,7 +255,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             [Required]
             public string ReqNoPositionRequest {get; set;}
@@ -274,7 +274,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             [Required(5)]
             public string ReqRequestedFifth {get; set;}
@@ -293,7 +293,7 @@ public class UserTemplateTests
         using Gobie;
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             [Required(5)]
             public string ReqRequestedFifth {get; set;}
@@ -320,7 +320,7 @@ public class UserTemplateTests
         public class CustomType {}
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             [Required]
             public int MyInt {get; set;}
@@ -341,7 +341,7 @@ public class UserTemplateTests
         public class CustomType {}
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             [Required]
             public double BadProp {get; set;}
@@ -362,7 +362,7 @@ public class UserTemplateTests
         public class CustomType {}
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             [Required]
             public int MyInt {get; set;} = 4;
@@ -386,7 +386,7 @@ public class UserTemplateTests
         public class CustomType {}
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             [Required]
             public int MyInt {get; set;} = 4;
@@ -407,7 +407,7 @@ public class UserTemplateTests
         public class CustomType {}
 
         [GobieGeneratorName]
-        public sealed class PrimaryKeyGenerator : Gobie.GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : Gobie.GobieClassGenerator
         {
             public double BadProp {get; set;}
 
@@ -426,7 +426,7 @@ public class UserTemplateTests
         namespace SomeNamespace;
 
         [GobieGeneratorName(""PkGen"")]
-        public sealed class PrimaryKeyGenerator : GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : GobieClassGenerator
         {
             [GobieTemplate]
             private const string KeyString = ""{{"";
@@ -448,13 +448,13 @@ public class UserTemplateTests
         namespace SomeNamespace;
 
         [GobieGeneratorName(""PkGen"")]
-        public sealed class PrimaryKeyGenerator : GobieFieldGenerator
+        public sealed class PrimaryKeyGenerator : GobieClassGenerator
         {
             [GobieTemplate]
             private const string KeyString = ""public int Id { get; set; } // This is a key"";
         }
 
-        public sealed class NamePropertyGenerator : GobieFieldGenerator
+        public sealed class NamePropertyGenerator : GobieClassGenerator
         {
             [GobieTemplate]
             private const string KeyString = ""public string Name { get; set; }"";
@@ -481,7 +481,7 @@ public class UserTemplateTests
 
         namespace SomeNamespace;
 
-        public sealed class NamePropertyGenerator : GobieFieldGenerator
+        public sealed class NamePropertyGenerator : GobieClassGenerator
         {
             [GobieTemplate]
             private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
@@ -508,7 +508,7 @@ public class UserTemplateTests
 
         namespace SomeNamespace;
 
-        public sealed class NamePropertyGenerator : GobieFieldGenerator
+        public sealed class NamePropertyGenerator : GobieClassGenerator
         {
             [GobieTemplate]
             private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
@@ -535,7 +535,7 @@ public class UserTemplateTests
 
         namespace SomeNamespace;
 
-        public sealed class NamePropertyGenerator : GobieFieldGenerator
+        public sealed class NamePropertyGenerator : GobieClassGenerator
         {
             [GobieTemplate]
             private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName : camel}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
@@ -561,7 +561,7 @@ public class UserTemplateTests
 
         namespace SomeNamespace;
 
-        public sealed class NamePropertyGenerator : GobieFieldGenerator
+        public sealed class NamePropertyGenerator : GobieClassGenerator
         {
             [GobieTemplate]
             private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
