@@ -1,9 +1,7 @@
-﻿using Gobie.Tests;
-
-namespace Gobie.UnitTests;
+﻿namespace Gobie.UnitTests;
 
 [TestFixture]
-public class UserTemplateTests
+public class ClassGen
 {
     private const string TrivialTemplate = @"
     {
