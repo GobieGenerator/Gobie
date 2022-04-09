@@ -139,7 +139,7 @@ public static class GeneratorDiscovery
 
         //! We accumulate data here.
         var ident = new ClassIdentifier("Gobie", cds.Identifier.ToString());
-        var genData = new UserGeneratorAttributeData(ident, cds, "Gobie.GobieFieldGeneratorAttribute");
+        var genData = new UserGeneratorAttributeData(ident, cds, "global::Gobie.GobieFieldGeneratorAttribute");
 
         var diagnostics = new List<Diagnostic>();
         if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
