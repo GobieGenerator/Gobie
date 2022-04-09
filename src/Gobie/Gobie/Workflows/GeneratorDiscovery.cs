@@ -131,7 +131,13 @@ public static class GeneratorDiscovery
 
         // Because we control the list of base types they can use this should be a very good though
         // imperfect filter we can run on the syntax alone.
-        var gobieBaseTypeName = cds.BaseList.Types.SingleOrDefault(x => GobieGenerator.GobieGeneratorBaseClasses.Contains(x.ToString()));
+        foreach (var item in cds.BaseList.Types)
+        {
+            var a = item.ToString();
+            var b = item.ToFullString();
+        }
+
+        var gobieBaseTypeName = cds.BaseList.Types.SingleOrDefault(x => Config.GenToAttribute.ContainsKey(x.ToString()));
         if (gobieBaseTypeName is null)
         {
             return null;
@@ -139,7 +145,7 @@ public static class GeneratorDiscovery
 
         //! We accumulate data here.
         var ident = new ClassIdentifier("Gobie", cds.Identifier.ToString());
-        var genData = new UserGeneratorAttributeData(ident, cds, "global::Gobie.GobieFieldGeneratorAttribute");
+        var genData = new UserGeneratorAttributeData(ident, cds, Config.GenToAttribute[gobieBaseTypeName.ToString()]);
 
         var diagnostics = new List<Diagnostic>();
         if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))

@@ -3,14 +3,6 @@
 [Generator]
 public class GobieGenerator : IIncrementalGenerator
 {
-    public static readonly HashSet<string> GobieGeneratorBaseClasses = new()
-    {
-        "GobieClassGenerator",
-        "Gobie.GobieClassGenerator",
-        "GobieFieldGenerator",
-        "Gobie.GobieFieldGenerator",
-    };
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Find the user templates and report diagnostics on issues.
