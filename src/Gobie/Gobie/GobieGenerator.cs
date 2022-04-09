@@ -7,6 +7,8 @@ public class GobieGenerator : IIncrementalGenerator
     {
         "GobieClassGenerator",
         "Gobie.GobieClassGenerator",
+        "GobieFieldGenerator",
+        "Gobie.GobieFieldGenerator",
     };
 
     public void Initialize(IncrementalGeneratorInitializationContext context)

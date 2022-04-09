@@ -139,7 +139,7 @@ public static class GeneratorDiscovery
 
         //! We accumulate data here.
         var ident = new ClassIdentifier("Gobie", cds.Identifier.ToString());
-        var genData = new UserGeneratorAttributeData(ident, cds);
+        var genData = new UserGeneratorAttributeData(ident, cds, "Gobie.GobieFieldGeneratorAttribute");
 
         var diagnostics = new List<Diagnostic>();
         if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
@@ -273,7 +273,7 @@ public static class GeneratorDiscovery
             {{
                 /// <summary> This attribute will cause the generator defined by this thing here to
                 /// run <see cref=""{data.DefinitionIdentifier.FullName}""/> to run. </summary>
-                public sealed class {data.AttributeIdentifier.ClassName} : Gobie.GobieFieldGeneratorAttribute
+                public sealed class {data.AttributeIdentifier.ClassName} : {data.AttributeBase}
                 {{
                     public {data.AttributeIdentifier.ClassName}({string.Join(", ", data.RequiredParameters.Select(x => x.CtorArgumentString))})
                     {{

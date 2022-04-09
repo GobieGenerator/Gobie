@@ -7,11 +7,15 @@ public class UserGeneratorAttributeData
 {
     private readonly List<RequiredParameter> requiredParameters = new List<RequiredParameter>();
 
-    public UserGeneratorAttributeData(ClassIdentifier defintionIdentifier, ClassDeclarationSyntax classDeclarationSyntax)
+    public UserGeneratorAttributeData(
+        ClassIdentifier defintionIdentifier,
+        ClassDeclarationSyntax classDeclarationSyntax,
+        string attributeBase)
     {
         DefinitionIdentifier = defintionIdentifier;
         AttributeIdentifier = CalculateAttributeIdentifier(defintionIdentifier);
         ClassDeclarationSyntax = classDeclarationSyntax;
+        AttributeBase = attributeBase;
     }
 
     public ClassIdentifier DefinitionIdentifier { get; private set; }
@@ -27,6 +31,8 @@ public class UserGeneratorAttributeData
     /// </summary>
     public IEnumerable<RequiredParameter> RequiredParameters =>
         requiredParameters.OrderBy(x => x.RequestedOrder).ThenBy(x => x.DeclaredOrder);
+
+    public string AttributeBase { get; private set; }
 
     public void AddRequiredParameter(RequiredParameter p) => requiredParameters.Add(p);
 

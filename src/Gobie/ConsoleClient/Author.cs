@@ -37,7 +37,7 @@ namespace Models
         public string CustomValidator { get; set; } = null;
     }
 
-    [EncapsulatedCollection("Books", "string", nameof(ValidateBooks))]
+    //[EncapsulatedCollection("Books", "string", nameof(ValidateBooks))]
     public partial class GenTarget
     {
         public bool ValidateBooks(string s) => s.Length > 0;
