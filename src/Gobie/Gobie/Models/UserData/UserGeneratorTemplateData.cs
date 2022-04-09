@@ -5,13 +5,13 @@
 /// </summary>
 public class UserGeneratorTemplateData
 {
-    public UserGeneratorTemplateData(UserGeneratorAttributeData data, List<Mustache.Mustache.TemplateDefinition> templates)
+    public UserGeneratorTemplateData(UserGeneratorAttributeData data, List<Mustache.TemplateDefinition> templates)
     {
         AttributeData = data;
         Templates = templates;
     }
 
-    public List<Mustache.Mustache.TemplateDefinition> Templates { get; }
+    public List<Mustache.TemplateDefinition> Templates { get; }
 
     public UserGeneratorAttributeData AttributeData { get; }
 }

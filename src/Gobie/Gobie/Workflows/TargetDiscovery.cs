@@ -1,7 +1,4 @@
-﻿using System.Text;
-using Gobie.Enums;
-
-namespace Gobie.Workflows;
+﻿namespace Gobie.Workflows;
 
 public class TargetDiscovery
 {

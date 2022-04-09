@@ -1,4 +1,4 @@
-﻿namespace Gobie.Models.Mustache;
+﻿namespace Gobie.Models.Templating;
 
 public class Mustache
 {

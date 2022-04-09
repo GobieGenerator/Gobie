@@ -1,8 +1,5 @@
 ﻿namespace Gobie.Models.UserData;
 
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-
 /// <summary>
 /// Contains enough data to build the user generator attribute. But not enough to actually run the template.
 /// </summary>

@@ -1,6 +1,6 @@
 ﻿namespace Gobie.UnitTests;
-using System.Linq;
-using static Gobie.Mustache;
+
+using static Gobie.Models.Templating.Mustache;
 
 [TestFixtureSource(nameof(FixtureArgs))]
 public class MoustacheTokenizePropertyBasedTests
@@ -18,7 +18,7 @@ public class MoustacheTokenizePropertyBasedTests
     public MoustacheTokenizePropertyBasedTests(string template)
     {
         this.template = template;
-        tokens = Mustache.Tokenize(this.template).ToArray();
+        tokens = Tokenize(this.template).ToArray();
     }
 
     [Test]
