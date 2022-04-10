@@ -70,4 +70,46 @@ public class FieldGen
 
         return TestHelper.Verify(source);
     }
+
+    [TestCase(101, "private readonly ;")]
+    [TestCase(102, "private readonly List<string names = new();")]
+    [TestCase(103, "private readonly Liststring> names = new();")]
+    [TestCase(104, "private readonly List<string> = new();")]
+    [TestCase(105, "private readonly List<string> names new();")]
+    [TestCase(106, "private readonly List<string> names;")]
+    [TestCase(107, "private readonly List<> names;")]
+    [TestCase(108, "private readonly List< names;")]
+    [TestCase(109, "private readonly List> names;")]
+    [TestCase(110, "private;")]
+    [TestCase(201, "private readonly ;")]
+    [TestCase(202, "private readonly List<string names = new()")]
+    [TestCase(203, "private readonly Liststring> names = new()")]
+    [TestCase(204, "private readonly List<string> = new()")]
+    [TestCase(205, "private readonly List<string> names new()")]
+    [TestCase(206, "private readonly List<string> names")]
+    [TestCase(207, "private readonly List<> names")]
+    [TestCase(208, "private readonly List< names")]
+    [TestCase(209, "private readonly List> names")]
+    [TestCase(210, "private;")]
+    public Task InvalidFieldDeclaration_DoesntCrash(int n, string field)
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class EncapsulatedFieldGenerator : GobieFieldGenerator
+        {
+            [GobieTemplate]
+            private const string ReadonlyCollection = ""// {{FieldName}} {{FieldType}} {{FieldGenericType}}"";
+        }
+
+        public partial class TemplateTarget
+        {
+            [EncapsulatedField]
+            " + field + @"
+        }";
+
+        return TestHelper.Verify(source);
+    }
 }
