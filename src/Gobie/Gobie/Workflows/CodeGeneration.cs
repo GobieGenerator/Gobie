@@ -1,23 +1,54 @@
 ﻿namespace Gobie.Workflows;
 
 using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Immutable;
 
 public static class CodeGeneration
 {
-    public static void Output(SourceProductionContext spc, TargetAndTemplateData source)
+    public static void Output(SourceProductionContext spc, ImmutableArray<CodeOutput> sources)
     {
-        var fullCode = $@"
-            namespace {source.TargetClass.NamespaceName}
+        foreach (var source in sources)
+        {
+            spc.AddSource(source.HintName, source.Code);
+        }
+    }
+
+    public static IncrementalValueProvider<ImmutableArray<CodeOutput>> CollectOutputs(
+        IncrementalValueProvider<ImmutableArray<TargetAndTemplateData>> incrementalValueProvider)
+    {
+        return incrementalValueProvider.Select(static (s, _) => Asdf(s));
+    }
+
+    public static ImmutableArray<CodeOutput> Asdf(
+        ImmutableArray<TargetAndTemplateData> compliationAndGeneratorDeclarations)
+    {
+        var codeOut = ImmutableArray.CreateBuilder<CodeOutput>();
+
+        var fileGroups = compliationAndGeneratorDeclarations.GroupBy(x => (x.TargetClass, x.GeneratorName));
+
+        foreach (var group in fileGroups)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(@$"
+            namespace {group.Key.TargetClass.NamespaceName}
             {{
-                public partial class {source.TargetClass.ClassName}
-                {{
-                    {source.Code}
-                }}
-            }}
-            ";
+                public partial class {group.Key.TargetClass.ClassName}
+                {{");
 
-        fullCode = CSharpSyntaxTree.ParseText(fullCode).GetRoot().NormalizeWhitespace().ToFullString();
+            foreach (var templates in group.AsEnumerable())
+            {
+                sb.AppendLine(templates.Code);
+            }
 
-        spc.AddSource($"{source.GeneratorName}_{source.TargetClass.ClassName}.g.cs", fullCode);
+            sb.AppendLine(@"
+                }
+            }");
+
+            var fullCode = CSharpSyntaxTree.ParseText(sb.ToString()).GetRoot().NormalizeWhitespace().ToFullString();
+            var hintName = $"{group.Key.GeneratorName}_{group.Key.TargetClass.ClassName}.g.cs";
+            codeOut.Add(new CodeOutput(hintName, fullCode));
+        }
+
+        return codeOut.ToImmutable();
     }
 }

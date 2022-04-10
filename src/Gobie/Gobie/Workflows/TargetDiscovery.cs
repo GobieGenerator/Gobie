@@ -132,9 +132,9 @@ public class TargetDiscovery
 
                     var attributeDataImmutable = attributeData.ToImmutable();
 
-                    var sb = new StringBuilder();
                     foreach (var target in syntaxData)
                     {
+                        var sb = new StringBuilder();
                         var intersections = target.Keys.Intersect(attributeDataImmutable.Keys);
                         if (intersections.Any())
                         {
@@ -150,15 +150,12 @@ public class TargetDiscovery
                             sb.AppendLine(Mustache.RenderTemplate(t, fullTemplateData));
                             sb.AppendLine();
                         }
-                    }
 
-                    if (sb.Length > 0)
-                    {
                         output.Add(
                             new TargetAndTemplateData(
                                 TemplateType.Complete,
                                 ctypeName,
-                                new ClassIdentifier(syntaxData[0][ClassNamespace].RenderString, syntaxData[0][ClassName].RenderString),
+                                new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
                                 sb.ToString()));
                     }
                 }

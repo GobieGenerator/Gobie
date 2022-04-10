@@ -94,6 +94,32 @@ public class FieldGen
         return TestHelper.Verify(source);
     }
 
+    [Test]
+    public Task MultipleFieldDeclaration_GeneratesOutput()
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
+        {
+            [GobieTemplate]
+            private const string ReadonlyCollection = ""public IEnumerable<{{FieldGenericType}}> {{FieldName : pascal}} => {{FieldName}}.AsReadOnly(); // Encapsulating {{FieldType}}"";
+        }
+
+        public partial class TemplateTarget
+        {
+            [EncapsulatedCollection]
+            private readonly List<string> names = new(), addresses = new();
+
+            [EncapsulatedCollection]
+            private readonly List<string> books = new();
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
     // Note, we use the integers to ensure verify generates unique file names when escaping these strings.
     [TestCase(101, "private readonly ;")]
     [TestCase(102, "private readonly List<string names = new();")]

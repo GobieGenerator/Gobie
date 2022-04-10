@@ -12,7 +12,7 @@ public class TargetAndTemplateData
     {
         TemplateType = templateType;
         GeneratorName = generatorName ?? throw new ArgumentNullException(nameof(generatorName));
-        TargetClass = targetClass ?? throw new ArgumentNullException(nameof(targetClass));
+        TargetClass = targetClass;
         Code = code ?? throw new ArgumentNullException(nameof(code));
     }
 
