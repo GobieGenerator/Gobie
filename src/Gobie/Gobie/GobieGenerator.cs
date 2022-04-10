@@ -27,7 +27,7 @@ public class GobieGenerator : IIncrementalGenerator
         DiagnosticsReporting.Report(context, targetsOrDiagnostics);
         var targets = ExtractManyData(targetsOrDiagnostics);
 
-        // Consolodate outputs down to files and output them
+        // Consolodate outputs down to files and output them.
         IncrementalValueProvider<ImmutableArray<CodeOutput>> codeOut = CodeGeneration.CollectOutputs(targets.Collect());
         context.RegisterSourceOutput(codeOut, static (spc, source) => CodeGeneration.Output(spc, source));
     }
