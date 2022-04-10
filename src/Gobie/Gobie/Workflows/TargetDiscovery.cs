@@ -45,8 +45,10 @@ public class TargetDiscovery
             return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(diagnostics);
         }
 
-        // Initial data which would be the same for all generators operating on the member data syntax.
-        ImmutableDictionary<string, Mustache.RenderData>? syntaxData = null;
+        // Initial data which would be the same for all generators operating on the member data
+        // syntax. Note that for some syntax like fields, we can have multple generation targets in
+        // a single syntax node.
+        ImmutableList<ImmutableDictionary<string, Mustache.RenderData>>? syntaxData = null;
         SemanticModel? semanticModel = null;
 
         // It looks like we aren't able to get the attribute args off of SourceAttributeData (from
@@ -77,8 +79,7 @@ public class TargetDiscovery
                     semanticModel ??= compilation.GetSemanticModel(mds.SyntaxTree);
                     syntaxData ??= GetSyntaxData(semanticModel, mds);
 
-                    var templateData = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
-                    templateData.AddRange(syntaxData);
+                    var attributeData = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
 
                     if (att.ArgumentList is not null)
                     {
@@ -91,13 +92,13 @@ public class TargetDiscovery
                                 // This is a required argument either with or without colon equals
                                 var ident = template.AttributeData.RequiredParameters.ElementAt(i).NamePascal;
 
-                                if (arg.Expression.Kind() == Microsoft.CodeAnalysis.CSharp.SyntaxKind.NullLiteralExpression)
+                                if (arg.Expression.Kind() == SyntaxKind.NullLiteralExpression)
                                 {
-                                    templateData.Add(ident, new Mustache.RenderData(ident, string.Empty, false));
+                                    attributeData.Add(new Mustache.RenderData(ident, string.Empty, false));
                                 }
                                 else
                                 {
-                                    templateData.Add(ident, new Mustache.RenderData(ident, constValArg.Value!.ToString(), true));
+                                    attributeData.Add(new Mustache.RenderData(ident, constValArg.Value!.ToString(), true));
                                 }
                             }
                             else if (arg.NameEquals is not null && constValArg.HasValue)
@@ -105,48 +106,61 @@ public class TargetDiscovery
                                 // This is a named parameter (i.e. optional value prefixed by 'Name
                                 // = '
                                 var n = arg.NameEquals.Name.ToFullString().Trim();
-                                if (arg.Expression.Kind() == Microsoft.CodeAnalysis.CSharp.SyntaxKind.NullLiteralExpression)
+                                if (arg.Expression.Kind() == SyntaxKind.NullLiteralExpression)
                                 {
-                                    templateData.Add(n, new Mustache.RenderData(n, string.Empty, false));
+                                    attributeData.Add(new Mustache.RenderData(n, string.Empty, false));
                                 }
                                 else
                                 {
-                                    templateData.Add(
-                                   n,
-                                   new Mustache.RenderData(n, constValArg.Value!.ToString(), true));
+                                    attributeData.Add(new Mustache.RenderData(n, constValArg.Value!.ToString(), true));
                                 }
                             }
                         }
 
-                        if (templateData.Count < template.AttributeData.RequiredParameters.Count())
+                        if (attributeData.Count < template.AttributeData.RequiredParameters.Count())
                         {
-                            for (int i = templateData.Count; i < template.AttributeData.RequiredParameters.Count(); i++)
+                            for (int i = attributeData.Count; i < template.AttributeData.RequiredParameters.Count(); i++)
                             {
                                 var param = template.AttributeData.RequiredParameters.ElementAt(i);
                                 var ident = param.NamePascal;
-                                templateData.Add(
+                                attributeData.Add(
                                     ident,
                                     new Mustache.RenderData(ident, param.InitalizerLiteral, true));
                             }
                         }
                     }
 
-                    var fullTemplateData = templateData.ToImmutable();
+                    var attributeDataImmutable = attributeData.ToImmutable();
 
                     var sb = new StringBuilder();
-
-                    foreach (var t in template.Templates)
+                    foreach (var target in syntaxData)
                     {
-                        sb.AppendLine(Mustache.RenderTemplate(t, fullTemplateData));
-                        sb.AppendLine();
+                        var intersections = target.Keys.Intersect(attributeDataImmutable.Keys);
+                        if (intersections.Any())
+                        {
+                            // TODO output diagnostic about duplicate entry.
+
+                            continue;
+                        }
+
+                        var fullTemplateData = attributeDataImmutable.AddRange(target);
+
+                        foreach (var t in template.Templates)
+                        {
+                            sb.AppendLine(Mustache.RenderTemplate(t, fullTemplateData));
+                            sb.AppendLine();
+                        }
                     }
 
-                    output.Add(
-                        new TargetAndTemplateData(
-                            TemplateType.Complete,
-                            ctypeName,
-                            new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
-                            sb.ToString()));
+                    if (sb.Length > 0)
+                    {
+                        output.Add(
+                            new TargetAndTemplateData(
+                                TemplateType.Complete,
+                                ctypeName,
+                                new ClassIdentifier(syntaxData[0][ClassNamespace].RenderString, syntaxData[0][ClassName].RenderString),
+                                sb.ToString()));
+                    }
                 }
             }
         }
@@ -156,8 +170,9 @@ public class TargetDiscovery
         return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(builder.ToImmutable(), diagnostics);
     }
 
-    private static ImmutableDictionary<string, Mustache.RenderData> GetSyntaxData(SemanticModel semanticModel, MemberDeclarationSyntax mds)
+    private static ImmutableList<ImmutableDictionary<string, Mustache.RenderData>> GetSyntaxData(SemanticModel semanticModel, MemberDeclarationSyntax mds)
     {
+        var listOfData = ImmutableList.CreateBuilder<ImmutableDictionary<string, Mustache.RenderData>>();
         var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
 
         if (mds is ClassDeclarationSyntax cds)
@@ -168,6 +183,11 @@ public class TargetDiscovery
         {
             var fieldType = fds.Declaration.Type.ToFullString();
             data.Add(new Mustache.RenderData("FieldType", fieldType, true));
+
+            if (SyntaxHelpers.FindClass(fds) is ClassDeclarationSyntax fieldClass)
+            {
+                GetClassData(fieldClass);
+            }
 
             if (fds.Declaration.Type is GenericNameSyntax gns)
             {
@@ -182,22 +202,25 @@ public class TargetDiscovery
                 data.Add(new Mustache.RenderData("FieldGenericType", string.Empty, false));
             }
 
-            if (fds.Declaration.Variables.Count != 1)
+            if (fds.Declaration.Variables.Count == 0)
             {
-                // TODO is this possible?
+                // The field declaration isn't complete, just keep going.
+                data.Add(new Mustache.RenderData("FieldName", string.Empty, false));
+                listOfData.Add(data.ToImmutable());
             }
             else
             {
-                data.Add(new Mustache.RenderData("FieldName", fds.Declaration.Variables[0].Identifier.Text, true));
-            }
-
-            if (SyntaxHelpers.FindClass(fds) is ClassDeclarationSyntax fieldClass)
-            {
-                GetClassData(fieldClass);
+                var constData = data.ToImmutable();
+                foreach (var variable in fds.Declaration.Variables)
+                {
+                    var varData = constData.ToBuilder();
+                    varData.Add(new Mustache.RenderData("FieldName", variable.Identifier.Text, true));
+                    listOfData.Add(varData.ToImmutable());
+                }
             }
         }
 
-        return data.ToImmutable();
+        return listOfData.ToImmutable();
 
         void GetClassData(ClassDeclarationSyntax cds)
         {
