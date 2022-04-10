@@ -71,6 +71,7 @@ public class FieldGen
         return TestHelper.Verify(source);
     }
 
+    // Note, we use the integers to ensure verify generates unique file names when escaping these strings.
     [TestCase(101, "private readonly ;")]
     [TestCase(102, "private readonly List<string names = new();")]
     [TestCase(103, "private readonly Liststring> names = new();")]
@@ -91,6 +92,8 @@ public class FieldGen
     [TestCase(208, "private readonly List< names")]
     [TestCase(209, "private readonly List> names")]
     [TestCase(210, "private;")]
+    [TestCase(301, ";")]
+    [TestCase(302, "")]
     public Task InvalidFieldDeclaration_DoesntCrash(int n, string field)
     {
         var source = @"
