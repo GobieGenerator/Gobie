@@ -174,7 +174,8 @@ public class TargetDiscovery
 
         if (mds is ClassDeclarationSyntax cds)
         {
-            GetClassData(cds);
+            GetClassData(cds, semanticModel, data);
+            listOfData.Add(data.ToImmutable());
         }
         else if (mds is FieldDeclarationSyntax fds)
         {
@@ -183,7 +184,7 @@ public class TargetDiscovery
 
             if (SyntaxHelpers.FindClass(fds) is ClassDeclarationSyntax fieldClass)
             {
-                GetClassData(fieldClass);
+                GetClassData(fieldClass, semanticModel, data);
             }
 
             if (fds.Declaration.Type is GenericNameSyntax gns)
@@ -219,7 +220,7 @@ public class TargetDiscovery
 
         return listOfData.ToImmutable();
 
-        void GetClassData(ClassDeclarationSyntax cds)
+        static void GetClassData(ClassDeclarationSyntax cds, SemanticModel semanticModel, ImmutableDictionary<string, Mustache.RenderData>.Builder data)
         {
             var typeInfo = semanticModel.GetDeclaredSymbol(cds);
 
