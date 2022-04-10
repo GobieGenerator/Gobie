@@ -10,7 +10,7 @@ public class UserGeneratorAttributeDataTests
     [TestCase("MyNamespace", "PrimaryKeyGenerator", "PrimaryKeyAttribute")]
     public void CtorTests(string namespaceName, string className, string attributeName)
     {
-        var sut = new UserGeneratorAttributeData(new ClassIdentifier(namespaceName, className), TrivialCDS);
+        var sut = new UserGeneratorAttributeData(new ClassIdentifier(namespaceName, className), TrivialCDS, "");
 
         Assert.AreEqual(namespaceName, sut.DefinitionIdentifier.NamespaceName);
         Assert.AreEqual(className, sut.DefinitionIdentifier.ClassName);
@@ -24,7 +24,7 @@ public class UserGeneratorAttributeDataTests
     [TestCase("MyNamespace", "PrimaryKey", "PkGenAttribute", "CustomNamespace", "CustomNamespace", "PkGenAttribute")]
     public void WithNameTests(string namespaceName, string className, string withName, string? withNamespace, string attributeNamespace, string attributeName)
     {
-        var sut = new UserGeneratorAttributeData(new ClassIdentifier(namespaceName, className), TrivialCDS);
+        var sut = new UserGeneratorAttributeData(new ClassIdentifier(namespaceName, className), TrivialCDS, "");
         sut = sut.WithName(withName, withNamespace);
 
         Assert.AreEqual(namespaceName, sut.DefinitionIdentifier.NamespaceName);
