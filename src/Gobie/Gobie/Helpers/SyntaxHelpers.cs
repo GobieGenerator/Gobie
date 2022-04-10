@@ -21,9 +21,9 @@
             {
                 return classDeclaration;
             }
-            if (node is SyntaxNode)
+            else if (node.Parent is SyntaxNode p)
             {
-                return FindClass(node.Parent);
+                return FindClass(p);
             }
             return null;
         }

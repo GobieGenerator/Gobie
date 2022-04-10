@@ -19,15 +19,15 @@ public class GobieGenerator : IIncrementalGenerator
 
         //### Target Discovery Workflow
 
-        var cwa = TargetDiscovery.FindClassesWithAttributes(context);
-        var cwaAndGenerators = cwa.Combine(userGenerators.Collect());
-        var probableTargets = TargetDiscovery.FindProbableTargets(cwaAndGenerators);
-        var compliationAndProbleTargets = probableTargets.Where(x => x is not null).Combine(context.CompilationProvider);
-        var targetsOrDiagnostics = TargetDiscovery.GetTargetsOrDiagnostics(compliationAndProbleTargets);
+        var mwa = TargetDiscovery.FindMembersWithAttributes(context);
+        var mwaAndGenerators = mwa.Combine(userGenerators.Collect());
+        var probableTargets = TargetDiscovery.FindProbableTargets(mwaAndGenerators);
+
+        var compliationAndProbableTargets = probableTargets.Where(x => x is not null).Combine(context.CompilationProvider);
+        var targetsOrDiagnostics = TargetDiscovery.GetTargetsOrDiagnostics(compliationAndProbableTargets);
         DiagnosticsReporting.Report(context, targetsOrDiagnostics);
         var targets = ExtractManyData(targetsOrDiagnostics);
 
-        //! Seems like the syntax provider won't run unless downstream we output text or something. So we report nonsense.
         context.RegisterSourceOutput(targets, static (spc, source) => CodeGeneration.Output(spc, source));
     }
 

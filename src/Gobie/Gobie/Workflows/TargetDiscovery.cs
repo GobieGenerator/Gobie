@@ -2,25 +2,30 @@
 
 public class TargetDiscovery
 {
-    public static IncrementalValuesProvider<ClassDeclarationSyntax> FindClassesWithAttributes(IncrementalGeneratorInitializationContext context)
+    private const string ClassName = "ClassName";
+    private const string ClassNamespace = "ClassNamespace";
+
+    public static IncrementalValuesProvider<MemberDeclarationSyntax> FindMembersWithAttributes(IncrementalGeneratorInitializationContext context)
     {
         return context.SyntaxProvider
             .CreateSyntaxProvider(
-                predicate: static (s, _) => IsSyntaxTargetForGeneration(s),
-                transform: static (ctx, _) => (ClassDeclarationSyntax)ctx.Node)
+                predicate: static (s, _) => IsTargetForGeneration(s),
+                transform: static (ctx, _) => (MemberDeclarationSyntax)ctx.Node)
             .Where(static x => x is not null)!;
     }
 
     /// <summary>
     /// Tries to find targets without relying on any complex operations.
     /// </summary>
-    public static IncrementalValuesProvider<(ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)?> FindProbableTargets(
-        IncrementalValuesProvider<(ClassDeclarationSyntax Left, ImmutableArray<UserGeneratorTemplateData> Right)> cwaAndGenerators)
+    public static IncrementalValuesProvider<(T, ImmutableArray<UserGeneratorTemplateData>)?> FindProbableTargets<T>(
+        IncrementalValuesProvider<(T Left, ImmutableArray<UserGeneratorTemplateData> Right)> mdsAndGenerators)
+        where T : MemberDeclarationSyntax
     {
-        return cwaAndGenerators.Select(selector: static (s, _) => FindProbableTargets(s.Left, s.Right));
+        return mdsAndGenerators.Select(selector: static (s, _) => FindProbableTargets(s.Left, s.Right));
     }
 
-    public static IncrementalValuesProvider<DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>> GetTargetsOrDiagnostics(IncrementalValuesProvider<((ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? Left, Compilation Right)> data)
+    public static IncrementalValuesProvider<DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>> GetTargetsOrDiagnostics(
+        IncrementalValuesProvider<((MemberDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? Left, Compilation Right)> data)
     {
         return data
             .Select(selector: static (s, _) =>
@@ -28,42 +33,33 @@ public class TargetDiscovery
     }
 
     private static DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>> GetTargetsOrDiagnostics(
-        ClassDeclarationSyntax? cds,
+        MemberDeclarationSyntax? mds,
         ImmutableArray<UserGeneratorTemplateData>? templates,
         Compilation compilation)
     {
         var output = new List<TargetAndTemplateData>();
         var diagnostics = new List<Diagnostic>();
 
-        if (cds is null || templates is null)
+        if (mds is null || templates is null)
         {
             return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(diagnostics);
         }
 
-        // Verify for certian this is a target
-        var sm = compilation.GetSemanticModel(cds.SyntaxTree);
-        var typeInfo = sm.GetDeclaredSymbol(cds);
-
-        if (typeInfo is null)
-        {
-            // TODO should this change?
-            return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(diagnostics);
-        }
-
-        var ti = typeInfo.Name;
-        var tin = typeInfo.ContainingNamespace.Name;
+        // Initial data which would be the same for all generators operating on the member data syntax.
+        ImmutableDictionary<string, Mustache.RenderData>? syntaxData = null;
+        SemanticModel? semanticModel = null;
 
         // It looks like we aren't able to get the attribute args off of SourceAttributeData (from
         // typeInfo.GetAttributes()). This doesn't seem to be isolated to unit testing. Even in the
         // console client we find zero args when we follow the same process we use to get args for
         // required position or generator name. My current guess now is that the semantic model
         // above doesn't (and maybe cannot) have the definitions of the attributes we create in the
-        // generator. (I'm assuming the register post generation initaliztion code is doign
+        // generator. (I'm assuming the register post generation initaliztion code is doing
         // something different, because we were able to get the constructor args for those).
         // Additionally I noticed that the SourceAttributeData (att) is missing the namespace and
         // doesn't say attribute at the end. So this seems like what happened when the unit tests
         // were missing a reference.
-        foreach (var att in cds.AttributeLists.SelectMany(x => x.Attributes))
+        foreach (var att in mds.AttributeLists.SelectMany(x => x.Attributes))
         {
             // TODO, maybe we should test that we can't resolve the specific attribute details and
             // then look to the syntax? I wonder if we define a generator in one lib and use it in
@@ -76,14 +72,20 @@ public class TargetDiscovery
             {
                 if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
                 {
-                    var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
+                    // First thing we do, now that we know we have work to do, is to initalize data
+                    // we will use for every template we are generating.
+                    semanticModel ??= compilation.GetSemanticModel(mds.SyntaxTree);
+                    syntaxData ??= GetSyntaxData(semanticModel, mds);
+
+                    var templateData = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
+                    templateData.AddRange(syntaxData);
 
                     if (att.ArgumentList is not null)
                     {
                         for (int i = 0; i < att.ArgumentList.Arguments.Count; i++)
                         {
                             var arg = att.ArgumentList.Arguments[i];
-                            var constValArg = sm.GetConstantValue(arg.Expression);
+                            var constValArg = semanticModel.GetConstantValue(arg.Expression);
                             if (arg.NameEquals is null && constValArg.HasValue && i < template.AttributeData.RequiredParameters.Count())
                             {
                                 // This is a required argument either with or without colon equals
@@ -91,11 +93,11 @@ public class TargetDiscovery
 
                                 if (arg.Expression.Kind() == Microsoft.CodeAnalysis.CSharp.SyntaxKind.NullLiteralExpression)
                                 {
-                                    data.Add(ident, new Mustache.RenderData(ident, string.Empty, false));
+                                    templateData.Add(ident, new Mustache.RenderData(ident, string.Empty, false));
                                 }
                                 else
                                 {
-                                    data.Add(ident, new Mustache.RenderData(ident, constValArg.Value!.ToString(), true));
+                                    templateData.Add(ident, new Mustache.RenderData(ident, constValArg.Value!.ToString(), true));
                                 }
                             }
                             else if (arg.NameEquals is not null && constValArg.HasValue)
@@ -105,37 +107,37 @@ public class TargetDiscovery
                                 var n = arg.NameEquals.Name.ToFullString().Trim();
                                 if (arg.Expression.Kind() == Microsoft.CodeAnalysis.CSharp.SyntaxKind.NullLiteralExpression)
                                 {
-                                    data.Add(n, new Mustache.RenderData(n, string.Empty, false));
+                                    templateData.Add(n, new Mustache.RenderData(n, string.Empty, false));
                                 }
                                 else
                                 {
-                                    data.Add(
+                                    templateData.Add(
                                    n,
                                    new Mustache.RenderData(n, constValArg.Value!.ToString(), true));
                                 }
                             }
                         }
 
-                        if (data.Count < template.AttributeData.RequiredParameters.Count())
+                        if (templateData.Count < template.AttributeData.RequiredParameters.Count())
                         {
-                            for (int i = data.Count; i < template.AttributeData.RequiredParameters.Count(); i++)
+                            for (int i = templateData.Count; i < template.AttributeData.RequiredParameters.Count(); i++)
                             {
                                 var param = template.AttributeData.RequiredParameters.ElementAt(i);
                                 var ident = param.NamePascal;
-                                data.Add(
+                                templateData.Add(
                                     ident,
                                     new Mustache.RenderData(ident, param.InitalizerLiteral, true));
                             }
                         }
                     }
 
-                    var templateData = data.ToImmutable();
+                    var fullTemplateData = templateData.ToImmutable();
 
                     var sb = new StringBuilder();
 
                     foreach (var t in template.Templates)
                     {
-                        sb.AppendLine(Mustache.RenderTemplate(t, templateData));
+                        sb.AppendLine(Mustache.RenderTemplate(t, fullTemplateData));
                         sb.AppendLine();
                     }
 
@@ -143,7 +145,7 @@ public class TargetDiscovery
                         new TargetAndTemplateData(
                             TemplateType.Complete,
                             ctypeName,
-                            new ClassIdentifier(tin, ti),
+                            new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
                             sb.ToString()));
                 }
             }
@@ -154,12 +156,78 @@ public class TargetDiscovery
         return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(builder.ToImmutable(), diagnostics);
     }
 
-    private static (ClassDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableTargets(
-            ClassDeclarationSyntax cds,
-        ImmutableArray<UserGeneratorTemplateData> userGenerators)
+    private static ImmutableDictionary<string, Mustache.RenderData> GetSyntaxData(SemanticModel semanticModel, MemberDeclarationSyntax mds)
     {
-        var n = cds.ToFullString();
-        foreach (var item in cds.AttributeLists.SelectMany(x => x.Attributes))
+        var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
+
+        if (mds is ClassDeclarationSyntax cds)
+        {
+            GetClassData(cds);
+        }
+        else if (mds is FieldDeclarationSyntax fds)
+        {
+            var fieldType = fds.Declaration.Type.ToFullString();
+            data.Add(new Mustache.RenderData("FieldType", fieldType, true));
+
+            if (fds.Declaration.Type is GenericNameSyntax gns)
+            {
+                var genericStart = gns.TypeArgumentList.LessThanToken.FullSpan.End;
+                var genericEnd = gns.TypeArgumentList.GreaterThanToken.FullSpan.Start;
+                var fs = fds.SyntaxTree.GetText().ToString(new TextSpan(genericStart, genericEnd - genericStart));
+
+                data.Add(new Mustache.RenderData("FieldGenericType", fs, true));
+            }
+            else
+            {
+                data.Add(new Mustache.RenderData("FieldGenericType", string.Empty, false));
+            }
+
+            if (fds.Declaration.Variables.Count != 1)
+            {
+                // TODO is this possible?
+            }
+            else
+            {
+                data.Add(new Mustache.RenderData("FieldName", fds.Declaration.Variables[0].Identifier.Text, true));
+            }
+
+            if (SyntaxHelpers.FindClass(fds) is ClassDeclarationSyntax fieldClass)
+            {
+                GetClassData(fieldClass);
+            }
+        }
+
+        return data.ToImmutable();
+
+        void GetClassData(ClassDeclarationSyntax cds)
+        {
+            var typeInfo = semanticModel.GetDeclaredSymbol(cds);
+
+            if (typeInfo == null)
+            {
+                // TODO throw here?
+                return;
+            }
+
+            data.Add(new Mustache.RenderData(ClassNamespace, typeInfo.ContainingNamespace.Name, true));
+            data.Add(new Mustache.RenderData(ClassName, typeInfo.Name, true));
+        }
+    }
+
+    /// <summary>
+    /// Looks for an attribute that matches the name of one we created. It does this without relying
+    /// on the compliation at all.
+    /// </summary>
+    /// <typeparam name="T">Any MemberDeclarationSyntax</typeparam>
+    /// <param name="mds">Syntax we want to check for matching attributes</param>
+    /// <param name="userGenerators">Complete list of attributes defined by the user</param>
+    /// <returns>Syntax and template data, or null</returns>
+    private static (T, ImmutableArray<UserGeneratorTemplateData>)? FindProbableTargets<T>(
+        T mds,
+        ImmutableArray<UserGeneratorTemplateData> userGenerators)
+             where T : MemberDeclarationSyntax
+    {
+        foreach (var item in mds.AttributeLists.SelectMany(x => x.Attributes))
         {
             var classAttName = ((IdentifierNameSyntax)item.Name).Identifier.Text;
             classAttName += classAttName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute";
@@ -169,7 +237,7 @@ public class TargetDiscovery
                 var genAttName = gen.AttributeData.AttributeIdentifier.ClassName;
                 if (genAttName == classAttName)
                 {
-                    return (cds, userGenerators);
+                    return (mds, userGenerators);
                 }
             }
         }
@@ -177,8 +245,9 @@ public class TargetDiscovery
         return null;
     }
 
-    private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
+    private static bool IsTargetForGeneration(SyntaxNode node)
     {
-        return node is ClassDeclarationSyntax m && m.AttributeLists.Count > 0;
+        return (node is ClassDeclarationSyntax c && c.AttributeLists.Count > 0) ||
+               (node is FieldDeclarationSyntax f && f.AttributeLists.Count > 0);
     }
 }

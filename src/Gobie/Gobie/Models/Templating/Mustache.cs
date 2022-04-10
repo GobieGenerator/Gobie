@@ -653,6 +653,11 @@ public class Mustache
         public string RenderString { get; }
 
         public bool Render { get; }
+
+        public static implicit operator KeyValuePair<string, RenderData>(RenderData rd)
+        {
+            return new(rd.Identity, rd);
+        }
     }
 
     public class TemplateDefinition

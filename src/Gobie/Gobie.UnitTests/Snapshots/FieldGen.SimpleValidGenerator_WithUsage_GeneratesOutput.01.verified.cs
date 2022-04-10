@@ -1,12 +1,8 @@
-﻿//HintName: _Gobie.NamePropertyAttribute.g.cs
-namespace Gobie
+﻿//HintName: EncapsulatedFieldAttribute_TemplateTarget.g.cs
+namespace SomeNamespace
 {
-    /// <summary> This attribute will cause the generator defined by this thing here to
-    /// run <see cref = "Gobie.NamePropertyGenerator"/> to run. </summary>
-    public sealed class NamePropertyAttribute : global::Gobie.GobieFieldGeneratorAttribute
+    public partial class TemplateTarget
     {
-        public NamePropertyAttribute()
-        {
-        }
+        public string Names => names; // Readonly string 
     }
 }
