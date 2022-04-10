@@ -17,8 +17,7 @@ public class GobieGenerator : IIncrementalGenerator
         DiagnosticsReporting.Report(context, userGeneratorsOrDiagnostics);
         var userGenerators = ExtractData(userGeneratorsOrDiagnostics);
 
-        //### Target Discovery Workflow
-
+        // Target Discovery Workflow
         var mwa = TargetDiscovery.FindMembersWithAttributes(context);
         var mwaAndGenerators = mwa.Combine(userGenerators.Collect());
         var probableTargets = TargetDiscovery.FindProbableTargets(mwaAndGenerators);
@@ -28,6 +27,7 @@ public class GobieGenerator : IIncrementalGenerator
         DiagnosticsReporting.Report(context, targetsOrDiagnostics);
         var targets = ExtractManyData(targetsOrDiagnostics);
 
+        // Consolodate outputs down to files and output them
         IncrementalValueProvider<ImmutableArray<CodeOutput>> codeOut = CodeGeneration.CollectOutputs(targets.Collect());
         context.RegisterSourceOutput(codeOut, static (spc, source) => CodeGeneration.Output(spc, source));
     }
