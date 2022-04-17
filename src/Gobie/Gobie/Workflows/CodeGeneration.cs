@@ -54,7 +54,7 @@ public static class CodeGeneration
             }
 
             var fullCode = CSharpSyntaxTree.ParseText(fileContents).GetRoot().NormalizeWhitespace().ToFullString();
-            var hintName = $"{group.Key.GeneratorName}_{group.Key.TargetClass.ClassName}.g.cs";
+            var hintName = $"{group.Key.TargetClass.ClassName}_{group.Key.GeneratorName}.g.cs";
             codeOut.Add(new CodeOutput(hintName, fullCode));
         }
 

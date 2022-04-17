@@ -32,6 +32,32 @@ namespace Models
         public string CustomValidator { get; set; } = null;
     }
 
+    [GobieGeneratorName("LoggedClass")]
+    public sealed class LoggedClassGenBase : GobieClassGenerator
+    {
+        [GobieTemplate]
+        private const string LogString = "private readonly System.Collections.Generic.List<{{ClassName}}Log> logs = new();";
+
+        [GobieFileTemplate("Log")]
+        private const string KeyString = @"
+            using System;
+
+            namespace {{ClassNamespace}};
+
+            public sealed class {{ClassName}}Log
+            {
+                public int Id { get; set; }
+
+                public {{ClassName}} Parent {get; set;}
+
+                public DateTime Timestamp {get; set;}
+
+                public string LogMessage {get; set;}
+            }
+            ";
+    }
+
+    [LoggedClass]
     public partial class Author
     {
         [EncapsulatedCollection(nameof(ValidateBooks))]

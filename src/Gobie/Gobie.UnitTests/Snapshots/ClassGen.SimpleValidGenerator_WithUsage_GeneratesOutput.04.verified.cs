@@ -1,4 +1,4 @@
-﻿//HintName: PkGenAttribute_GenTarget2.g.cs
+﻿//HintName: GenTarget2_PkGenAttribute.g.cs
 namespace SomeNamespace
 {
     public partial class GenTarget2

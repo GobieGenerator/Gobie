@@ -1,4 +1,4 @@
-﻿//HintName: NamePropertyAttribute_TemplateTarget.g.cs
+﻿//HintName: TemplateTarget_NamePropertyAttribute.g.cs
 namespace SomeNamespace
 {
     public partial class TemplateTarget
