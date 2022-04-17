@@ -41,6 +41,11 @@
     {
     }
 
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public abstract class GobieClassGeneratorAttribute : Attribute
+    {
+    }
+
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public sealed class GobieFileTemplateAttribute : Attribute
     {
