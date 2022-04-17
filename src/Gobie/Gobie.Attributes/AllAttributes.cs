@@ -17,17 +17,6 @@
     {
     }
 
-    /// <summary>
-    /// Base class Gobie ALWAYS generates.
-    /// </summary>
-    public sealed class GobieFileTemplateAttribute : GobieBaseFieldAttribute
-    {
-        /// <summary>
-        /// A literal string or mustache template to determine the file name.
-        /// </summary>
-        public string FileNameTemplate { get; set; }
-    }
-
     public abstract class GobieGeneratorBase
     {
         public virtual bool DebugGenerator { get; protected set; }
@@ -50,6 +39,26 @@
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public abstract class GobieFieldGeneratorAttribute : Attribute
     {
+    }
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public abstract class GobieClassGeneratorAttribute : Attribute
+    {
+    }
+
+    [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class GobieFileTemplateAttribute : Attribute
+    {
+        /// <summary>
+        /// </summary>
+        /// <param name="fileName">Must be unique across all... File name is suffixed with '.g.cs'</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public GobieFileTemplateAttribute(string fileName)
+        {
+            FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
+        }
+
+        public string FileName { get; }
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]

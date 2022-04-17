@@ -409,9 +409,10 @@ public class Mustache
         }
 
         static void AddTemplateIncomplete(List<Diagnostic> diagnostics) =>
-           diagnostics.Add(
-              Diagnostic.Create(
-                  Errors.UnfinishedTemplate("Template is incomplete"), null));
+            diagnostics.Add(
+                Diagnostic.Create(
+                    Errors.UnfinishedTemplate("Template is incomplete"),
+                    null));
 
         static void AddExpectedClosingToken(List<Diagnostic> diagnostics, string actualText) =>
             diagnostics.Add(

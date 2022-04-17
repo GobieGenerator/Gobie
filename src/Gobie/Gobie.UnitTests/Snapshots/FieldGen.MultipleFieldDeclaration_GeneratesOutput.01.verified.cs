@@ -1,4 +1,4 @@
-﻿//HintName: EncapsulatedCollectionAttribute_TemplateTarget.g.cs
+﻿//HintName: TemplateTarget_EncapsulatedCollectionAttribute.g.cs
 namespace SomeNamespace
 {
     public partial class TemplateTarget
