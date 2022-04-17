@@ -56,7 +56,7 @@ public class TargetDiscovery
         // console client we find zero args when we follow the same process we use to get args for
         // required position or generator name. My current guess now is that the semantic model
         // above doesn't (and maybe cannot) have the definitions of the attributes we create in the
-        // generator. (I'm assuming the register post generation initaliztion code is doing
+        // generator. (I'm assuming the register post generation initialization code is doing
         // something different, because we were able to get the constructor args for those).
         // Additionally I noticed that the SourceAttributeData (att) is missing the namespace and
         // doesn't say attribute at the end. So this seems like what happened when the unit tests
@@ -74,7 +74,7 @@ public class TargetDiscovery
             {
                 if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
                 {
-                    // First thing we do, now that we know we have work to do, is to initalize data
+                    // First thing we do, now that we know we have work to do, is to initialize data
                     // we will use for every template we are generating.
                     semanticModel ??= compilation.GetSemanticModel(mds.SyntaxTree);
                     syntaxData ??= GetSyntaxData(semanticModel, mds);
@@ -157,6 +157,17 @@ public class TargetDiscovery
                                 ctypeName,
                                 new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
                                 sb.ToString()));
+
+                        foreach (var t in template.FileTemplates)
+                        {
+                            var fileContents = Mustache.RenderTemplate(t.Template, fullTemplateData);
+                            output.Add(
+                                new TargetAndTemplateData(
+                                    TemplateType.File,
+                                    ctypeName + "_" + t.FileName,
+                                    new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
+                                    fileContents));
+                        }
                     }
                 }
             }

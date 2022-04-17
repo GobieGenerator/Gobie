@@ -39,9 +39,8 @@ public static class GeneratorDiscovery
             return new(diagnostics);
         }
 
-        var templates = GetTemplates(data.ClassDeclarationSyntax, symbol, data, compliation);
+        var templates = GetTemplates(data.ClassDeclarationSyntax, compliation);
         var templateDefs = new List<Mustache.TemplateDefinition>();
-
         foreach (var template in templates)
         {
             var res = Mustache.Parse(template.AsSpan());
@@ -55,17 +54,32 @@ public static class GeneratorDiscovery
             }
         }
 
+        var fileTemplates = GetFileTemplates(data.ClassDeclarationSyntax, compliation);
+        var fileTemplateDefs = new List<UserFileTemplateData>();
+        foreach (var template in fileTemplates)
+        {
+            var res = Mustache.Parse(template.template.AsSpan());
+            if (res.Diagnostics is not null)
+            {
+                diagnostics.AddRange(res.Diagnostics);
+            }
+            else if (res.Data is not null)
+            {
+                fileTemplateDefs.Add(new(template.fileName, res.Data));
+            }
+        }
+
         if (diagnostics.Any())
         {
             return new(diagnostics);
         }
 
-        var td = new UserGeneratorTemplateData(data, templateDefs);
+        var td = new UserGeneratorTemplateData(data, templateDefs, fileTemplateDefs);
 
         return new(td, diagnostics);
     }
 
-    private static List<string> GetTemplates(ClassDeclarationSyntax cds, ISymbol classSymbol, UserGeneratorAttributeData genData, Compilation compliation)
+    private static List<string> GetTemplates(ClassDeclarationSyntax cds, Compilation compliation)
     {
         var templates = new List<string>();
 
@@ -86,6 +100,42 @@ public static class GeneratorDiscovery
                             if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
                             {
                                 templates.Add(fs.ConstantValue.ToString());
+                                goto DoneWithField;
+                            }
+                        }
+                    }
+                }
+            }
+
+        DoneWithField:;
+        }
+
+        return templates;
+    }
+
+    private static List<(string fileName, string template)> GetFileTemplates(ClassDeclarationSyntax cds, Compilation compliation)
+    {
+        var templates = new List<(string fileName, string template)>();
+
+        foreach (var child in cds.ChildNodes())
+        {
+            if (child is FieldDeclarationSyntax f)
+            {
+                foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
+                {
+                    var a = ((IdentifierNameSyntax)att.Name).Identifier;
+                    if (a.Text == "GobieFileTemplate")
+                    {
+                        foreach (var variable in f.Declaration.Variables)
+                        {
+                            var model = compliation.GetSemanticModel(f.SyntaxTree);
+                            var fieldSymbol = model.GetDeclaredSymbol(variable);
+
+                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                            {
+                                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieFileTemplateAttribute");
+                                var fn = ad.ConstructorArguments[0].Value;
+                                templates.Add((fn.ToString(), fs.ConstantValue.ToString()));
                                 goto DoneWithField;
                             }
                         }
