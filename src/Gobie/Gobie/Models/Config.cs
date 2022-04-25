@@ -9,6 +9,8 @@
             db.Add("Gobie.GobieClassGenerator", "global::Gobie.GobieClassGeneratorAttribute");
             db.Add("GobieFieldGenerator", "global::Gobie.GobieFieldGeneratorAttribute");
             db.Add("Gobie.GobieFieldGenerator", "global::Gobie.GobieFieldGeneratorAttribute");
+            db.Add("GobieGlobalGenerator", "global::Gobie.GobieGlobalTemplateChildAttribute");
+            db.Add("Gobie.GobieGlobalGenerator", "global::Gobie.GobieGlobalTemplateChildAttribute");
             GenToAttribute = db.ToImmutable();
         }
 

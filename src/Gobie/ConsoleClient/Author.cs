@@ -61,9 +61,6 @@ namespace Models
             ";
     }
 
-    /// <summary>
-    /// Standardized log entries for <see cref="Author"/>
-    /// </summary>
     [LoggedClass]
     public partial class Author
     {
@@ -72,7 +69,7 @@ namespace Models
 
         public Author()
         {
-            logs.Add(new AuthorLog { Id = 1, LogMessage = "Example log", Parent = this, Timestamp = System.DateTime.Now });
+            logs.Add(new AuthorLog { Id = 1, LogMessage = "Record created", Parent = this, Timestamp = System.DateTime.Now });
         }
 
         public bool ValidateBooks(string s) => s.Length > 0;
