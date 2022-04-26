@@ -32,8 +32,35 @@ public class TargetDiscovery
                 GetTargetsOrDiagnostics(s.Left?.Item1, s.Left?.Item2, s.Right));
     }
 
+    public static IncrementalValuesProvider<(AttributeSyntax, ImmutableArray<UserGeneratorTemplateData>)?> FindProbableAssemblyTargets(
+        IncrementalValuesProvider<(AttributeSyntax Left, ImmutableArray<UserGeneratorTemplateData> Right)> assemblyAttributesAndGenerators)
+    {
+        return assemblyAttributesAndGenerators.Select(selector: static (s, _) => FindProbableAssemblyTargets(s.Left, s.Right));
+    }
+
+    public static IncrementalValuesProvider<DataOrDiagnostics<TargetAndTemplateData>> GetAssemblyTargetsOrDiagnostics(
+        IncrementalValuesProvider<((AttributeSyntax, ImmutableArray<UserGeneratorTemplateData>)? Left, Compilation Right)> data)
+    {
+        return data
+            .Select(selector: static (s, _) =>
+                GetAssemblyTargetsOrDiagnostics(s.Left?.Item1, s.Left?.Item2, s.Right));
+    }
+
+    private static DataOrDiagnostics<TargetAndTemplateData> GetAssemblyTargetsOrDiagnostics(
+            AttributeSyntax? attributeSyntax,
+        ImmutableArray<UserGeneratorTemplateData>? item2,
+        Compilation compilation)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static (AttributeSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableAssemblyTargets(AttributeSyntax attributeSyntax, ImmutableArray<UserGeneratorTemplateData> right)
+    {
+        throw new NotImplementedException();
+    }
+
     private static DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>> GetTargetsOrDiagnostics(
-        MemberDeclarationSyntax? mds,
+            MemberDeclarationSyntax? mds,
         ImmutableArray<UserGeneratorTemplateData>? templates,
         Compilation compilation)
     {

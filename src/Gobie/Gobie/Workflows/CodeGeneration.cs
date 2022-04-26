@@ -14,7 +14,8 @@ public static class CodeGeneration
     }
 
     public static IncrementalValueProvider<ImmutableArray<CodeOutput>> CollectOutputs(
-        IncrementalValueProvider<ImmutableArray<TargetAndTemplateData>> incrementalValueProvider)
+        IncrementalValueProvider<ImmutableArray<TargetAndTemplateData>> incrementalValueProvider,
+        IncrementalValueProvider<ImmutableArray<TargetAndTemplateData>> incrementalValueProvider1)
     {
         return incrementalValueProvider.Select(static (s, _) => OutputFiles(s));
     }

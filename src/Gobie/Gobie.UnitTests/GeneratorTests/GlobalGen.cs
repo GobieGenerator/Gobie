@@ -15,13 +15,41 @@ public class GlobalGen
         {
             [GobieGlobalFileTemplate(""Log"", ""EFCoreRegistration"")]
             private const string KeyString = @""
-            namespace {{ClassNamespace}};
+            namespace SomeNamespace;
 
             public sealed static class EFCoreRegistration
             {
-                public static Register()
+                public static void Register()
                 {
                     {{ChildContent}}
+                }
+            }
+            "";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task SimpleValidGenerator_WithUsage_GeneratesOutput()
+    {
+        var source = @"
+        [assembly: EFCoreRegistrationGenerator]
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
+        {
+            [GobieGlobalFileTemplate(""Log"", ""EFCoreRegistration"")]
+            private const string KeyString = @""
+            namespace SomeNamespace;
+
+            public sealed static class EFCoreRegistration
+            {
+                public static void Register()
+                {
+                    // Initially no child content will be used.
                 }
             }
             "";

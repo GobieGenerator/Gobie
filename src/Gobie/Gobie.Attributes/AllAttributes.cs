@@ -74,6 +74,10 @@
     {
     }
 
+    public class RealGobieAssemblyGeneratorAttribute : GobieAssemblyGeneratorAttribute
+    {
+    }
+
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public sealed class GobieFileTemplateAttribute : Attribute
     {
