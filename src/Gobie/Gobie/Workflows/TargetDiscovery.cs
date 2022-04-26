@@ -47,16 +47,19 @@ public class TargetDiscovery
     }
 
     private static DataOrDiagnostics<TargetAndTemplateData> GetAssemblyTargetsOrDiagnostics(
-            AttributeSyntax? attributeSyntax,
+        AttributeSyntax? attributeSyntax,
         ImmutableArray<UserGeneratorTemplateData>? item2,
         Compilation compilation)
     {
         throw new NotImplementedException();
     }
 
-    private static (AttributeSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableAssemblyTargets(AttributeSyntax attributeSyntax, ImmutableArray<UserGeneratorTemplateData> right)
+    private static (AttributeSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableAssemblyTargets(
+        AttributeSyntax attributeSyntax,
+        ImmutableArray<UserGeneratorTemplateData> right)
     {
-        throw new NotImplementedException();
+        // Todo add logic
+        return (attributeSyntax, right);
     }
 
     private static DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>> GetTargetsOrDiagnostics(

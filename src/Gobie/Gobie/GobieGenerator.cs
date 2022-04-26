@@ -20,11 +20,6 @@ public class GobieGenerator : IIncrementalGenerator
         // TODO look for gobie settings coming from attributes
         var assemblyAtt = AssemblyAttributes.FindAssemblyAttributes(context);
 
-        context.RegisterSourceOutput(assemblyAtt, static (spc, source) =>
-        {
-            Console.WriteLine("");
-        });
-
         // ========== Target Discovery Workflow ================
         // First: Discover classes and field targets.
         var mwa = TargetDiscovery.FindMembersWithAttributes(context);

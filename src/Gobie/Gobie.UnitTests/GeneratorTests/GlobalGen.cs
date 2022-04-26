@@ -35,24 +35,24 @@ public class GlobalGen
     {
         var source = @"
         [assembly: EFCoreRegistrationGenerator]
-        using Gobie;
-
-        namespace SomeNamespace;
-
-        public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
+        namespace SomeNamespace
         {
-            [GobieGlobalFileTemplate(""Log"", ""EFCoreRegistration"")]
-            private const string KeyString = @""
-            namespace SomeNamespace;
-
-            public sealed static class EFCoreRegistration
+            using Gobie;
+            public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
             {
-                public static void Register()
+                [GobieGlobalFileTemplate(""Log"", ""EFCoreRegistration"")]
+                private const string KeyString = @""
+                namespace SomeNamespace;
+
+                public sealed static class EFCoreRegistration
                 {
-                    // Initially no child content will be used.
+                    public static void Register()
+                    {
+                        // Initially no child content will be used.
+                    }
                 }
+                "";
             }
-            "";
         }";
 
         return TestHelper.Verify(source);

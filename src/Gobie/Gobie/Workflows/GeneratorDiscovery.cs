@@ -54,6 +54,21 @@ public static class GeneratorDiscovery
             }
         }
 
+        var globalTemplates = GetGlobalTemplates(data.ClassDeclarationSyntax, compliation);
+        var globalTemplateDefs = new List<GlobalTemplateData>();
+        foreach (var template in globalTemplates)
+        {
+            var res = Mustache.Parse(template.template.AsSpan());
+            if (res.Diagnostics is not null)
+            {
+                diagnostics.AddRange(res.Diagnostics);
+            }
+            else if (res.Data is not null)
+            {
+                globalTemplateDefs.Add(new(template.generatorName, template.fileName, res.Data));
+            }
+        }
+
         var fileTemplates = GetFileTemplates(data.ClassDeclarationSyntax, compliation);
         var fileTemplateDefs = new List<UserFileTemplateData>();
         foreach (var template in fileTemplates)
@@ -74,7 +89,7 @@ public static class GeneratorDiscovery
             return new(diagnostics);
         }
 
-        var td = new UserGeneratorTemplateData(data, templateDefs, fileTemplateDefs);
+        var td = new UserGeneratorTemplateData(data, templateDefs, fileTemplateDefs, globalTemplateDefs);
 
         return new(td, diagnostics);
     }
@@ -136,6 +151,44 @@ public static class GeneratorDiscovery
                                 var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieFileTemplateAttribute");
                                 var fn = ad.ConstructorArguments[0].Value;
                                 templates.Add((fn.ToString(), fs.ConstantValue.ToString()));
+                                goto DoneWithField;
+                            }
+                        }
+                    }
+                }
+            }
+
+        DoneWithField:;
+        }
+
+        return templates;
+    }
+
+    private static List<(string generatorName, string fileName, string template)> GetGlobalTemplates(ClassDeclarationSyntax cds, Compilation compliation)
+    {
+        var templates = new List<(string generatorName, string fileName, string template)>();
+
+        foreach (var child in cds.ChildNodes())
+        {
+            if (child is FieldDeclarationSyntax f)
+            {
+                foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
+                {
+                    var a = ((IdentifierNameSyntax)att.Name).Identifier;
+                    if (a.Text == "GobieGlobalFileTemplate")
+                    {
+                        foreach (var variable in f.Declaration.Variables)
+                        {
+                            var model = compliation.GetSemanticModel(f.SyntaxTree);
+                            var fieldSymbol = model.GetDeclaredSymbol(variable);
+
+                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                            {
+                                var awre = fieldSymbol.GetAttributes();
+                                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieGlobalFileTemplateAttribute");
+                                var generatorName = ad.ConstructorArguments[0].Value;
+                                var fn = ad.ConstructorArguments[1].Value;
+                                templates.Add((generatorName.ToString(), fn.ToString(), fs.ConstantValue.ToString()));
                                 goto DoneWithField;
                             }
                         }

@@ -8,11 +8,13 @@ public class UserGeneratorTemplateData
     public UserGeneratorTemplateData(
         UserGeneratorAttributeData data,
         List<Mustache.TemplateDefinition> templates,
-        List<UserFileTemplateData> fileTemplates)
+        List<UserFileTemplateData> fileTemplates,
+        List<GlobalTemplateData> globalTemplateDefs)
     {
-        FileTemplates = fileTemplates;
         AttributeData = data;
         Templates = templates;
+        FileTemplates = fileTemplates;
+        GlobalTemplate = globalTemplateDefs;
     }
 
     public List<Mustache.TemplateDefinition> Templates { get; }
@@ -20,4 +22,6 @@ public class UserGeneratorTemplateData
     public UserGeneratorAttributeData AttributeData { get; }
 
     public List<UserFileTemplateData> FileTemplates { get; }
+
+    public List<GlobalTemplateData> GlobalTemplate { get; }
 }
