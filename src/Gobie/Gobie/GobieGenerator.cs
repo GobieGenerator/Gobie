@@ -43,10 +43,20 @@ public class GobieGenerator : IIncrementalGenerator
         DiagnosticsReporting.Report(context, assemblyTargetsOrDiagnostics);
         var assemblyTargets = ExtractData(assemblyTargetsOrDiagnostics);
 
-        // =========== Code Generation Workflow
+        // =========== Code Generation Workflow ==============
+
+        // First: Concatenate the target types into a single output.
+        var targetsTuple = memberTargets.Collect().Combine(assemblyTargets.Collect());
+        var targets = targetsTuple.Select(static (f, _) =>
+        {
+            var builder = ImmutableArray.CreateBuilder<TargetAndTemplateData>();
+            builder.AddRange(f.Left);
+            builder.AddRange(f.Right);
+            return builder.ToImmutable();
+        });
 
         // Consolidate outputs down to files and output them.
-        IncrementalValueProvider<ImmutableArray<CodeOutput>> codeOut = CodeGeneration.CollectOutputs(memberTargets.Collect(), assemblyTargets.Collect());
+        IncrementalValueProvider<ImmutableArray<CodeOutput>> codeOut = CodeGeneration.CollectOutputs(targets);
         context.RegisterSourceOutput(codeOut, static (spc, source) => CodeGeneration.Output(spc, source));
     }
 
