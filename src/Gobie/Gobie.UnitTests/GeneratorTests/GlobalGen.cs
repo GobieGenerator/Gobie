@@ -88,7 +88,7 @@ public class GlobalGen
     }
 
     [Test]
-    public Task SimpleValidGenerator_WithUsage_GeneratesOutput()
+    public Task SimpleValidGenerator_WithUsageNoIdentifiers_GeneratesOutput()
     {
         var source = @"
         [assembly: EFCoreRegistration]
