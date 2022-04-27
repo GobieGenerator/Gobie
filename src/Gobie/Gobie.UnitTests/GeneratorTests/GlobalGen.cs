@@ -114,4 +114,38 @@ public class GlobalGen
 
         return TestHelper.Verify(source);
     }
+
+    [Test]
+    public Task SimpleValidGenerator_WithUsageAndIdentifiers_NoReferences_GeneratesOutput()
+    {
+        var source = @"
+        [assembly: EFCoreRegistration]
+        namespace SomeNamespace
+        {
+            using Gobie;
+            public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
+            {
+                [GobieGlobalFileTemplate(""Log"", ""EFCoreRegistration"")]
+                private const string KeyString = @""
+                namespace SomeNamespace;
+
+                public sealed static class EFCoreRegistration
+                {
+                    public static void Register()
+                    {
+                        {{#ChildContent}}
+                            // Global generator code
+                            {{ChildContent}}
+                        {{/ChildContent}}
+                        {{^ChildContent}}
+                            // No generators reference this global generator.
+                        {{/ChildContent}}
+                    }
+                }
+                "";
+            }
+        }";
+
+        return TestHelper.Verify(source);
+    }
 }

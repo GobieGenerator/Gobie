@@ -64,6 +64,12 @@ public static class CodeGeneration
         {
             var hintName = $"{assemblyTemplate.GlobalGeneratorName}.g.cs";
             var renderData = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
+            var sb = new StringBuilder();
+
+            //TODO accumulate code refs.
+
+            var code = sb.ToString();
+            renderData.Add("ChildContent", new Mustache.RenderData("ChildContent", code, code.Length > 0));
             var renderedTemplate = Mustache.RenderTemplate(assemblyTemplate.GlobalTemplate, renderData.ToImmutable());
             var fullCode = CSharpSyntaxTree.ParseText(renderedTemplate).GetRoot().NormalizeWhitespace().ToFullString();
 
