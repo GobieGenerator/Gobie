@@ -14,8 +14,8 @@
         "Location": ": (0,0)-(0,0)",
         "Description": "",
         "HelpLink": "",
-        "MessageFormat": "This section of the template will never be reached. You cannot use the identifer 'name' here because it is surrounded by a not node (i.e. {{^name}} )",
-        "Message": "This section of the template will never be reached. You cannot use the identifer 'name' here because it is surrounded by a not node (i.e. {{^name}} )",
+        "MessageFormat": "This section of the template will never be reached. You cannot use the identifier 'name' here because it is surrounded by a not node (i.e. {{^name}} )",
+        "Message": "This section of the template will never be reached. You cannot use the identifier 'name' here because it is surrounded by a not node (i.e. {{^name}} )",
         "Category": "Gobie",
         "CustomTags": []
       }

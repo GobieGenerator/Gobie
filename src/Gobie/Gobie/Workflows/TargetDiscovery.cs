@@ -24,7 +24,7 @@ public class TargetDiscovery
         return mdsAndGenerators.Select(selector: static (s, _) => FindProbableTargets(s.Left, s.Right));
     }
 
-    public static IncrementalValuesProvider<DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>> GetTargetsOrDiagnostics(
+    public static IncrementalValuesProvider<DataOrDiagnostics<ImmutableArray<MemberTargetAndTemplateData>>> GetTargetsOrDiagnostics(
         IncrementalValuesProvider<((MemberDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? Left, Compilation Right)> data)
     {
         return data
@@ -38,7 +38,7 @@ public class TargetDiscovery
         return assemblyAttributesAndGenerators.Select(selector: static (s, _) => FindProbableAssemblyTargets(s.Left, s.Right));
     }
 
-    public static IncrementalValuesProvider<DataOrDiagnostics<TargetAndTemplateData>> GetAssemblyTargetsOrDiagnostics(
+    public static IncrementalValuesProvider<DataOrDiagnostics<AssemblyTargetAndTemplateData>> GetAssemblyTargetsOrDiagnostics(
         IncrementalValuesProvider<((AttributeSyntax, ImmutableArray<UserGeneratorTemplateData>)? Left, Compilation Right)> data)
     {
         return data
@@ -46,12 +46,27 @@ public class TargetDiscovery
                 GetAssemblyTargetsOrDiagnostics(s.Left?.Item1, s.Left?.Item2, s.Right));
     }
 
-    private static DataOrDiagnostics<TargetAndTemplateData> GetAssemblyTargetsOrDiagnostics(
+    private static DataOrDiagnostics<AssemblyTargetAndTemplateData> GetAssemblyTargetsOrDiagnostics(
         AttributeSyntax? attributeSyntax,
-        ImmutableArray<UserGeneratorTemplateData>? item2,
+        ImmutableArray<UserGeneratorTemplateData>? templates,
         Compilation compilation)
     {
-        throw new NotImplementedException();
+        var d = new List<Diagnostic>();
+
+        var attName = attributeSyntax.Name.ToFullString();
+        var ctypeName = attName + (attName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute");
+
+        foreach (var template in templates)
+        {
+            if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
+            {
+            }
+        }
+
+        return new(d);
+
+        ////throw new NotImplementedException();
+        ////var at = new AssemblyTargetAndTemplateData()
     }
 
     private static (AttributeSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableAssemblyTargets(
@@ -62,21 +77,21 @@ public class TargetDiscovery
         return (attributeSyntax, right);
     }
 
-    private static DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>> GetTargetsOrDiagnostics(
+    private static DataOrDiagnostics<ImmutableArray<MemberTargetAndTemplateData>> GetTargetsOrDiagnostics(
             MemberDeclarationSyntax? mds,
         ImmutableArray<UserGeneratorTemplateData>? templates,
         Compilation compilation)
     {
-        var output = new List<TargetAndTemplateData>();
+        var output = new List<MemberTargetAndTemplateData>();
         var diagnostics = new List<Diagnostic>();
 
         if (mds is null || templates is null)
         {
-            return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(diagnostics);
+            return new DataOrDiagnostics<ImmutableArray<MemberTargetAndTemplateData>>(diagnostics);
         }
 
         // Initial data which would be the same for all generators operating on the member data
-        // syntax. Note that for some syntax like fields, we can have multple generation targets in
+        // syntax. Note that for some syntax like fields, we can have multiple generation targets in
         // a single syntax node.
         ImmutableList<ImmutableDictionary<string, Mustache.RenderData>>? syntaxData = null;
         SemanticModel? semanticModel = null;
@@ -182,7 +197,7 @@ public class TargetDiscovery
                         }
 
                         output.Add(
-                            new TargetAndTemplateData(
+                            new MemberTargetAndTemplateData(
                                 TemplateType.Complete,
                                 ctypeName,
                                 new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
@@ -192,7 +207,7 @@ public class TargetDiscovery
                         {
                             var fileContents = Mustache.RenderTemplate(t.Template, fullTemplateData);
                             output.Add(
-                                new TargetAndTemplateData(
+                                new MemberTargetAndTemplateData(
                                     TemplateType.File,
                                     ctypeName + "_" + t.FileName,
                                     new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
@@ -203,9 +218,9 @@ public class TargetDiscovery
             }
         }
 
-        var builder = ImmutableArray.CreateBuilder<TargetAndTemplateData>();
+        var builder = ImmutableArray.CreateBuilder<MemberTargetAndTemplateData>();
         builder.AddRange(output);
-        return new DataOrDiagnostics<ImmutableArray<TargetAndTemplateData>>(builder.ToImmutable(), diagnostics);
+        return new DataOrDiagnostics<ImmutableArray<MemberTargetAndTemplateData>>(builder.ToImmutable(), diagnostics);
     }
 
     private static ImmutableList<ImmutableDictionary<string, Mustache.RenderData>> GetSyntaxData(SemanticModel semanticModel, MemberDeclarationSyntax mds)

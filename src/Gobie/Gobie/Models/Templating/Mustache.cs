@@ -44,8 +44,8 @@ public class Mustache
     private enum IdentifierValidity
     {
         Valid,
-        IdentiferUsedWhereItDoesntExist,
-        IdentiferExcludedWhereItDoesExist,
+        IdentifierUsedWhereItDoesntExist,
+        IdentifierExcludedWhereItDoesExist,
     }
 
     public static ReadOnlySpan<Token> Tokenize(ReadOnlySpan<char> template)
@@ -311,21 +311,21 @@ public class Mustache
                     };
 
                     var identValid = IdentiferValidInThisContext(tst, currentNode, identifier);
-                    if (identValid == IdentifierValidity.IdentiferUsedWhereItDoesntExist)
+                    if (identValid == IdentifierValidity.IdentifierUsedWhereItDoesntExist)
                     {
                         diagnostics.Add(
                             Diagnostic.Create(
                                 Errors.UnreachableTemplateSection(
-                                    $"You cannot use the identifer '{identifier}' here because it is surrounded " +
+                                    $"You cannot use the identifier '{identifier}' here because it is surrounded " +
                                     $"by a not node (i.e. {{{{^{identifier}}}}} )"),
                                 null));
                     }
-                    else if (identValid == IdentifierValidity.IdentiferExcludedWhereItDoesExist)
+                    else if (identValid == IdentifierValidity.IdentifierExcludedWhereItDoesExist)
                     {
                         diagnostics.Add(
                            Diagnostic.Create(
                               Errors.UnreachableTemplateSection(
-                                  $"You cannot exclude the identifer '{identifier}' here because it is surrounded " +
+                                  $"You cannot exclude the identifier '{identifier}' here because it is surrounded " +
                                   $"by an if node (i.e. {{{{#{identifier}}}}} )"),
                               null));
                     }
@@ -385,7 +385,7 @@ public class Mustache
                 }
                 else
                 {
-                    // TODO do we stop? We already issued dagnostics.
+                    // TODO do we stop? We already issued diagnostics.
                 }
             }
         }
@@ -577,11 +577,11 @@ public class Mustache
         {
             if (newSyntaxType is TemplateSyntaxType.Identifier or TemplateSyntaxType.If && parent.Type is TemplateSyntaxType.Not)
             {
-                return IdentifierValidity.IdentiferUsedWhereItDoesntExist;
+                return IdentifierValidity.IdentifierUsedWhereItDoesntExist;
             }
             else if (newSyntaxType is TemplateSyntaxType.Not && parent.Type is TemplateSyntaxType.Identifier or TemplateSyntaxType.If)
             {
-                return IdentifierValidity.IdentiferExcludedWhereItDoesExist;
+                return IdentifierValidity.IdentifierExcludedWhereItDoesExist;
             }
         }
 

@@ -14,17 +14,19 @@ public static class CodeGeneration
     }
 
     public static IncrementalValueProvider<ImmutableArray<CodeOutput>> CollectOutputs(
-        IncrementalValueProvider<ImmutableArray<TargetAndTemplateData>> incrementalValueProvider)
+        IncrementalValueProvider<(ImmutableArray<MemberTargetAndTemplateData> Left,
+                                  ImmutableArray<AssemblyTargetAndTemplateData> Right)> targets)
     {
-        return incrementalValueProvider.Select(static (s, _) => OutputFiles(s));
+        return targets.Select(static (s, _) => OutputFiles(s.Left, s.Right));
     }
 
-    public static ImmutableArray<CodeOutput> OutputFiles(
-        ImmutableArray<TargetAndTemplateData> compliationAndGeneratorDeclarations)
+    private static ImmutableArray<CodeOutput> OutputFiles(
+        ImmutableArray<MemberTargetAndTemplateData> memberTemplates,
+        ImmutableArray<AssemblyTargetAndTemplateData> assemblyTemplates)
     {
         var codeOut = ImmutableArray.CreateBuilder<CodeOutput>();
 
-        var fileGroups = compliationAndGeneratorDeclarations.GroupBy(x => (x.TemplateType, x.TargetClass, x.GeneratorName));
+        var fileGroups = memberTemplates.GroupBy(x => (x.TemplateType, x.TargetClass, x.GeneratorName));
 
         foreach (var group in fileGroups)
         {
