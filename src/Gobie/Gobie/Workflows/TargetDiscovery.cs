@@ -56,10 +56,14 @@ public class TargetDiscovery
         var attName = attributeSyntax.Name.ToFullString();
         var ctypeName = attName + (attName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute");
 
+        // TODO diagnostics if there are more than one template or similar.
+
         foreach (var template in templates)
         {
             if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
             {
+                var at = new AssemblyTargetAndTemplateData(template.AttributeData.DefinitionIdentifier.ClassName, template.GlobalTemplate[0].Template);
+                return new(at);
             }
         }
 

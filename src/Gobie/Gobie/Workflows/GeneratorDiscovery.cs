@@ -69,9 +69,9 @@ public static class GeneratorDiscovery
                 // have a single identifier node for ChildContent. Logical nodes are allowed if they
                 // work off of ChildContent, but the use case isn't clear.
                 if (t.Identifiers.Count > 1 ||
-                   t.Identifiers.Count == 1 &&
+                    t.Identifiers.Count == 1 &&
                       ((t.Identifiers.First() != "ChildContent") ||
-                      (t.Syntax.CountNodes(x => x.Type == Mustache.TemplateSyntaxType.Identifier) != 1)))
+                       (t.Syntax.CountNodes(x => x.Type == Mustache.TemplateSyntaxType.Identifier) != 1)))
                 {
                     diagnostics.Add(Diagnostic.Create(Errors.GobieGlobalTemplateIdentifierIssue, null));
                     continue;

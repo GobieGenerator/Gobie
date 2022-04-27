@@ -60,6 +60,16 @@ public static class CodeGeneration
             codeOut.Add(new CodeOutput(hintName, fullCode));
         }
 
+        foreach (var assemblyTemplate in assemblyTemplates)
+        {
+            var hintName = $"{assemblyTemplate.GlobalGeneratorName}.g.cs";
+            var renderData = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
+            var renderedTemplate = Mustache.RenderTemplate(assemblyTemplate.GlobalTemplate, renderData.ToImmutable());
+            var fullCode = CSharpSyntaxTree.ParseText(renderedTemplate).GetRoot().NormalizeWhitespace().ToFullString();
+
+            codeOut.Add(new CodeOutput(hintName, fullCode));
+        }
+
         return codeOut.ToImmutable();
     }
 }
