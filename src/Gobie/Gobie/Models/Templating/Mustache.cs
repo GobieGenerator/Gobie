@@ -701,5 +701,27 @@ public class Mustache
         public TemplateSyntax? Parent { get; }
 
         public List<TemplateSyntax> Children { get; } = new();
+
+        /// <summary>
+        /// Counts the nodes of a particular type, starting from this node and checking all children recursively.
+        /// </summary>
+        /// <param name="selector">Criteria to count</param>
+        /// <returns>Number of nodes.</returns>
+        public int CountNodes(Func<TemplateSyntax, bool> selector)
+        {
+            int count = 0;
+
+            if (selector(this))
+            {
+                count++;
+            }
+
+            foreach (var child in Children)
+            {
+                count += child.CountNodes(selector);
+            }
+
+            return count;
+        }
     }
 }
