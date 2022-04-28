@@ -4,5 +4,5 @@ public enum TemplateType
 {
     File,
     Complete,
-    Partial,
+    GlobalChild,
 }

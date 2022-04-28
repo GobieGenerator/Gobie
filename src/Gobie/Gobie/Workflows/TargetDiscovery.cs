@@ -152,7 +152,7 @@ public class TargetDiscovery
                             }
                             else if (arg.NameEquals is not null && constValArg.HasValue)
                             {
-                                // This is a named parameter (i.e. optional value prefixed by 'Name
+                                // Named parameter (i.e. optional value prefixed by 'Name
                                 // = '
                                 var n = arg.NameEquals.Name.ToFullString().Trim();
                                 if (arg.Expression.Kind() == SyntaxKind.NullLiteralExpression)
@@ -194,6 +194,7 @@ public class TargetDiscovery
 
                         var fullTemplateData = attributeDataImmutable.AddRange(target);
 
+                        // All regular templates are rendered and combined.
                         foreach (var t in template.Templates)
                         {
                             sb.AppendLine(Mustache.RenderTemplate(t, fullTemplateData));
@@ -206,6 +207,17 @@ public class TargetDiscovery
                                 ctypeName,
                                 new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
                                 sb.ToString()));
+
+                        foreach (var t in template.GlobalChildTemplates)
+                        {
+                            var childFragement = Mustache.RenderTemplate(t.Template, fullTemplateData);
+                            output.Add(
+                                new MemberTargetAndTemplateData(
+                                    TemplateType.GlobalChild,
+                                    t.GlobalTemplateName,
+                                    new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
+                                    childFragement));
+                        }
 
                         foreach (var t in template.FileTemplates)
                         {
