@@ -4,9 +4,11 @@
 
 ## Overview
 
-Source generation in C# is a very powerfull tool, but its complexity reduces how and where it is used. 
+![](docs/images/gobie-simple-demo.gif)  
 
-This is my attempt to make source generation for low/medium complexity scenarios easily accessable. Gobie allows developers define and use custom source generation without writing any generator code themselves or learning the Roslyn APIs. This happens in two steps. 
+Source generation in C# is a very powerful tool, but its complexity reduces how and where it is used. 
+
+This is my attempt to make source generation for low/medium complexity scenarios easily accessible. Gobie allows developers define and use custom source generation without writing any generator code themselves or learning the Roslyn APIs. This happens in two steps. 
 1. Devs define what they want to generate in C#. Typically this would be text templates, along with definitions for what parameters are needed to populate the template.
     1. From step 1, Gobie creates marker attributes which can be used to tag classes, fields, ... that need code generation.
 2. Using the marker attributes, devs mark their code with the generated attributes, and provide custom arguments where needed. This step work just like consuming any other source generator.
