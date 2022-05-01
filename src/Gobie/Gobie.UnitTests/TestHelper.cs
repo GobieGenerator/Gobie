@@ -4,6 +4,15 @@ public static class TestHelper
 {
     public static Task Verify(string source)
     {
+        GeneratorDriver driver = RunGeneration(source);
+
+        // Use verify to snapshot test the source generator output!
+        return Verifier
+            .Verify(driver).UseDirectory("Snapshots");
+    }
+
+    public static GeneratorDriver RunGeneration(string source)
+    {
         // Parse the provided string into a C# syntax tree
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source);
         // Create references for assemblies we require We could add multiple references if required
@@ -28,9 +37,6 @@ public static class TestHelper
 
         // Run the source generator!
         driver = driver.RunGenerators(compilation);
-
-        // Use verify to snapshot test the source generator output!
-        return Verifier
-            .Verify(driver).UseDirectory("Snapshots");
+        return driver;
     }
 }
