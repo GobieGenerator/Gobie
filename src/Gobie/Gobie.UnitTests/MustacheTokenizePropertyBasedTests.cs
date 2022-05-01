@@ -3,7 +3,7 @@
 using static Gobie.Models.Templating.Mustache;
 
 [TestFixtureSource(nameof(FixtureArgs))]
-public class MoustacheTokenizePropertyBasedTests
+public class MustacheTokenizePropertyBasedTests
 {
     private static object[] FixtureArgs = {
         new object[] { "Question"},
@@ -15,7 +15,7 @@ public class MoustacheTokenizePropertyBasedTests
     private readonly string template;
     private readonly Token[] tokens;
 
-    public MoustacheTokenizePropertyBasedTests(string template)
+    public MustacheTokenizePropertyBasedTests(string template)
     {
         this.template = template;
         tokens = Tokenize(this.template).ToArray();

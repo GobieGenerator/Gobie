@@ -1,0 +1,17 @@
+﻿{
+  "Diagnostics": [
+    {
+      "Id": "GB1002",
+      "Title": "Gobie",
+      "Severity": "Error",
+      "WarningLevel": 0,
+      "Location": ": (0,0)-(0,0)",
+      "Description": "",
+      "HelpLink": "",
+      "MessageFormat": "Gobie should have zero or one instance of the '{{ChildContent}}'. No other identifiers are allowed in global templates.",
+      "Message": "Gobie should have zero or one instance of the '{{ChildContent}}'. No other identifiers are allowed in global templates.",
+      "Category": "Gobie",
+      "CustomTags": []
+    }
+  ]
+}

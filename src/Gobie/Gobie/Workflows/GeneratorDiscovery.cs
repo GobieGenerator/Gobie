@@ -54,6 +54,48 @@ public static class GeneratorDiscovery
             }
         }
 
+        var globalChildTemplates = GetGlobalChildTemplates(data.ClassDeclarationSyntax, compliation);
+        var globalChildTemplateDefs = new List<GlobalChildTemplateData>();
+        foreach (var template in globalChildTemplates)
+        {
+            var res = Mustache.Parse(template.template.AsSpan());
+            if (res.Diagnostics is not null)
+            {
+                diagnostics.AddRange(res.Diagnostics);
+            }
+            else if (res.Data is not null)
+            {
+                globalChildTemplateDefs.Add(new(template.generatorName, res.Data));
+            }
+        }
+
+        var globalTemplates = GetGlobalTemplates(data.ClassDeclarationSyntax, compliation);
+        var globalTemplateDefs = new List<GlobalTemplateData>();
+        foreach (var template in globalTemplates)
+        {
+            var res = Mustache.Parse(template.template.AsSpan());
+            if (res.Diagnostics is not null)
+            {
+                diagnostics.AddRange(res.Diagnostics);
+            }
+            else if (res.Data is Mustache.TemplateDefinition t)
+            {
+                // Here we apply special rules to global templates. The only allowable option is to
+                // have a single identifier node for ChildContent. Logical nodes are allowed if they
+                // work off of ChildContent, but the use case isn't clear.
+                if (t.Identifiers.Count > 1 ||
+                    t.Identifiers.Count == 1 &&
+                      ((t.Identifiers.First() != "ChildContent") ||
+                       (t.Syntax.CountNodes(x => x.Type == Mustache.TemplateSyntaxType.Identifier) != 1)))
+                {
+                    diagnostics.Add(Diagnostic.Create(Errors.GobieGlobalTemplateIdentifierIssue, null));
+                    continue;
+                }
+
+                globalTemplateDefs.Add(new(template.generatorName, template.fileName, t));
+            }
+        }
+
         var fileTemplates = GetFileTemplates(data.ClassDeclarationSyntax, compliation);
         var fileTemplateDefs = new List<UserFileTemplateData>();
         foreach (var template in fileTemplates)
@@ -74,7 +116,12 @@ public static class GeneratorDiscovery
             return new(diagnostics);
         }
 
-        var td = new UserGeneratorTemplateData(data, templateDefs, fileTemplateDefs);
+        var td = new UserGeneratorTemplateData(
+                     data,
+                     templateDefs,
+                     fileTemplateDefs,
+                     globalTemplateDefs,
+                     globalChildTemplateDefs);
 
         return new(td, diagnostics);
     }
@@ -136,6 +183,80 @@ public static class GeneratorDiscovery
                                 var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieFileTemplateAttribute");
                                 var fn = ad.ConstructorArguments[0].Value;
                                 templates.Add((fn.ToString(), fs.ConstantValue.ToString()));
+                                goto DoneWithField;
+                            }
+                        }
+                    }
+                }
+            }
+
+        DoneWithField:;
+        }
+
+        return templates;
+    }
+
+    private static List<(string generatorName, string template)> GetGlobalChildTemplates(ClassDeclarationSyntax cds, Compilation compliation)
+    {
+        var templates = new List<(string generatorName, string template)>();
+
+        foreach (var child in cds.ChildNodes())
+        {
+            if (child is FieldDeclarationSyntax f)
+            {
+                foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
+                {
+                    var a = ((IdentifierNameSyntax)att.Name).Identifier;
+                    if (a.Text == "GobieGlobalChildTemplate")
+                    {
+                        foreach (var variable in f.Declaration.Variables)
+                        {
+                            var model = compliation.GetSemanticModel(f.SyntaxTree);
+                            var fieldSymbol = model.GetDeclaredSymbol(variable);
+
+                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                            {
+                                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieGlobalChildTemplateAttribute");
+                                var fn = ad.ConstructorArguments[0].Value;
+                                templates.Add((fn.ToString(), fs.ConstantValue.ToString()));
+                                goto DoneWithField;
+                            }
+                        }
+                    }
+                }
+            }
+
+        DoneWithField:;
+        }
+
+        return templates;
+    }
+
+    private static List<(string generatorName, string fileName, string template)> GetGlobalTemplates(ClassDeclarationSyntax cds, Compilation compliation)
+    {
+        var templates = new List<(string generatorName, string fileName, string template)>();
+
+        foreach (var child in cds.ChildNodes())
+        {
+            if (child is FieldDeclarationSyntax f)
+            {
+                foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
+                {
+                    var a = ((IdentifierNameSyntax)att.Name).Identifier;
+                    if (a.Text == "GobieGlobalFileTemplate")
+                    {
+                        foreach (var variable in f.Declaration.Variables)
+                        {
+                            var model = compliation.GetSemanticModel(f.SyntaxTree);
+                            var fieldSymbol = model.GetDeclaredSymbol(variable);
+
+                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                            {
+                                var awre = fieldSymbol.GetAttributes();
+                                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieGlobalFileTemplateAttribute");
+                                var generatorName = ad.ConstructorArguments[0].Value;
+                                var fn = ad.ConstructorArguments[1].Value;
+                                templates.Add((generatorName.ToString(), fn.ToString(), fs.ConstantValue.ToString()));
                                 goto DoneWithField;
                             }
                         }

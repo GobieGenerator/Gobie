@@ -17,6 +17,22 @@
     {
     }
 
+    /// <summary>
+    /// Base class Gobie ALWAYS generates.
+    /// </summary>
+    public sealed class GobieGlobalChildTemplateAttribute : GobieBaseFieldAttribute
+    {
+        /// <summary>
+        /// </summary>
+        /// <exception cref="ArgumentNullException"></exception>
+        public GobieGlobalChildTemplateAttribute(string templateName)
+        {
+            TemplateName = templateName ?? throw new ArgumentNullException(nameof(templateName));
+        }
+
+        public string TemplateName { get; }
+    }
+
     public abstract class GobieGeneratorBase
     {
         public virtual bool DebugGenerator { get; protected set; }
@@ -36,6 +52,13 @@
     {
     }
 
+    /// <summary>
+    /// Base class Gobie ALWAYS generates.
+    /// </summary>
+    public abstract class GobieGlobalGenerator : GobieGeneratorBase
+    {
+    }
+
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public abstract class GobieFieldGeneratorAttribute : Attribute
     {
@@ -43,6 +66,15 @@
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public abstract class GobieClassGeneratorAttribute : Attribute
+    {
+    }
+
+    [AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = true)]
+    public abstract class GobieAssemblyGeneratorAttribute : Attribute
+    {
+    }
+
+    public class RealGobieAssemblyGeneratorAttribute : GobieAssemblyGeneratorAttribute
     {
     }
 
@@ -57,6 +89,24 @@
         {
             FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         }
+
+        public string FileName { get; }
+    }
+
+    [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class GobieGlobalFileTemplateAttribute : Attribute
+    {
+        /// <summary>
+        /// </summary>
+        /// <param name="fileName">Must be unique across all... File name is suffixed with '.g.cs'</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public GobieGlobalFileTemplateAttribute(string templateName, string fileName)
+        {
+            TemplateName = templateName ?? throw new ArgumentNullException(nameof(templateName));
+            FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
+        }
+
+        public string TemplateName { get; }
 
         public string FileName { get; }
     }

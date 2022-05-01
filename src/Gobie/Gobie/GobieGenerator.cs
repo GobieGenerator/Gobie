@@ -17,18 +17,34 @@ public class GobieGenerator : IIncrementalGenerator
         DiagnosticsReporting.Report(context, userGeneratorsOrDiagnostics);
         var userGenerators = ExtractData(userGeneratorsOrDiagnostics);
 
-        // Target Discovery Workflow
+        // TODO look for gobie settings coming from attributes
+        var assemblyAtt = AssemblyAttributes.FindAssemblyAttributes(context);
+
+        // ========== Target Discovery Workflow ================
+        // First: Discover classes and field targets.
         var mwa = TargetDiscovery.FindMembersWithAttributes(context);
         var mwaAndGenerators = mwa.Combine(userGenerators.Collect());
         var probableTargets = TargetDiscovery.FindProbableTargets(mwaAndGenerators);
-
         var compliationAndProbableTargets = probableTargets.Where(x => x is not null).Combine(context.CompilationProvider);
         var targetsOrDiagnostics = TargetDiscovery.GetTargetsOrDiagnostics(compliationAndProbableTargets);
         DiagnosticsReporting.Report(context, targetsOrDiagnostics);
-        var targets = ExtractManyData(targetsOrDiagnostics);
+        var memberTargets = ExtractManyData(targetsOrDiagnostics);
 
-        // Consolodate outputs down to files and output them.
-        IncrementalValueProvider<ImmutableArray<CodeOutput>> codeOut = CodeGeneration.CollectOutputs(targets.Collect());
+        // Second: Discover assembly targets (i.e. Requests for global template gen).
+        var assemblyAttributesAndGenerators = assemblyAtt.Combine(userGenerators.Collect());
+        var probableAssemblyTargets = TargetDiscovery.FindProbableAssemblyTargets(assemblyAttributesAndGenerators);
+        var compliationAndProbableAssemblyTargets = probableAssemblyTargets.Where(x => x is not null).Combine(context.CompilationProvider);
+        var assemblyTargetsOrDiagnostics = TargetDiscovery.GetAssemblyTargetsOrDiagnostics(compliationAndProbableAssemblyTargets);
+        DiagnosticsReporting.Report(context, assemblyTargetsOrDiagnostics);
+        var assemblyTargets = ExtractData(assemblyTargetsOrDiagnostics);
+
+        // =========== Code Generation Workflow ==============
+
+        // First: Concatenate the target types into a single output.
+        var targets = memberTargets.Collect().Combine(assemblyTargets.Collect());
+
+        // Consolidate outputs down to files and output them.
+        var codeOut = CodeGeneration.CollectOutputs(targets);
         context.RegisterSourceOutput(codeOut, static (spc, source) => CodeGeneration.Output(spc, source));
     }
 

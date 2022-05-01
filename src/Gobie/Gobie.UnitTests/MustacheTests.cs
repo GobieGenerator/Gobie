@@ -23,7 +23,7 @@ public class MustacheTests
     [TestCase("\n {{ name }}  ")]
     [TestCase("{{#name}}Something{{/name}} {{^name}}Something Else{{/name}}")]
     [TestCase("{{#name}}Someone named {{name}} {{#age}} with age of {{age}}{{/age}} {{/name}} is great!!")]
-    [TestCase("{{#name}} Text1 {{#foo}}{{#name}}{{/name}} Text2  {{/foo}}{{/name}}")] // Inner if name is redudant.
+    [TestCase("{{#name}} Text1 {{#foo}}{{#name}}{{/name}} Text2  {{/foo}}{{/name}}")] // Inner if name is redundant.
     [TestCase("private void {{name}}(string greeting) => {{name}}.Add(greeting);")]
     [TestCase("{{name:pascal}}")]
     [TestCase("{{name:pascal}}{{name:camel}}{{ name :  PASCAL }}{{ name : CAMEL  }}")]

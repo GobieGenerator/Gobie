@@ -8,6 +8,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Assets\GeneratorCrashes\*" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Assets\GeneratorCrashes\*" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
 		<PackageReference Include="NUnit" Version="3.13.2" />
