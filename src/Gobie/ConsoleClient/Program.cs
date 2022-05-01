@@ -1,6 +1,5 @@
 ﻿namespace ConsoleClient
 {
-    using Models;
     using System;
     using System.Linq;
 
