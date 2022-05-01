@@ -11,7 +11,17 @@ public static class TestHelper
             .Verify(driver).UseDirectory("Snapshots");
     }
 
-    public static GeneratorDriver RunGeneration(string source)
+    public static void ThrowIfGeneratorDoes(string source)
+    {
+        GeneratorDriver driver = RunGeneration(source);
+        var rr = driver.GetRunResult();
+        var firstEx = rr.Results.FirstOrDefault(x => x.Exception is not null);
+
+        if (firstEx.Exception is Exception ex)
+            throw new InvalidOperationException("Gobie crashed", ex);
+    }
+
+    private static GeneratorDriver RunGeneration(string source)
     {
         // Parse the provided string into a C# syntax tree
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source);

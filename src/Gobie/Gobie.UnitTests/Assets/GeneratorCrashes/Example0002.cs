@@ -1,4 +1,5 @@
 ﻿[assembly: EFCoreRegistration]
+[assembly: EFCoreRegistration]
 namespace SomeNamespace
 {
     using Gobie;
@@ -167,10 +168,10 @@ namespace SomeNamespace
 ";
 
         [Required]
-        public string StateEnum { get; set; } = null;
+        public string StateEnum { get; set; }
 
         [Required]
-        public string TriggerEnum { get; set; } = null;
+        public string TriggerEnum { get; set; }
     }
 
     public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
@@ -186,7 +187,7 @@ namespace SomeNamespace
                     throw new ArgumentNullException(nameof(s));
                 }
 
-                {{#CustomValidator :  }}
+                {{#CustomValidator}}
                 if({{CustomValidator}}(s))
                 {
                     {{FieldName}}.Add(s);

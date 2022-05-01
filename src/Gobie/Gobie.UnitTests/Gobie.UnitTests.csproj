@@ -8,11 +8,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Assets\GeneratorCrashes\Example0001.cs" />
+	  <Compile Remove="Assets\GeneratorCrashes\*" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="Assets\GeneratorCrashes\Example0001.cs" />
+	  <None Include="Assets\GeneratorCrashes\*" />
 	</ItemGroup>
 
 	<ItemGroup>
