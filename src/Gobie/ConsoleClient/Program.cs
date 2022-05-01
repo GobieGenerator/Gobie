@@ -1,8 +1,8 @@
-﻿namespace ConsoleClient
-{
-    using System;
-    using System.Linq;
+﻿using System;
+using System.Linq;
 
+namespace ConsoleClient
+{
     internal class Program
     {
         private static void Main(string[] args)
