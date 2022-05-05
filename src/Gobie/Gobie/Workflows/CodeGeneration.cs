@@ -1,5 +1,6 @@
 ﻿namespace Gobie.Workflows;
 
+using Gobie.Models.Unions;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
 
@@ -13,17 +14,19 @@ public static class CodeGeneration
         }
     }
 
-    public static IncrementalValueProvider<ImmutableArray<CodeOutput>> CollectOutputs(
+    public static IncrementalValueProvider<DataOrDiagnostics<ImmutableArray<CodeOutput>>> CollectOutputs(
         IncrementalValueProvider<(ImmutableArray<MemberTargetAndTemplateData> Left,
                                   ImmutableArray<AssemblyTargetAndTemplateData> Right)> targets)
     {
         return targets.Select(static (s, _) => OutputFiles(s.Left, s.Right));
     }
 
-    private static ImmutableArray<CodeOutput> OutputFiles(
+    private static DataOrDiagnostics<ImmutableArray<CodeOutput>> OutputFiles(
         ImmutableArray<MemberTargetAndTemplateData> memberTemplates,
         ImmutableArray<AssemblyTargetAndTemplateData> assemblyTemplates)
     {
+        var diagnostics = new List<Diagnostic>();
+
         var codeOut = ImmutableArray.CreateBuilder<CodeOutput>();
         var globalTemplates = new Dictionary<string, StringBuilder>();
 
@@ -78,6 +81,9 @@ public static class CodeGeneration
 
         foreach (var assemblyTemplate in assemblyTemplates)
         {
+            // TODO, this is the first place that all the assembly attributes are gathered together and processed at once. 
+            // So we should check for duplicates and skip processing them at this point / also output a warning.
+
             var hintName = $"{assemblyTemplate.GlobalGeneratorName}.g.cs";
             var renderData = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
 
@@ -89,6 +95,6 @@ public static class CodeGeneration
             codeOut.Add(new CodeOutput(hintName, fullCode));
         }
 
-        return codeOut.ToImmutable();
+        return new(codeOut.ToImmutable(), diagnostics);
     }
 }
