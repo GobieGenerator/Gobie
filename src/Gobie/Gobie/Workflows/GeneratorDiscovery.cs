@@ -16,17 +16,19 @@ public static class GeneratorDiscovery
         return context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => IsClassDeclaration(s),
-                transform: static (ctx, _) => GetUserTemplate(ctx))
+                transform: static (ctx, ct) => GetUserTemplate(ctx, ct))
             .Where(static x => x is not null)!;
     }
 
     public static IncrementalValuesProvider<DataOrDiagnostics<UserGeneratorTemplateData>> GetFullGenerators(
         IncrementalValuesProvider<(UserGeneratorAttributeData Left, Compilation Right)> compliationAndGeneratorDeclarations)
     {
-        return compliationAndGeneratorDeclarations.Select(static (s, _) => GetFullTemplateDeclaration(s));
+        return compliationAndGeneratorDeclarations.Select(static (s, ct) => GetFullTemplateDeclaration(s, ct));
     }
 
-    private static DataOrDiagnostics<UserGeneratorTemplateData> GetFullTemplateDeclaration((UserGeneratorAttributeData, Compilation) s)
+    private static DataOrDiagnostics<UserGeneratorTemplateData> GetFullTemplateDeclaration(
+        (UserGeneratorAttributeData, Compilation) s,
+        CancellationToken ct)
     {
         var (data, compliation) = (s.Item1, s.Item2);
         var diagnostics = new List<Diagnostic>();
@@ -43,6 +45,8 @@ public static class GeneratorDiscovery
         var templateDefs = new List<Mustache.TemplateDefinition>();
         foreach (var template in templates)
         {
+            ct.ThrowIfCancellationRequested();
+
             var res = Mustache.Parse(template.AsSpan());
             if (res.Diagnostics is not null)
             {
@@ -58,6 +62,8 @@ public static class GeneratorDiscovery
         var globalChildTemplateDefs = new List<GlobalChildTemplateData>();
         foreach (var template in globalChildTemplates)
         {
+            ct.ThrowIfCancellationRequested();
+
             var res = Mustache.Parse(template.template.AsSpan());
             if (res.Diagnostics is not null)
             {
@@ -69,10 +75,12 @@ public static class GeneratorDiscovery
             }
         }
 
-        var globalTemplates = GetGlobalTemplates(data.ClassDeclarationSyntax, compliation);
+        var globalTemplates = GetGlobalTemplates(data.ClassDeclarationSyntax, compliation, ct);
         var globalTemplateDefs = new List<GlobalTemplateData>();
         foreach (var template in globalTemplates)
         {
+            ct.ThrowIfCancellationRequested();
+
             var res = Mustache.Parse(template.template.AsSpan());
             if (res.Diagnostics is not null)
             {
@@ -100,6 +108,8 @@ public static class GeneratorDiscovery
         var fileTemplateDefs = new List<UserFileTemplateData>();
         foreach (var template in fileTemplates)
         {
+            ct.ThrowIfCancellationRequested();
+
             var res = Mustache.Parse(template.template.AsSpan());
             if (res.Diagnostics is not null)
             {
@@ -232,12 +242,17 @@ public static class GeneratorDiscovery
         return templates;
     }
 
-    private static List<(string generatorName, string fileName, string template)> GetGlobalTemplates(ClassDeclarationSyntax cds, Compilation compliation)
+    private static List<(string generatorName, string fileName, string template)> GetGlobalTemplates(
+        ClassDeclarationSyntax cds,
+        Compilation compliation,
+        CancellationToken ct)
     {
         var templates = new List<(string generatorName, string fileName, string template)>();
 
         foreach (var child in cds.ChildNodes())
         {
+            ct.ThrowIfCancellationRequested();
+
             if (child is FieldDeclarationSyntax f)
             {
                 foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
@@ -290,7 +305,9 @@ public static class GeneratorDiscovery
         return diagnostics;
     }
 
-    private static DataOrDiagnostics<UserGeneratorAttributeData>? GetUserTemplate(GeneratorSyntaxContext context)
+    private static DataOrDiagnostics<UserGeneratorAttributeData>? GetUserTemplate(
+        GeneratorSyntaxContext context,
+        CancellationToken ct)
     {
         var cds = (ClassDeclarationSyntax)context.Node;
         var classLocation = cds.Identifier.GetLocation();
@@ -302,12 +319,6 @@ public static class GeneratorDiscovery
 
         // Because we control the list of base types they can use this should be a very good though
         // imperfect filter we can run on the syntax alone.
-        foreach (var item in cds.BaseList.Types)
-        {
-            var a = item.ToString();
-            var b = item.ToFullString();
-        }
-
         var gobieBaseTypeName = cds.BaseList.Types.SingleOrDefault(x => Config.GenToAttribute.ContainsKey(x.ToString()));
         if (gobieBaseTypeName is null)
         {
@@ -334,6 +345,8 @@ public static class GeneratorDiscovery
         var invalidName = !cds.Identifier.ToString().EndsWith("Generator", StringComparison.OrdinalIgnoreCase);
         foreach (var attribute in classSymbol!.GetAttributes())
         {
+            ct.ThrowIfCancellationRequested();
+
             var b = attribute?.AttributeClass?.ToString();
             if (attribute?.AttributeClass?.ToString() == "Gobie.GobieGeneratorNameAttribute")
             {
@@ -372,6 +385,8 @@ public static class GeneratorDiscovery
         var requiredPropertyNumber = 1;
         foreach (PropertyDeclarationSyntax node in cds.ChildNodes().Where(x => x is PropertyDeclarationSyntax))
         {
+            ct.ThrowIfCancellationRequested();
+
             if (ConstantTypes.IsAllowedConstantType(node.Type, out var propertyType) == false)
             {
                 // We don't need to break the whole template when they do this wrong.

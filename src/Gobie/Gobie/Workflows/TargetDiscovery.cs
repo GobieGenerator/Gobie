@@ -21,15 +21,15 @@ public class TargetDiscovery
         IncrementalValuesProvider<(T Left, ImmutableArray<UserGeneratorTemplateData> Right)> mdsAndGenerators)
         where T : MemberDeclarationSyntax
     {
-        return mdsAndGenerators.Select(selector: static (s, _) => FindProbableTargets(s.Left, s.Right));
+        return mdsAndGenerators.Select(selector: static (s, ct) => FindProbableTargets(s.Left, s.Right, ct));
     }
 
     public static IncrementalValuesProvider<DataOrDiagnostics<ImmutableArray<MemberTargetAndTemplateData>>> GetTargetsOrDiagnostics(
         IncrementalValuesProvider<((MemberDeclarationSyntax, ImmutableArray<UserGeneratorTemplateData>)? Left, Compilation Right)> data)
     {
         return data
-            .Select(selector: static (s, _) =>
-                GetTargetsOrDiagnostics(s.Left?.Item1, s.Left?.Item2, s.Right));
+            .Select(selector: static (s, ct) =>
+                GetTargetsOrDiagnostics(s.Left?.Item1, s.Left?.Item2, s.Right, ct));
     }
 
     public static IncrementalValuesProvider<(AttributeSyntax, ImmutableArray<UserGeneratorTemplateData>)?> FindProbableAssemblyTargets(
@@ -84,7 +84,8 @@ public class TargetDiscovery
     private static DataOrDiagnostics<ImmutableArray<MemberTargetAndTemplateData>> GetTargetsOrDiagnostics(
             MemberDeclarationSyntax? mds,
         ImmutableArray<UserGeneratorTemplateData>? templates,
-        Compilation compilation)
+        Compilation compilation,
+        CancellationToken ct)
     {
         var output = new List<MemberTargetAndTemplateData>();
         var diagnostics = new List<Diagnostic>();
@@ -112,6 +113,8 @@ public class TargetDiscovery
         // were missing a reference.
         foreach (var att in mds.AttributeLists.SelectMany(x => x.Attributes))
         {
+            ct.ThrowIfCancellationRequested();
+
             // TODO, maybe we should test that we can't resolve the specific attribute details and
             // then look to the syntax? I wonder if we define a generator in one lib and use it in
             // another whether that is even viable. And in that case we might be able to see the
@@ -121,6 +124,8 @@ public class TargetDiscovery
 
             foreach (var template in templates)
             {
+                ct.ThrowIfCancellationRequested();
+
                 if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
                 {
                     // First thing we do, now that we know we have work to do, is to initialize data
@@ -317,11 +322,14 @@ public class TargetDiscovery
     /// <returns>Syntax and template data, or null</returns>
     private static (T, ImmutableArray<UserGeneratorTemplateData>)? FindProbableTargets<T>(
         T mds,
-        ImmutableArray<UserGeneratorTemplateData> userGenerators)
+        ImmutableArray<UserGeneratorTemplateData> userGenerators,
+        CancellationToken ct)
              where T : MemberDeclarationSyntax
     {
         foreach (var item in mds.AttributeLists.SelectMany(x => x.Attributes))
         {
+            ct.ThrowIfCancellationRequested();
+
             var classAttName = ((IdentifierNameSyntax)item.Name).Identifier.Text;
             classAttName += classAttName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute";
 
