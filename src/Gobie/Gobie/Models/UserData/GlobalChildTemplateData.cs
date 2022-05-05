@@ -5,7 +5,7 @@
         public GlobalChildTemplateData(string templateName, Mustache.TemplateDefinition template)
         {
             GlobalTemplateName = templateName;
-            Template = template ?? throw new ArgumentNullException(nameof(template));
+            Template = template;
         }
 
         public string GlobalTemplateName { get; }

@@ -6,8 +6,8 @@ public readonly struct ClassIdentifier : IEquatable<ClassIdentifier>
 {
     public ClassIdentifier(string classNamespace, string className)
     {
-        NamespaceName = classNamespace ?? throw new ArgumentNullException(nameof(classNamespace));
-        ClassName = className ?? throw new ArgumentNullException(nameof(className));
+        NamespaceName = classNamespace ?? string.Empty;
+        ClassName = className ?? string.Empty;
     }
 
     public string NamespaceName { get; }
