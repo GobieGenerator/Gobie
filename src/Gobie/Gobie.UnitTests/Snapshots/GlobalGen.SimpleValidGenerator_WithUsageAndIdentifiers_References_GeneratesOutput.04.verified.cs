@@ -1,13 +1,10 @@
-﻿//HintName: EFCoreRegistrationGenerator.g.cs
-namespace SomeNamespace;
-public sealed static class EFCoreRegistration
+﻿//HintName: TemplateTarget_EncapsulatedCollectionAttribute.g.cs
+namespace SomeNamespace
 {
-    public static void Register()
+    public partial class TemplateTarget
     {
-    // Global generator code
-    // Hello From TemplateTarget.names
-    // Hello From TemplateTarget.addresses
-    // Hello From TemplateTarget.books
-    // Hello From OtherTarget.names
+        public IEnumerable<string> Names => names.AsReadOnly(); // Encapsulating List<string> 
+        public IEnumerable<string> Addresses => addresses.AsReadOnly(); // Encapsulating List<string> 
+        public IEnumerable<string> Books => books.AsReadOnly(); // Encapsulating List<string> 
     }
 }
