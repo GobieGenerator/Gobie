@@ -123,6 +123,13 @@ public static class GeneratorDiscovery
                      globalTemplateDefs,
                      globalChildTemplateDefs);
 
+        if(td.HasAnyTemplate == false)
+        {
+            // Warn the user this won't do anything as is.
+            diagnostics.Add(Diagnostic.Create(Warnings.UserTemplateIsEmpty(td.AttributeData.DefinitionIdentifier.ClassName), null));
+        }
+
+
         return new(td, diagnostics);
     }
 

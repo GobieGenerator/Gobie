@@ -78,7 +78,6 @@ public class ClassGen
     [Test]
     public Task Empty_GetsNoDefinitionDiagnostic()
     {
-        Assert.Fail("Not workign yet");
         var source = @"
         using Gobie;
 
@@ -198,6 +197,9 @@ public class ClassGen
             public string MyParam {get; set;}
 
             public string OtherParam {get; set;} = ""My Initial Value"";
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);
@@ -218,6 +220,9 @@ public class ClassGen
             public string MyParam {get; set;}
 
             public string OtherParam {get; set;} = ""My Initial Value"";
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);
@@ -241,6 +246,9 @@ public class ClassGen
             public string MyParam {get; set;}
 
             public string OtherParam {get; set;} = ""My Initial Value"";
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);
@@ -260,6 +268,9 @@ public class ClassGen
 
             [Required(1)]
             public int ReqRequestedFirst {get; set;}
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);
@@ -279,6 +290,9 @@ public class ClassGen
 
             [Required(1)]
             public int ReqRequestedFirst {get; set;}
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);
@@ -304,6 +318,9 @@ public class ClassGen
 
             [Required(5)]
             public int AnotherReqRequestedFifth {get; set;}
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);
@@ -325,6 +342,9 @@ public class ClassGen
 
             [Required]
             public string MyString {get; set;}
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);
@@ -346,6 +366,9 @@ public class ClassGen
 
             [Required]
             public string MyString {get; set;}
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);
@@ -367,6 +390,9 @@ public class ClassGen
 
             [Required(1)]
             public string MyString {get; set;}
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);
@@ -391,6 +417,9 @@ public class ClassGen
 
             [Required]
             public string MyString {get; set;}
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);
@@ -410,6 +439,9 @@ public class ClassGen
             public double BadProp {get; set;}
 
             public string MyString {get; set;}
+
+            [GobieTemplate]
+            private const string EncapsulationTemplate = ""// String Comment"";
         }";
 
         return TestHelper.Verify(source);

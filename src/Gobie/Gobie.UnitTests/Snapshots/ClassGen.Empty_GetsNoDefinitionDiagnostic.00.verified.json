@@ -1,0 +1,17 @@
+﻿{
+  "Diagnostics": [
+    {
+      "Id": "GB0012",
+      "Title": "Gobie",
+      "Severity": "Warning",
+      "WarningLevel": 1,
+      "Location": ": (0,0)-(0,0)",
+      "Description": "",
+      "HelpLink": "",
+      "MessageFormat": "The generator UserDefinedGenerator does not have any templates defined. Therefore it will not generate any code.",
+      "Message": "The generator UserDefinedGenerator does not have any templates defined. Therefore it will not generate any code.",
+      "Category": "Gobie Usage",
+      "CustomTags": []
+    }
+  ]
+}

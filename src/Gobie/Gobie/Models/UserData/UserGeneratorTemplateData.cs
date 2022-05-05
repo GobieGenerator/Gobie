@@ -28,4 +28,10 @@ public class UserGeneratorTemplateData
     public List<GlobalTemplateData> GlobalTemplate { get; }
 
     public List<GlobalChildTemplateData> GlobalChildTemplates { get; }
+
+    /// <summary>
+    /// Helper to return whether there is any defined template, of any kind, for this generator.
+    /// </summary>
+    public bool HasAnyTemplate =>
+        Templates.Any() || FileTemplates.Any() || GlobalTemplate.Any() || GlobalChildTemplates.Any();
 }
