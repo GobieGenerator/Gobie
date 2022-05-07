@@ -79,11 +79,13 @@ public static class CodeGeneration
             }
         }
 
-        foreach (var assemblyTemplate in assemblyTemplates)
+        // This is the first place that all the assembly attributes are gathered together and
+        // processed at once. All attributes are configured to be unique so if more than one
+        // instance exists we can rely on the compiler to provide an error. All we need to do is
+        // avoid generating code more than once.
+        var unqiueAssemblyTempaltes = assemblyTemplates.GroupBy(x => x.GlobalGeneratorName).Select(x => x.First());
+        foreach (var assemblyTemplate in unqiueAssemblyTempaltes)
         {
-            // TODO, this is the first place that all the assembly attributes are gathered together and processed at once. 
-            // So we should check for duplicates and skip processing them at this point / also output a warning.
-
             var hintName = $"{assemblyTemplate.GlobalGeneratorName}.g.cs";
             var renderData = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
 
