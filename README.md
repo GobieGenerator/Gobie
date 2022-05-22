@@ -1,6 +1,7 @@
 # Gobie
 
 [![NuGet](https://shields.io/nuget/v/Gobie.svg)](https://www.nuget.org/packages/Gobie/)
+[![Code coverage](https://codecov.io/gh/GobieGenerator/Gobie/branch/main/graph/badge.svg)](https://codecov.io/gh/GobieGenerator/Gobie)
 
 ## Overview
 

@@ -21,8 +21,21 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+    - name: Unit Test
+      run: dotnet test ./Gobie.UnitTests/Gobie.UnitTests.csproj --collect:"XPlat Code Coverage"
+    - name: Upload Verification Files on Fail
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: Acceptance Test Failure
+        retention-days: 5
+        path: |
+          **/*.verified.txt
+          **/*.received.txt
+    - name: Codecov
+      uses: codecov/codecov-action@v1.2.1
+      with:
+        files: '**/coverage.cobertura.xml'
 
 defaults:
  run:
