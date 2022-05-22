@@ -16,7 +16,7 @@ public static class ModuleInitializer
         // Prevent issues from Different OSs running tests.
         VerifierSettings.ScrubLinesWithReplace(x =>
         {
-            x = x.ReplaceLineEndings("\r\n");
+            x = x.Replace("\r", null);
             return x;
         });
     }
