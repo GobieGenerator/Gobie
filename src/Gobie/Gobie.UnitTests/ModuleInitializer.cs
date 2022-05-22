@@ -5,7 +5,7 @@ public static class ModuleInitializer
     [ModuleInitializer]
     public static void Init()
     {
-        VerifySourceGenerators.Enable();
+        ////VerifySourceGenerators.Enable();
 
         VerifierSettings.UseStrictJson(); // Multiline templates will be a mess otherwise
         VerifierSettings.AddExtraSettings(x =>
