@@ -22,7 +22,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Unit Test
-      run: dotnet test --no-build ./Gobie.UnitTests/Gobie.UnitTests.csproj -p:CollectCoverage=true -p:CoverletOutputFormat=opencover
+      run: dotnet test ./Gobie.UnitTests/Gobie.UnitTests.csproj -p:CollectCoverage=true -p:CoverletOutputFormat=opencover
     - name: Upload Verification Files on Fail
       if: ${{ failure() }}
       uses: actions/upload-artifact@v2
