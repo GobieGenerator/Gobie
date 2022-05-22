@@ -12,12 +12,5 @@ public static class ModuleInitializer
         {
             x.DefaultValueHandling = Newtonsoft.Json.DefaultValueHandling.Populate;
         });
-
-        // Prevent issues from Different OSs running tests.
-        VerifierSettings.ScrubLinesWithReplace(x =>
-        {
-            x = x.Replace("\r", null);
-            return x;
-        });
     }
 }
