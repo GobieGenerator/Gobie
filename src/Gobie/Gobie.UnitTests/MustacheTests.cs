@@ -55,7 +55,7 @@ public class MustacheTests
         var parse = Mustache.Parse(template);
         var render = Mustache.RenderTemplate(parse.Data!, data.ToImmutable());
 
-        return Verify(render).UseDirectory("Snapshots\\Mustache\\Render");
+        return Verify(render).UseDirectory("Snapshots/Mustache/Render");
     }
 
     [TestCase("{{#name}}Hello {{name}}{{/name}} {{^name}}No one is here{{/name}}")]
@@ -78,7 +78,7 @@ public class MustacheTests
         var parsed = Mustache.Parse(template);
 
         return Verify(new ParseResult(template, new(parsed.Data, parsed.Diagnostics)))
-              .UseDirectory("Snapshots\\Mustache\\Parsing");
+              .UseDirectory("Snapshots/Mustache/Parsing");
     }
 
     private record ParseResult(string Template, DataOrDiagnostics<SeralizableTemplateDef> Result);
