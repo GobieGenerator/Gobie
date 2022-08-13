@@ -322,7 +322,8 @@ public class TargetDiscovery
     {
         foreach (var item in mds.AttributeLists.SelectMany(x => x.Attributes))
         {
-            var classAttName = ((IdentifierNameSyntax)item.Name).Identifier.Text;
+            var classAttName = (item.Name as IdentifierNameSyntax)?.Identifier.Text;
+            if (classAttName is null) continue;
             classAttName += classAttName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute";
 
             foreach (var gen in userGenerators)
