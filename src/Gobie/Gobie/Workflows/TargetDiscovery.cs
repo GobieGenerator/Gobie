@@ -60,6 +60,8 @@ public class TargetDiscovery
 
         foreach (var template in templates)
         {
+            if (template.GlobalTemplate.Count == 0) continue;
+
             if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
             {
                 var at = new AssemblyTargetAndTemplateData(template.AttributeData.DefinitionIdentifier.ClassName, template.GlobalTemplate[0].Template);
