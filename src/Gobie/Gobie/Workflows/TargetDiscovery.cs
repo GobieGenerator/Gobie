@@ -302,7 +302,7 @@ public class TargetDiscovery
                 return;
             }
 
-            data.Add(new Mustache.RenderData(ClassNamespace, typeInfo.ContainingNamespace.Name, true));
+            data.Add(new Mustache.RenderData(ClassNamespace, typeInfo.ContainingNamespace.ToString(), true));
             data.Add(new Mustache.RenderData(ClassName, typeInfo.Name, true));
         }
     }
