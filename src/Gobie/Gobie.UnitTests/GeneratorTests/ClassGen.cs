@@ -75,19 +75,19 @@ public class ClassGen
         return TestHelper.Verify(source);
     }
 
-    [Test]
-    public Task Empty_GetsNoDefinitionDiagnostic()
-    {
-        Assert.Fail("Not workign yet");
-        var source = @"
-        using Gobie;
+    ////[Test]
+    ////public Task Empty_GetsNoDefinitionDiagnostic()
+    ////{
+    ////    Assert.Fail("Not workign yet");
+    ////    var source = @"
+    ////    using Gobie;
 
-        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
-        {
-        }";
+    ////    public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+    ////    {
+    ////    }";
 
-        return TestHelper.Verify(source);
-    }
+    ////    return TestHelper.Verify(source);
+    ////}
 
     [Test]
     public Task NameDoesntEndInGenerator_GetsDiagnostic()

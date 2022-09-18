@@ -60,6 +60,8 @@ public class TargetDiscovery
 
         foreach (var template in templates)
         {
+            if (template.GlobalTemplate.Count == 0) continue;
+
             if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
             {
                 var at = new AssemblyTargetAndTemplateData(template.AttributeData.DefinitionIdentifier.ClassName, template.GlobalTemplate[0].Template);
@@ -307,7 +309,7 @@ public class TargetDiscovery
                 return;
             }
 
-            data.Add(new Mustache.RenderData(ClassNamespace, typeInfo.ContainingNamespace.Name, true));
+            data.Add(new Mustache.RenderData(ClassNamespace, typeInfo.ContainingNamespace.ToString(), true));
             data.Add(new Mustache.RenderData(ClassName, typeInfo.Name, true));
         }
     }
@@ -329,8 +331,8 @@ public class TargetDiscovery
         foreach (var item in mds.AttributeLists.SelectMany(x => x.Attributes))
         {
             ct.ThrowIfCancellationRequested();
-
-            var classAttName = ((IdentifierNameSyntax)item.Name).Identifier.Text;
+            var classAttName = (item.Name as IdentifierNameSyntax)?.Identifier.Text;
+            if (classAttName is null) continue;
             classAttName += classAttName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute";
 
             foreach (var gen in userGenerators)

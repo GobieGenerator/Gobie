@@ -1,4 +1,4 @@
-﻿[assembly: EFCoreRegistration]
+﻿////[assembly: EFCoreRegistration]
 
 namespace SomeNamespace
 {
@@ -214,17 +214,17 @@ namespace SomeNamespace
         public string CustomValidator { get; set; } = null;
     }
 
-    [StatefullLoggedClass(nameof(AuthorState), nameof(AuthorTrigger))]
-    public partial class Author
-    {
-        [EncapsulatedCollection(null)]
-        private readonly List<Publisher> publishers = new();
+    ////[StatefullLoggedClass(nameof(AuthorState), nameof(AuthorTrigger))]
+    ////public partial class Author
+    ////{
+    ////    [EncapsulatedCollection(null)]
+    ////    private readonly List<Publisher> publishers = new();
 
-        [EncapsulatedCollection(nameof(BookValid))]
-        private readonly List<Book> books = new();
+    ////    [EncapsulatedCollection(nameof(BookValid))]
+    ////    private readonly List<Book> books = new();
 
-        private static bool BookValid(Book b) => b.Title.Length > 0;
-    }
+    ////    private static bool BookValid(Book b) => b.Title.Length > 0;
+    ////}
 
     public class Publisher
     {
