@@ -4,7 +4,7 @@
 [![Code coverage](https://codecov.io/gh/GobieGenerator/Gobie/branch/main/graph/badge.svg)](https://codecov.io/gh/GobieGenerator/Gobie)
 
 ## Overview
-
+ 
 ![](docs/images/gobie-simple-demo.gif)  
 
 Source generation in C# is a very powerful tool, but its complexity reduces how and where it is used. 
