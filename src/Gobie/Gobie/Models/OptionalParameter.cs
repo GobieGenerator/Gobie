@@ -10,9 +10,9 @@ public class OptionalParameter
         // The type specified in a constant declaration shall be sbyte, byte, short, ushort, int,
         // uint, long, ulong, char, float, double, decimal, bool, string, an enum_type, or a reference_type.
 
-        name = name ?? throw new ArgumentNullException(nameof(name));
+        name = name ?? string.Empty;
 
-        CsharpTypeName = csharpTypeName ?? throw new ArgumentNullException(nameof(csharpTypeName));
+        CsharpTypeName = csharpTypeName ?? string.Empty;
 
         NamePascal = name[0].ToString().ToUpperInvariant() + name.Substring(1);
     }

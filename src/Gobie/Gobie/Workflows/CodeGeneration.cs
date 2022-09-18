@@ -17,12 +17,13 @@ public static class CodeGeneration
         IncrementalValueProvider<(ImmutableArray<MemberTargetAndTemplateData> Left,
                                   ImmutableArray<AssemblyTargetAndTemplateData> Right)> targets)
     {
-        return targets.Select(static (s, _) => OutputFiles(s.Left, s.Right));
+        return targets.Select(static (s, ct) => OutputFiles(s.Left, s.Right, ct));
     }
 
     private static ImmutableArray<CodeOutput> OutputFiles(
         ImmutableArray<MemberTargetAndTemplateData> memberTemplates,
-        ImmutableArray<AssemblyTargetAndTemplateData> assemblyTemplates)
+        ImmutableArray<AssemblyTargetAndTemplateData> assemblyTemplates,
+        CancellationToken ct)
     {
         var codeOut = ImmutableArray.CreateBuilder<CodeOutput>();
         var globalTemplates = new Dictionary<string, StringBuilder>();
@@ -31,6 +32,8 @@ public static class CodeGeneration
 
         foreach (var group in fileGroups)
         {
+            ct.ThrowIfCancellationRequested();
+
             if (group.Key.TemplateType == TemplateType.Complete)
             {
                 var sb = new StringBuilder();
@@ -78,6 +81,8 @@ public static class CodeGeneration
 
         foreach (var assemblyTemplate in assemblyTemplates)
         {
+            ct.ThrowIfCancellationRequested();
+
             var hintName = $"{assemblyTemplate.GlobalGeneratorName}.g.cs";
             var renderData = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
 

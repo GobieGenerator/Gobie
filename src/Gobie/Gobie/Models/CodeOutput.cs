@@ -4,8 +4,8 @@ public readonly struct CodeOutput
 {
     public CodeOutput(string hintName, string code)
     {
-        HintName = hintName ?? throw new ArgumentNullException(nameof(hintName));
-        Code = code ?? throw new ArgumentNullException(nameof(code));
+        HintName = hintName ?? string.Empty; //TODO is this ok?
+        Code = code ?? string.Empty;
     }
 
     public string HintName { get; }

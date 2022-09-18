@@ -11,9 +11,9 @@ public class MemberTargetAndTemplateData
     public MemberTargetAndTemplateData(TemplateType templateType, string generatorName, ClassIdentifier targetClass, string code)
     {
         TemplateType = templateType;
-        GeneratorName = generatorName ?? throw new ArgumentNullException(nameof(generatorName));
+        GeneratorName = generatorName ?? string.Empty;
         TargetClass = targetClass;
-        Code = code ?? throw new ArgumentNullException(nameof(code));
+        Code = code ?? string.Empty;
     }
 
     public TemplateType TemplateType { get; }
@@ -32,8 +32,8 @@ public class AssemblyTargetAndTemplateData
 {
     public AssemblyTargetAndTemplateData(string globalGeneratorName, Mustache.TemplateDefinition globalTemplate)
     {
-        GlobalGeneratorName = globalGeneratorName ?? throw new ArgumentNullException(nameof(globalGeneratorName));
-        GlobalTemplate = globalTemplate ?? throw new ArgumentNullException(nameof(globalTemplate));
+        GlobalGeneratorName = globalGeneratorName ?? string.Empty;
+        GlobalTemplate = globalTemplate;
     }
 
     public string GlobalGeneratorName { get; }

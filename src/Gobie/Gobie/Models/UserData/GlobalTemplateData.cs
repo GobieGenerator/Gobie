@@ -5,8 +5,8 @@
         public GlobalTemplateData(string templateName, string fileName, Mustache.TemplateDefinition template)
         {
             TemplateName = templateName;
-            FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
-            Template = template ?? throw new ArgumentNullException(nameof(template));
+            FileName = fileName ?? string.Empty;
+            Template = template;
         }
 
         public string TemplateName { get; }
