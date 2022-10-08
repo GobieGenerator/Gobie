@@ -96,7 +96,7 @@ public static class GeneratorDiscovery
                       ((t.Identifiers.First() != "ChildContent") ||
                        (t.Syntax.CountNodes(x => x.Type == Mustache.TemplateSyntaxType.Identifier) != 1)))
                 {
-                    diagnostics.Add(Diagnostic.Create(Errors.GobieGlobalTemplateIdentifierIssue, null));
+                    diagnostics.Add(Diagnostic.Create(Diagnostics.GobieGlobalTemplateIdentifierIssue, null));
                     continue;
                 }
 
@@ -133,12 +133,11 @@ public static class GeneratorDiscovery
                      globalTemplateDefs,
                      globalChildTemplateDefs);
 
-        if(td.HasAnyTemplate == false)
+        if (td.HasAnyTemplate == false)
         {
             // Warn the user this won't do anything as is.
-            diagnostics.Add(Diagnostic.Create(Warnings.UserTemplateIsEmpty(td.AttributeData.DefinitionIdentifier.ClassName), null));
+            diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsEmpty(td.AttributeData.DefinitionIdentifier.ClassName), null));
         }
-
 
         return new(td, diagnostics);
     }
@@ -304,7 +303,7 @@ public static class GeneratorDiscovery
             {
                 diagnostics.Add(
                     Diagnostic.Create(
-                        Warnings.PriorityAlreadyDeclared(req.RequestedOrder),
+                        Diagnostics.PriorityAlreadyDeclared(req.RequestedOrder),
                         req.RequestedOrderLocation));
             }
         }
@@ -339,12 +338,12 @@ public static class GeneratorDiscovery
         var diagnostics = new List<Diagnostic>();
         if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
         {
-            diagnostics.Add(Diagnostic.Create(Errors.UserTemplateIsPartial, classLocation));
+            diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsPartial, classLocation));
         }
 
         if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.SealedKeyword)) == false)
         {
-            diagnostics.Add(Diagnostic.Create(Errors.UserTemplateIsNotSealed, classLocation));
+            diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsNotSealed, classLocation));
         }
 
         var classSymbol = context.SemanticModel.GetDeclaredSymbol(context.Node);
@@ -380,7 +379,7 @@ public static class GeneratorDiscovery
 
         if (invalidName)
         {
-            diagnostics.Add(Diagnostic.Create(Errors.GeneratorNameInvalid, classLocation));
+            diagnostics.Add(Diagnostic.Create(Diagnostics.GeneratorNameInvalid, classLocation));
         }
 
         //! Diagnostics before here are errors that stop generation.
@@ -397,7 +396,7 @@ public static class GeneratorDiscovery
             if (ConstantTypes.IsAllowedConstantType(node.Type, out var propertyType) == false)
             {
                 // We don't need to break the whole template when they do this wrong.
-                diagnostics.Add(Diagnostic.Create(Errors.DisallowedTemplateParameterType("TODO"), node.Type.GetLocation()));
+                diagnostics.Add(Diagnostic.Create(Diagnostics.DisallowedTemplateParameterType("TODO"), node.Type.GetLocation()));
                 continue;
             }
 

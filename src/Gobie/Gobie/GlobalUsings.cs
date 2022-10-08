@@ -4,7 +4,6 @@ global using System.Text;
 global using Gobie.Enums;
 global using Gobie.Helpers;
 global using Gobie.Models;
-global using Gobie.Models.Diagnostics;
 global using Gobie.Models.Templating;
 global using Gobie.Models.Unions;
 global using Gobie.Models.UserData;
