@@ -7,13 +7,13 @@
     },
     "Diagnostics": [
       {
-        "Id": "GB1001",
+        "Id": "GB1014",
         "Title": "Gobie",
         "Severity": "Error",
         "WarningLevel": 0,
         "Location": ": (0,0)-(0,0)",
         "Description": "",
-        "HelpLink": "",
+        "HelpLink": "https://github.com/GobieGenerator/Gobie/Docs/Diagnostics#GB1014",
         "MessageFormat": "The template is incomplete. Template is incomplete",
         "Message": "The template is incomplete. Template is incomplete",
         "Category": "Gobie",

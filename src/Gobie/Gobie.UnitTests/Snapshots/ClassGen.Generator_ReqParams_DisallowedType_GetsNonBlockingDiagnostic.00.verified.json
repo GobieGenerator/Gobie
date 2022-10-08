@@ -1,13 +1,13 @@
 ﻿{
   "Diagnostics": [
     {
-      "Id": "GB1001",
+      "Id": "GB109",
       "Title": "Gobie",
       "Severity": "Error",
       "WarningLevel": 0,
       "Location": ": (9,19)-(9,25)",
       "Description": "",
-      "HelpLink": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/Docs/Diagnostics#GB109",
       "MessageFormat": "The specified type name 'TODO' is not one of the types supported by Gobie.",
       "Message": "The specified type name 'TODO' is not one of the types supported by Gobie.",
       "Category": "Gobie",
