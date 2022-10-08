@@ -7,16 +7,16 @@ namespace ConsoleClient
     {
         private static void Main(string[] args)
         {
-            ////var auth = new Author();
-            ////auth.AddBooks("Spellmonger");
-            ////auth.AddBooks("The Warrior's Apprentice");
+            var auth = new Author();
+            auth.AddBooks(new Book { Title = "Spellmonger" });
+            auth.AddBooks(new Book { Title = "The Warrior's Apprentice" });
 
-            ////foreach (var book in auth.Books)
-            ////{
-            ////    Console.WriteLine(book);
-            ////}
+            foreach (var book in auth.Books)
+            {
+                Console.WriteLine(book.Title);
+            }
 
-            ////Console.WriteLine($"Author has {auth.Logs.Count()} log entry");
+            //Console.WriteLine($"Author has {auth.StateLog.Count()} log entries");
         }
     }
 }

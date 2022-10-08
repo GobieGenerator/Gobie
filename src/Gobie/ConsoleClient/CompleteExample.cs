@@ -1,21 +1,22 @@
 ﻿////[assembly: EFCoreRegistration]
 
-namespace SomeNamespace
+namespace ConsoleClient;
+
+using Gobie;
+using System;
+using System.Collections.Generic;
+
+public enum AuthorState
+{ }
+
+public enum AuthorTrigger
+{ }
+
+[GobieGeneratorName("EFCoreRegistrationAttribute", Namespace = "ConsoleClient")]
+public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
 {
-    using Gobie;
-    using System.Collections.Generic;
-
-    public enum AuthorState
-    { }
-
-    public enum AuthorTrigger
-    { }
-
-    [GobieGeneratorName("EFCoreRegistrationAttribute", Namespace = "ConsoleClient")]
-    public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
-    {
-        [GobieGlobalFileTemplate("EFCoreRegistrationGenerator", "EFCoreRegistration")]
-        private const string KeyString = @"
+    [GobieGlobalFileTemplate("EFCoreRegistrationGenerator", "EFCoreRegistration")]
+    private const string KeyString = @"
             namespace SomeNamespace;
 
             public sealed static class EFCoreRegistration
@@ -36,12 +37,12 @@ namespace SomeNamespace
                 }
             }
             ";
-    }
+}
 
-    public sealed class StatefullLoggedClassGenerator : GobieClassGenerator
-    {
-        [GobieTemplate]
-        private const string StatefullLoggedClass = @"
+public sealed class StatefullLoggedClassGenerator : GobieClassGenerator
+{
+    [GobieTemplate]
+    private const string StatefullLoggedClass = @"
         /// <summary>
         /// Primary key for the class.
         /// </summary>
@@ -126,8 +127,8 @@ namespace SomeNamespace
         }
         ";
 
-        [GobieFileTemplate("StateLog")]
-        private const string KeyString = @"
+    [GobieFileTemplate("StateLog")]
+    private const string KeyString = @"
             using System;
 
             namespace {{ClassNamespace}};
@@ -156,8 +157,8 @@ namespace SomeNamespace
             }
             ";
 
-        [GobieGlobalChildTemplate("EFCoreRegistrationGenerator")]
-        private const string EfCoreRegistration = @"
+    [GobieGlobalChildTemplate("EFCoreRegistrationGenerator")]
+    private const string EfCoreRegistration = @"
             // StatefullLoggedClassGenerator for {{ClassName}} - Map enums to strings and log field.
             mb.Entity<{{ClassName}}>().Property(x => x.State).HasConversion<string>();
             mb.Entity<{{ClassName}}StateLog>().Property(x => x.State).HasConversion<string>();
@@ -167,17 +168,17 @@ namespace SomeNamespace
               .SetPropertyAccessMode(PropertyAccessMode.Field);
 ";
 
-        [Required]
-        public string StateEnum { get; set; }
+    [Required]
+    public string StateEnum { get; set; }
 
-        [Required]
-        public string TriggerEnum { get; set; }
-    }
+    [Required]
+    public string TriggerEnum { get; set; }
+}
 
-    public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
-    {
-        [GobieTemplate]
-        private const string EncapsulatedCollection = @"
+public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
+{
+    [GobieTemplate]
+    private const string EncapsulatedCollection = @"
             public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : pascal}} => {{FieldName}}.AsReadOnly();
 
             public void Add{{ FieldName : pascal }}({{FieldGenericType}} s)
@@ -200,38 +201,40 @@ namespace SomeNamespace
             }
 ";
 
-        [GobieGlobalChildTemplate("EFCoreRegistrationGenerator")]
-        private const string EfCoreRegistration = @"
+    [GobieGlobalChildTemplate("EFCoreRegistrationGenerator")]
+    private const string EfCoreRegistration = @"
 
             // EncapsulatedCollectionGenerator for {{ClassName}} - Map the encapsulated collection
             mb.Entity<{{ClassName}}>()
               .Metadata.FindNavigation(nameof({{ClassName}}.{{FieldName : Pascal}}))?
               .SetPropertyAccessMode(PropertyAccessMode.Field);
-
 ";
 
-        [Required]
-        public string CustomValidator { get; set; } = null;
-    }
+    [Required]
+    public string CustomValidator { get; set; } = null;
+}
 
-    ////[StatefullLoggedClass(nameof(AuthorState), nameof(AuthorTrigger))]
-    ////public partial class Author
-    ////{
-    ////    [EncapsulatedCollection(null)]
-    ////    private readonly List<Publisher> publishers = new();
+//[StatefullLoggedClass(nameof(AuthorState), nameof(AuthorTrigger))]
+public partial class Author
+{
+    [EncapsulatedCollection(null)]
+    private readonly List<Publisher> publishers = new();
 
-    ////    [EncapsulatedCollection(nameof(BookValid))]
-    ////    private readonly List<Book> books = new();
+    [EncapsulatedCollection(nameof(BookValid))]
+    private readonly List<Book> books = new();
 
-    ////    private static bool BookValid(Book b) => b.Title.Length > 0;
-    ////}
-
-    public class Publisher
+    public Author()
     {
     }
 
-    public class Book
-    {
-        public string Title { get; set; }
-    }
+    private static bool BookValid(Book b) => b.Title.Length > 0;
+}
+
+public class Publisher
+{
+}
+
+public class Book
+{
+    public string Title { get; set; }
 }
