@@ -44,7 +44,9 @@ public class GobieGenerator : IIncrementalGenerator
         var targets = memberTargets.Collect().Combine(assemblyTargets.Collect());
 
         // Consolidate outputs down to files and output them.
-        var codeOut = CodeGeneration.CollectOutputs(targets);
+        var codeOutOrDiagnostics = CodeGeneration.CollectOutputs(targets);
+        DiagnosticsReporting.Report(context, codeOutOrDiagnostics);
+        var codeOut = codeOutOrDiagnostics.Select(selector: (x, _) => x.Data);
         context.RegisterSourceOutput(codeOut, static (spc, source) => CodeGeneration.Output(spc, source));
     }
 

@@ -150,6 +150,40 @@ public class GlobalGen
     }
 
     [Test]
+    public Task SimpleValidGenerator_WithUsageAndIdentifiers_AttrUsesNamespace_GeneratesOutput()
+    {
+        var source = @"
+        [assembly: SomeNamespace.EFCoreRegistration]
+        namespace SomeNamespace
+        {
+            using Gobie;
+            public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
+            {
+                [GobieGlobalFileTemplate(""Log"", ""EFCoreRegistration"")]
+                private const string KeyString = @""
+                namespace SomeNamespace;
+
+                public sealed static class EFCoreRegistration
+                {
+                    public static void Register()
+                    {
+                        {{#ChildContent}}
+                            // Global generator code
+                            {{ChildContent}}
+                        {{/ChildContent}}
+                        {{^ChildContent}}
+                            // No generators reference this global generator.
+                        {{/ChildContent}}
+                    }
+                }
+                "";
+            }
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task SimpleValidGenerator_WithUsageAndIdentifiers_References_GeneratesOutput()
     {
         // TODO this isn't using GobieGlobalFileTemplate for the template name
