@@ -7,7 +7,7 @@
       "WarningLevel": 0,
       "Location": ": (8,19)-(8,25)",
       "Description": "",
-      "HelpLink": "https://github.com/GobieGenerator/Gobie/Docs/Diagnostics#GB109",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB109",
       "MessageFormat": "The specified type name 'TODO' is not one of the types supported by Gobie.",
       "Message": "The specified type name 'TODO' is not one of the types supported by Gobie.",
       "Category": "Gobie",

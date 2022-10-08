@@ -2,7 +2,7 @@
 {
     public static class Diagnostics
     {
-        private const string BaseHelpLink = "https://github.com/GobieGenerator/Gobie/Docs/Diagnostics#";
+        private const string BaseHelpLink = "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#";
 
         public static DiagnosticDescriptor ClassIsNotParital =>
             Error("GB0001", "Class must be defined as partial.");

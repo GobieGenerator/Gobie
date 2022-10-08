@@ -13,7 +13,7 @@
         "WarningLevel": 0,
         "Location": ": (0,0)-(0,0)",
         "Description": "",
-        "HelpLink": "https://github.com/GobieGenerator/Gobie/Docs/Diagnostics#GB1011",
+        "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1011",
         "MessageFormat": "The expected token ':' was not found.",
         "Message": "The expected token ':' was not found.",
         "Category": "Gobie",

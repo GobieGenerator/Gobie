@@ -7,7 +7,7 @@
       "WarningLevel": 0,
       "Location": ": (3,28)-(3,39)",
       "Description": "",
-      "HelpLink": "https://github.com/GobieGenerator/Gobie/Docs/Diagnostics#GB006",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB006",
       "MessageFormat": "Generator names are expected to end with 'Generator'. You may use th....",
       "Message": "Generator names are expected to end with 'Generator'. You may use th....",
       "Category": "Gobie",

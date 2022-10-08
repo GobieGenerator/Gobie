@@ -13,7 +13,7 @@
         "WarningLevel": 0,
         "Location": ": (0,0)-(0,0)",
         "Description": "",
-        "HelpLink": "https://github.com/GobieGenerator/Gobie/Docs/Diagnostics#GB1010",
+        "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1010",
         "MessageFormat": "The token 'b' was not expected. This is either missing a colon or has a second unexpected identifier",
         "Message": "The token 'b' was not expected. This is either missing a colon or has a second unexpected identifier",
         "Category": "Gobie",

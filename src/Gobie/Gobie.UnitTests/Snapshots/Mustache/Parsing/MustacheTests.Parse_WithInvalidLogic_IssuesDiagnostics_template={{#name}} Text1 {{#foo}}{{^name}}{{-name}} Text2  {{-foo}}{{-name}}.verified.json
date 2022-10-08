@@ -13,7 +13,7 @@
         "WarningLevel": 0,
         "Location": ": (0,0)-(0,0)",
         "Description": "",
-        "HelpLink": "https://github.com/GobieGenerator/Gobie/Docs/Diagnostics#GB1015",
+        "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1015",
         "MessageFormat": "This section of the template will never be reached. You cannot exclude the identifier 'name' here because it is surrounded by an if node (i.e. {{#name}} )",
         "Message": "This section of the template will never be reached. You cannot exclude the identifier 'name' here because it is surrounded by an if node (i.e. {{#name}} )",
         "Category": "Gobie",
