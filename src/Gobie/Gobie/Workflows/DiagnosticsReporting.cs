@@ -11,6 +11,13 @@ public static class DiagnosticsReporting
         context.RegisterSourceOutput(diagnostics, static (spc, source) => Report(spc, source));
     }
 
+    public static void Report<T>(
+        IncrementalGeneratorInitializationContext context,
+        IncrementalValueProvider<DataOrDiagnostics<T>> diagnostics)
+    {
+        context.RegisterSourceOutput(diagnostics, static (spc, source) => Report(spc, source));
+    }
+
     private static void Report<T>(SourceProductionContext spc, DataOrDiagnostics<T> option)
     {
         if (option.Diagnostics is not null)

@@ -57,8 +57,8 @@
     {
         private static readonly DiagnosticSeverity Severity = DiagnosticSeverity.Warning;
 
-        public static DiagnosticDescriptor UserTemplateIsEmpty =>
-            new("GB0012", "Gobie", "You have not defined any of the required info.... The generator won't be able to do anything.", "Gobie Usage", Severity, true);
+        public static DiagnosticDescriptor UserTemplateIsEmpty(string className) =>
+            new("GB0012", "Gobie", $"The generator {className} does not have any templates defined. Therefore it will not generate any code.", "Gobie Usage", Severity, true);
 
         public static DiagnosticDescriptor GobieAttributeHasNoTemplates =>
             new("GB1003", "Gobie", "Attribute has no tempaltes and will not generate any output.", "Gobie", Severity, true);

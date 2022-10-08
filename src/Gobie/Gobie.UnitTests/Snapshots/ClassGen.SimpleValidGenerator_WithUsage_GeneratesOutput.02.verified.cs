@@ -1,8 +1,8 @@
-﻿//HintName: GenTarget_PkGenAttribute.g.cs
+﻿//HintName: GenTarget_NamePropertyAttribute.g.cs
 namespace SomeNamespace
 {
     public partial class GenTarget
     {
-        public int Id { get; set; } // This is a key
+        public string Name { get; set; }
     }
 }

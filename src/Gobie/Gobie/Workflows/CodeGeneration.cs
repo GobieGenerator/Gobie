@@ -1,5 +1,6 @@
 ﻿namespace Gobie.Workflows;
 
+using Gobie.Models.Unions;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
 
@@ -13,18 +14,20 @@ public static class CodeGeneration
         }
     }
 
-    public static IncrementalValueProvider<ImmutableArray<CodeOutput>> CollectOutputs(
+    public static IncrementalValueProvider<DataOrDiagnostics<ImmutableArray<CodeOutput>>> CollectOutputs(
         IncrementalValueProvider<(ImmutableArray<MemberTargetAndTemplateData> Left,
                                   ImmutableArray<AssemblyTargetAndTemplateData> Right)> targets)
     {
         return targets.Select(static (s, ct) => OutputFiles(s.Left, s.Right, ct));
     }
 
-    private static ImmutableArray<CodeOutput> OutputFiles(
+    private static DataOrDiagnostics<ImmutableArray<CodeOutput>> OutputFiles(
         ImmutableArray<MemberTargetAndTemplateData> memberTemplates,
         ImmutableArray<AssemblyTargetAndTemplateData> assemblyTemplates,
         CancellationToken ct)
     {
+        var diagnostics = new List<Diagnostic>();
+
         var codeOut = ImmutableArray.CreateBuilder<CodeOutput>();
         var globalTemplates = new Dictionary<string, StringBuilder>();
 
@@ -79,7 +82,12 @@ public static class CodeGeneration
             }
         }
 
-        foreach (var assemblyTemplate in assemblyTemplates)
+        // This is the first place that all the assembly attributes are gathered together and
+        // processed at once. All attributes are configured to be unique so if more than one
+        // instance exists we can rely on the compiler to provide an error. All we need to do is
+        // avoid generating code more than once.
+        var unqiueAssemblyTempaltes = assemblyTemplates.GroupBy(x => x.GlobalGeneratorName).Select(x => x.First());
+        foreach (var assemblyTemplate in unqiueAssemblyTempaltes)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -94,6 +102,6 @@ public static class CodeGeneration
             codeOut.Add(new CodeOutput(hintName, fullCode));
         }
 
-        return codeOut.ToImmutable();
+        return new(codeOut.ToImmutable(), diagnostics);
     }
 }

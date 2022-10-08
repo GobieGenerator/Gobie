@@ -69,12 +69,8 @@
     {
     }
 
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = false)]
     public abstract class GobieAssemblyGeneratorAttribute : Attribute
-    {
-    }
-
-    public class RealGobieAssemblyGeneratorAttribute : GobieAssemblyGeneratorAttribute
     {
     }
 
