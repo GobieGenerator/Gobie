@@ -5,31 +5,31 @@
         private const string BaseHelpLink = "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#";
 
         public static DiagnosticDescriptor ClassIsNotParital =>
-            Error("GB0001", "Class must be defined as partial.");
+            Error("GB1001", "Class must be defined as partial.");
 
         public static DiagnosticDescriptor TemplateIsNotConstString =>
-            Error("GB0002", "Template must annotate constant strings.");
+            Error("GB1002", "Template must annotate constant strings.");
 
         public static DiagnosticDescriptor GobieAttributeIsPartial =>
-            Error("GB0003", "Gobie Attributes cannot be implemented with partial classes. As a reminder, multiple source generators can't interact.");
+            Error("GB1003", "Gobie Attributes cannot be implemented with partial classes. As a reminder, multiple source generators can't interact.");
 
         public static DiagnosticDescriptor UserTemplateIsPartial =>
-            Error("GB0004", "Classes that declare user templates cannot be partial. We don't current support user templates having source in multiple files.");
+            Error("GB1004", "Classes that declare user templates cannot be partial. We don't current support user templates having source in multiple files.");
 
         public static DiagnosticDescriptor UserTemplateIsNotSealed =>
-            Error("GB005", "Classes that declare user templates must be sealed. We don't currently support inheritance of user templates.");
+            Error("GB1005", "Classes that declare user templates must be sealed. We don't currently support inheritance of user templates.");
 
         public static DiagnosticDescriptor GeneratorNameInvalid =>
-            Error("GB006", "Generator names are expected to end with 'Generator'. You may use th....");
+            Error("GB1006", "Generator names are expected to end with 'Generator'. You may use th....");
 
         public static DiagnosticDescriptor GobieGlobalTemplateIdentifierIssue =>
-            Error("GB107", $"Gobie should have zero or one instance of the '{{{{ChildContent}}}}'. No other identifiers are allowed in global templates.");
+            Error("GB1007", $"Gobie should have zero or one instance of the '{{{{ChildContent}}}}'. No other identifiers are allowed in global templates.");
 
         public static DiagnosticDescriptor GobieAttributeHasNoTemplates =>
-            Warning("GB108", "Attribute has no tempaltes and will not generate any output.");
+            Warning("GB1008", "Attribute has no tempaltes and will not generate any output.");
 
         public static DiagnosticDescriptor DisallowedTemplateParameterType(string typeName) =>
-            Error("GB109", $"The specified type name '{typeName}' is not one of the types supported by Gobie.");
+            Error("GB1009", $"The specified type name '{typeName}' is not one of the types supported by Gobie.");
 
         public static DiagnosticDescriptor UnexpectedToken(string token, string expected) =>
             Error("GB1010", $"The token '{token}' was not expected. {expected}");
@@ -56,10 +56,10 @@
             Error("GB1017", $"Gobie had some error. {exMessage}");
 
         public static DiagnosticDescriptor UserTemplateIsEmpty(string className) =>
-            Warning("GB0018", $"The generator {className} does not have any templates defined. Therefore it will not generate any code.");
+            Warning("GB1018", $"The generator {className} does not have any templates defined. Therefore it will not generate any code.");
 
         public static DiagnosticDescriptor PriorityAlreadyDeclared(int i) =>
-            Warning("GB0019", $"Another required parameter is using the priority {i}");
+            Warning("GB1019", $"Another required parameter is using the priority {i}");
 
         private static DiagnosticDescriptor Error(string code, string message) => FullDiscriptor(code, message, DiagnosticSeverity.Error);
 

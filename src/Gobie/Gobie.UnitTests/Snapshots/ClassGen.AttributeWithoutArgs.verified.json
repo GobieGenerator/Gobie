@@ -1,13 +1,13 @@
 ﻿{
   "Diagnostics": [
     {
-      "Id": "GB006",
+      "Id": "GB1006",
       "Title": "Gobie",
       "Severity": "Error",
       "WarningLevel": 0,
       "Location": ": (4,28)-(4,39)",
       "Description": "",
-      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB006",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1006",
       "MessageFormat": "Generator names are expected to end with 'Generator'. You may use th....",
       "Message": "Generator names are expected to end with 'Generator'. You may use th....",
       "Category": "Gobie",

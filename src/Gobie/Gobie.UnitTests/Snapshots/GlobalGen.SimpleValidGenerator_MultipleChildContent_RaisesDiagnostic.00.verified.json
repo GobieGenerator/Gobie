@@ -1,13 +1,13 @@
 ﻿{
   "Diagnostics": [
     {
-      "Id": "GB107",
+      "Id": "GB1007",
       "Title": "Gobie",
       "Severity": "Error",
       "WarningLevel": 0,
       "Location": ": (0,0)-(0,0)",
       "Description": "",
-      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB107",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1007",
       "MessageFormat": "Gobie should have zero or one instance of the '{{ChildContent}}'. No other identifiers are allowed in global templates.",
       "Message": "Gobie should have zero or one instance of the '{{ChildContent}}'. No other identifiers are allowed in global templates.",
       "Category": "Gobie",

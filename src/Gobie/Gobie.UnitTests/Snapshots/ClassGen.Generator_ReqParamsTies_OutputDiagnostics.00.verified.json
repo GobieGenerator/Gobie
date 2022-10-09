@@ -1,26 +1,26 @@
 ﻿{
   "Diagnostics": [
     {
-      "Id": "GB0019",
+      "Id": "GB1019",
       "Title": "Gobie",
       "Severity": "Warning",
       "WarningLevel": 1,
       "Location": ": (12,12)-(13,56)",
       "Description": "",
-      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB0019",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1019",
       "MessageFormat": "Another required parameter is using the priority 5",
       "Message": "Another required parameter is using the priority 5",
       "Category": "Gobie",
       "CustomTags": []
     },
     {
-      "Id": "GB0019",
+      "Id": "GB1019",
       "Title": "Gobie",
       "Severity": "Warning",
       "WarningLevel": 1,
       "Location": ": (15,12)-(16,59)",
       "Description": "",
-      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB0019",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1019",
       "MessageFormat": "Another required parameter is using the priority 5",
       "Message": "Another required parameter is using the priority 5",
       "Category": "Gobie",

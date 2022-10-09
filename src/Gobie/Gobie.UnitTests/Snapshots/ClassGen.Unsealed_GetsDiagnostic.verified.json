@@ -1,13 +1,13 @@
 ﻿{
   "Diagnostics": [
     {
-      "Id": "GB005",
+      "Id": "GB1005",
       "Title": "Gobie",
       "Severity": "Error",
       "WarningLevel": 0,
       "Location": ": (3,21)-(3,41)",
       "Description": "",
-      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB005",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1005",
       "MessageFormat": "Classes that declare user templates must be sealed. We don't currently support inheritance of user templates.",
       "Message": "Classes that declare user templates must be sealed. We don't currently support inheritance of user templates.",
       "Category": "Gobie",
