@@ -30,4 +30,27 @@ public class DiagnosticErrors
 
         return TestHelper.Verify(source);
     }
+
+    [Test]
+    public Task GB1006_NameDoesntEndInGenerator()
+    {
+        var source = @"public sealed class UserDefined : Gobie.GobieClassGenerator { }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task GB1020_InvalidFormatToken()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = @""
+                    public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();
+            "";
+        }";
+
+        return TestHelper.Verify(source);
+    }
 }

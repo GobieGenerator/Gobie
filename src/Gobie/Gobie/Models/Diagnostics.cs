@@ -61,6 +61,9 @@
         public static DiagnosticDescriptor PriorityAlreadyDeclared(int i) =>
             Warning("GB1019", $"Another required parameter is using the priority {i}");
 
+        public static DiagnosticDescriptor InvalidFormatToken(string formatToken) =>
+            Error("GB1020", $"The token {formatToken} does not match an allowed value, which are 'Pascal' and 'Camel'");
+
         private static DiagnosticDescriptor Error(string code, string message) => FullDiscriptor(code, message, DiagnosticSeverity.Error);
 
         private static DiagnosticDescriptor Warning(string code, string message) => FullDiscriptor(code, message, DiagnosticSeverity.Warning);

@@ -24,17 +24,6 @@ public class ClassGen
     ////}
 
     [Test]
-    public Task NameDoesntEndInGenerator_GetsDiagnostic()
-    {
-        var source = @"
-        using Gobie;
-
-        public sealed class UserDefined : Gobie.GobieClassGenerator" + TrivialTemplate;
-
-        return TestHelper.Verify(source);
-    }
-
-    [Test]
     public Task ValidNameOverridenByAttribute()
     {
         var source = @"

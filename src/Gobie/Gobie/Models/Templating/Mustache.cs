@@ -210,9 +210,7 @@ public class Mustache
                         // custom diagnostic.
                         diagnostics.Add(
                             Diagnostic.Create(
-                                Diagnostics.UnexpectedToken(
-                                    formatToken,
-                                    "Expected a format string ('camel' or 'pascal'). Case insensitive"),
+                                Diagnostics.InvalidFormatToken(formatToken),
                                 null));
                     }
                 }
