@@ -135,7 +135,7 @@ public class Mustache
         return tokens.Slice(0, t + 1);
     }
 
-    public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template, Location? initialLocation = null)
+    public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template, Location? initialLocation)
     {
         var tokens = Tokenize(template);
         var root = new TemplateSyntax(null, TemplateSyntaxType.Root, string.Empty, string.Empty, FormatSetting.None);
