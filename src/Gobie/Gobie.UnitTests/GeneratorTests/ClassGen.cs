@@ -43,17 +43,6 @@ public class ClassGen
     }
 
     [Test]
-    public Task Partial_GetsDiagnostic()
-    {
-        var source = @"
-        using Gobie;
-
-        public partial sealed class UserDefinedGenerator : GobieClassGenerator" + TrivialTemplate;
-
-        return TestHelper.Verify(source);
-    }
-
-    [Test]
     public Task Unsealed_GetsDiagnostic()
     {
         var source = @"
