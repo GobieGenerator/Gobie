@@ -43,14 +43,25 @@ public class DiagnosticErrors
     public Task GB1020_InvalidFormatToken()
     {
         var source = @"
-        public class foo {}
-
         public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
         {
             [GobieTemplate]
             private const string EncapsulatedCollection = @""
                     public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();
             "";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task GB1021_InterpolatedConstTemplate()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = $@""Just using the $ is disallowed"";
         }";
 
         return TestHelper.Verify(source);

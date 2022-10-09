@@ -64,6 +64,9 @@
         public static DiagnosticDescriptor InvalidFormatToken(string formatToken) =>
             Error("GB1020", $"The token {formatToken} does not match an allowed value, which are 'Pascal' and 'Camel'");
 
+        public static DiagnosticDescriptor TemplateIsInterpolatedString() =>
+            Error("GB1021", $"Template strings cannot be interpolated. We currently can't support them. Also, interoploating template strings may be a code smell.");
+
         private static DiagnosticDescriptor Error(string code, string message) => FullDiscriptor(code, message, DiagnosticSeverity.Error);
 
         private static DiagnosticDescriptor Warning(string code, string message) => FullDiscriptor(code, message, DiagnosticSeverity.Warning);

@@ -41,13 +41,13 @@ public static class GeneratorDiscovery
             return new(diagnostics);
         }
 
-        var templates = GetTemplates(data.ClassDeclarationSyntax, compliation);
+        var templates = GetTemplates(data.ClassDeclarationSyntax, compliation, diagnostics);
         var templateDefs = new List<Mustache.TemplateDefinition>();
         foreach (var template in templates)
         {
             ct.ThrowIfCancellationRequested();
 
-            var res = Mustache.Parse(template.AsSpan(), data.ClassDeclarationSyntax.GetLocation());
+            var res = Mustache.Parse(template.Item1.AsSpan(), template.Item2);
             if (res.Diagnostics is not null)
             {
                 diagnostics.AddRange(res.Diagnostics);
@@ -142,9 +142,9 @@ public static class GeneratorDiscovery
         return new(td, diagnostics);
     }
 
-    private static List<string> GetTemplates(ClassDeclarationSyntax cds, Compilation compliation)
+    private static List<(string, Location)> GetTemplates(ClassDeclarationSyntax cds, Compilation compliation, List<Diagnostic> diagnostics)
     {
-        var templates = new List<string>();
+        var templates = new List<(string, Location)>();
 
         foreach (var child in cds.ChildNodes())
         {
@@ -159,11 +159,22 @@ public static class GeneratorDiscovery
                         {
                             var model = compliation.GetSemanticModel(f.SyntaxTree);
                             var fieldSymbol = model.GetDeclaredSymbol(variable);
+                            var eqSyntax = variable.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
 
-                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null && eqSyntax is not null)
                             {
-                                templates.Add(fs.ConstantValue.ToString());
-                                goto DoneWithField;
+                                if (eqSyntax.ChildNodes().OfType<InterpolatedStringExpressionSyntax>().FirstOrDefault() is InterpolatedStringExpressionSyntax i)
+                                {
+                                    diagnostics.Add(
+                                        Diagnostic.Create(
+                                            Diagnostics.TemplateIsInterpolatedString(),
+                                            i.GetLocation()));
+                                }
+                                else if (eqSyntax.ChildNodes().OfType<LiteralExpressionSyntax>().FirstOrDefault() is LiteralExpressionSyntax l)
+                                {
+                                    templates.Add((fs.ConstantValue.ToString(), l.GetLocation()));
+                                    goto DoneWithField;
+                                }
                             }
                         }
                     }
