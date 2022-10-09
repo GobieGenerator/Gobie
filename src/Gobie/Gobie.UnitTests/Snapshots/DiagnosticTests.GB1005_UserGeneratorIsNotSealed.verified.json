@@ -5,7 +5,7 @@
       "Title": "Gobie",
       "Severity": "Error",
       "WarningLevel": 0,
-      "Location": ": (3,21)-(3,41)",
+      "Location": ": (1,21)-(1,41)",
       "Description": "",
       "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1005",
       "MessageFormat": "Classes that declare user templates must be sealed. We don't currently support inheritance of user templates.",
