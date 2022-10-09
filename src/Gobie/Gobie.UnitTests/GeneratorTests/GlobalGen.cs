@@ -180,6 +180,7 @@ public class GlobalGen
             }
         }";
 
+        Assert.Fail();
         return TestHelper.Verify(source);
     }
 
