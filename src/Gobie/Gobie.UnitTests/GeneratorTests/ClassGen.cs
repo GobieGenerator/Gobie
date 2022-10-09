@@ -100,6 +100,7 @@ public class ClassGen
     [Test]
     public Task AttributeWithoutArgs()
     {
+        Assert.Fail();
         var source = @"
         using Gobie;
 

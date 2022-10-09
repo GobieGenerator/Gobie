@@ -1,5 +1,7 @@
 ﻿namespace Gobie.Models.Templating;
 
+using Microsoft.CodeAnalysis;
+
 public class Mustache
 {
     public enum TokenType
@@ -133,7 +135,7 @@ public class Mustache
         return tokens.Slice(0, t + 1);
     }
 
-    public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template)
+    public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template, Location? initialLocation = null)
     {
         var tokens = Tokenize(template);
         var root = new TemplateSyntax(null, TemplateSyntaxType.Root, string.Empty, string.Empty, FormatSetting.None);
@@ -206,12 +208,11 @@ public class Mustache
                     }
                     else
                     {
-                        // The identifier where we expect a format token is not valid and needs a
                         // custom diagnostic.
                         diagnostics.Add(
                             Diagnostic.Create(
                                 Diagnostics.InvalidFormatToken(formatToken),
-                                null));
+                                initialLocation));
                     }
                 }
                 else if (initialToken.TokenType == TokenType.TemplateTokenOpen &&

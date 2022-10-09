@@ -43,6 +43,8 @@ public class DiagnosticErrors
     public Task GB1020_InvalidFormatToken()
     {
         var source = @"
+        public class foo {}
+
         public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
         {
             [GobieTemplate]
