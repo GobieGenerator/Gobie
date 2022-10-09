@@ -6,52 +6,8 @@ public class ClassGen
     private const string TrivialTemplate = @"
     {
         [GobieTemplate]
-        private const string EncapsulationTemplate = ""// String Comment"";
+        private const string EncapsulationTemplate = "";// String Comment"";
     }";
-
-    [Test]
-    public Task NoBase_Partial_NoDiagnostic()
-    {
-        var source = @"
-        using Gobie;
-
-        public partial class UserDefinedGenerator" + TrivialTemplate;
-
-        return TestHelper.Verify(source);
-    }
-
-    [Test]
-    public Task NonGobie_Partial_NoDiagnostic()
-    {
-        var source = @"
-        using Gobie;
-
-        public partial class UserDefinedGenerator : FooBase" + TrivialTemplate;
-
-        return TestHelper.Verify(source);
-    }
-
-    [Test]
-    public Task NonGobie_Unsealed_NoDiagnostic()
-    {
-        var source = @"
-        using Gobie;
-
-        public class UserDefinedGenerator : FooBase" + TrivialTemplate;
-
-        return TestHelper.Verify(source);
-    }
-
-    [Test]
-    public Task PartialUnsealed_GetsDiagnostics()
-    {
-        var source = @"
-        using Gobie;
-
-        public partial class UserDefinedGenerator : Gobie.GobieClassGenerator" + TrivialTemplate;
-
-        return TestHelper.Verify(source);
-    }
 
     ////[Test]
     ////public Task Empty_GetsNoDefinitionDiagnostic()
