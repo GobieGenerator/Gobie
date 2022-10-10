@@ -135,7 +135,7 @@ public class Mustache
         return tokens.Slice(0, t + 1);
     }
 
-    public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template, Location? initialLocation)
+    public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template, Func<int, int, Location>? initialLocation)
     {
         var tokens = Tokenize(template);
         var root = new TemplateSyntax(null, TemplateSyntaxType.Root, string.Empty, string.Empty, FormatSetting.None);
@@ -198,21 +198,22 @@ public class Mustache
                 {
                     tagClosed = true;
                     identifier = GetText(template, upcommingTokens[0].token);
-                    var formatToken = GetText(template, upcommingTokens[2].token);
+
+                    var formatToken = upcommingTokens[2].token;
+                    var formatTokenText = GetText(template, formatToken);
                     i = upcommingTokens[3].index;
 
-                    if (IdentifierIsFormatToken(formatToken, out FormatSetting f))
+                    if (IdentifierIsFormatToken(formatTokenText, out FormatSetting f))
                     {
                         // We do have a valid formatted identifier
                         formatSetting = f;
                     }
                     else
                     {
-                        // custom diagnostic.
                         diagnostics.Add(
                             Diagnostic.Create(
-                                Diagnostics.InvalidFormatToken(formatToken),
-                                initialLocation));
+                                Diagnostics.InvalidFormatToken(formatTokenText),
+                                initialLocation?.Invoke(formatToken.Start, formatToken.End - formatToken.Start + 1)));
                     }
                 }
                 else if (initialToken.TokenType == TokenType.TemplateTokenOpen &&

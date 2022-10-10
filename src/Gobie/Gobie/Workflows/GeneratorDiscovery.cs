@@ -47,7 +47,7 @@ public static class GeneratorDiscovery
         {
             ct.ThrowIfCancellationRequested();
 
-            var res = Mustache.Parse(template.Text.AsSpan(), template.GetLocation());
+            var res = Mustache.Parse(template.Text.AsSpan(), template.GetLocationAt);
             if (res.Diagnostics is not null)
             {
                 diagnostics.AddRange(res.Diagnostics);
@@ -64,7 +64,7 @@ public static class GeneratorDiscovery
         {
             ct.ThrowIfCancellationRequested();
 
-            var res = Mustache.Parse(template.template.AsSpan(), data.ClassDeclarationSyntax.GetLocation());
+            var res = Mustache.Parse(template.template.AsSpan(), (_, _) => data.ClassDeclarationSyntax.GetLocation());
             if (res.Diagnostics is not null)
             {
                 diagnostics.AddRange(res.Diagnostics);
@@ -81,7 +81,7 @@ public static class GeneratorDiscovery
         {
             ct.ThrowIfCancellationRequested();
 
-            var res = Mustache.Parse(template.template.AsSpan(), data.ClassDeclarationSyntax.GetLocation());
+            var res = Mustache.Parse(template.template.AsSpan(), (_, _) => data.ClassDeclarationSyntax.GetLocation());
             if (res.Diagnostics is not null)
             {
                 diagnostics.AddRange(res.Diagnostics);
@@ -110,7 +110,7 @@ public static class GeneratorDiscovery
         {
             ct.ThrowIfCancellationRequested();
 
-            var res = Mustache.Parse(template.template.AsSpan(), data.ClassDeclarationSyntax.GetLocation());
+            var res = Mustache.Parse(template.template.AsSpan(), (_, _) => data.ClassDeclarationSyntax.GetLocation());
             if (res.Diagnostics is not null)
             {
                 diagnostics.AddRange(res.Diagnostics);
