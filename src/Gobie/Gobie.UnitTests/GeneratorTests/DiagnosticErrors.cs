@@ -55,6 +55,19 @@ public class DiagnosticErrors
     }
 
     [Test]
+    public Task GB1020_InvalidFormatToken_WithEscaped()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> /r/n{{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task GB1021_InterpolatedConstTemplate()
     {
         var source = @"
