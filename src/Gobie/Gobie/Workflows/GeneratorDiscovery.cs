@@ -47,7 +47,7 @@ public static class GeneratorDiscovery
         {
             ct.ThrowIfCancellationRequested();
 
-            var res = Mustache.Parse(template.Item1.AsSpan(), template.Item2);
+            var res = Mustache.Parse(template.Text.AsSpan(), template.GetLocation());
             if (res.Diagnostics is not null)
             {
                 diagnostics.AddRange(res.Diagnostics);
@@ -142,9 +142,9 @@ public static class GeneratorDiscovery
         return new(td, diagnostics);
     }
 
-    private static List<(string, Location)> GetTemplates(ClassDeclarationSyntax cds, Compilation compliation, List<Diagnostic> diagnostics)
+    private static List<TemplateText> GetTemplates(ClassDeclarationSyntax cds, Compilation compliation, List<Diagnostic> diagnostics)
     {
-        var templates = new List<(string, Location)>();
+        var templates = new List<TemplateText>();
 
         foreach (var child in cds.ChildNodes())
         {
@@ -172,7 +172,7 @@ public static class GeneratorDiscovery
                                 }
                                 else if (eqSyntax.ChildNodes().OfType<LiteralExpressionSyntax>().FirstOrDefault() is LiteralExpressionSyntax l)
                                 {
-                                    templates.Add((fs.ConstantValue.ToString(), l.GetLocation()));
+                                    templates.Add(new TemplateText(l, fs.ConstantValue.ToString()));
                                     goto DoneWithField;
                                 }
                             }
