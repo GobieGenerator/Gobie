@@ -31,7 +31,31 @@ public readonly struct TemplateText
     /// </summary>
     public Location GetLocationAt(int start, int len)
     {
-        return Location.Create(tree, new TextSpan(fullSpan.Start + start, len));
+        // This method is responsible for mapping the text from the Constant Expression, which is
+        // the text the user intended to be output after escape characters or similar, and point
+        // back to the orginal text so we can point at exact errors within the source code.
+
+        // TODO handle c#7 strings.
+
+        var literal = false;
+        var inQuotes = false;
+
+        var cs = fullText.AsSpan();
+        var stringContentsStart = 0;
+        for (int i = 0; i < cs.Length; i++)
+        {
+            if (!inQuotes && cs[i] == '@')
+            {
+                literal = true;
+            }
+            else if (!inQuotes && cs[i] == '"')
+            {
+                stringContentsStart = i + 1;
+                break;
+            }
+        }
+
+        return Location.Create(tree, new TextSpan(fullSpan.Start + stringContentsStart + start, len));
     }
 
     /// <summary>
