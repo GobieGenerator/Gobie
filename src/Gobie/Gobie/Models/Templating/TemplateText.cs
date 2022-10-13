@@ -90,8 +90,18 @@ public readonly struct TemplateText
 
     private bool IsEscape(ReadOnlySpan<char> chars) => chars switch
     {
-        @"\r" => true,
+        @"\'" => true,
+        @"\""" => true,
+        @"\\" => true,
+        @"\0" => true,
+        @"\a" => true,
+        @"\b" => true,
+        @"\f" => true,
         @"\n" => true,
+        @"\r" => true,
+        @"\t" => true,
+        @"\v" => true,
+        // For now at least, deliberatly ignoring unicode escape chars.
         _ => false,
     };
 }

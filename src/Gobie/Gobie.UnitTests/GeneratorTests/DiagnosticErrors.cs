@@ -40,6 +40,20 @@ public class DiagnosticErrors
     }
 
     [Test]
+    public Task GBxxxx_EmptyTag()
+    {
+        Assert.Fail(); 
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ }} => {{FieldName}}.AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task GB1020_InvalidFormatToken()
     {
         var source = @"
@@ -47,19 +61,6 @@ public class DiagnosticErrors
         {
             [GobieTemplate]
             private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();"";
-        }";
-
-        return TestHelper.Verify(source);
-    }
-
-    [Test]
-    public Task GB1020_InvalidFormatToken_WithEscapedBeforeError()
-    {
-        var source = @"
-        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
-        {
-            [GobieTemplate]
-            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> \r\n \n{{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();"";
         }";
 
         return TestHelper.Verify(source);

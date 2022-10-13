@@ -30,13 +30,14 @@ namespace ConsoleClient
             }";
 
         [GobieTemplate]
-        private const string EncapsulatedCollection2 = "interpolated const {{EncapsulatedCollection : pascal}} \r\n";
+        private const string EncapsulatedCollection2 =
+            "interpolated const \r\n{{EncapsulatedCollection : pascal}} ";
     }
 
     ////public sealed class UserDefined3Generator : Gobie.GobieClassGenerator
     ////{
     ////    [GobieTemplate]
-    ////    private const string EncapsulatedCollection = "public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> \r \n \r\n{{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();";
+    ////    private const string EncapsulatedCollection = "public System.Collections.Generic.IEnumerable<{{FieldGenericType}}>  {{FieldName : BADTAsdfsdG}} => {{FieldName}}.AsReadOnly();";
     ////}
 
     internal class Program
