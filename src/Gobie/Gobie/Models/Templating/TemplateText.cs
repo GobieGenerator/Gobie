@@ -14,14 +14,14 @@ public readonly struct TemplateText
     /// </summary>
     private readonly string fullText;
 
-    private readonly TextSpan fullSpan;
+    private readonly TextSpan span;
 
     public TemplateText(LiteralExpressionSyntax literalExpressionSyntax, string constantText)
     {
         this.constantText = constantText;
         tree = literalExpressionSyntax.SyntaxTree;
         fullText = literalExpressionSyntax.Token.Text;
-        fullSpan = literalExpressionSyntax.FullSpan;
+        span = literalExpressionSyntax.Span; //Span, but excluding leading trivia.
     }
 
     public string Text => constantText;
@@ -76,7 +76,7 @@ public readonly struct TemplateText
         }
 
         // This is right so long as the wrapped text does NOT have escaped char in it.
-        return Location.Create(tree, new TextSpan(fullSpan.Start + stringContentsStart + start + escapeCharCount, len));
+        return Location.Create(tree, new TextSpan(span.Start + stringContentsStart + start + escapeCharCount, len));
     }
 
     /// <summary>
@@ -85,7 +85,7 @@ public readonly struct TemplateText
     /// </summary>
     public Location GetLocation()
     {
-        return Location.Create(tree, fullSpan);
+        return Location.Create(tree, span);
     }
 
     private bool IsEscape(ReadOnlySpan<char> chars) => chars switch
