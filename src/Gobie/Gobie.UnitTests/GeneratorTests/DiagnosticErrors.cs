@@ -42,7 +42,7 @@ public class DiagnosticErrors
     [Test]
     public Task GBxxxx_EmptyTag()
     {
-        Assert.Fail(); 
+        Assert.Fail();
         var source = @"
         public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
         {
