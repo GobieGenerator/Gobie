@@ -46,22 +46,20 @@ public class DiagnosticErrors
         public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
         {
             [GobieTemplate]
-            private const string EncapsulatedCollection = @""
-                    public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();
-            "";
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();"";
         }";
 
         return TestHelper.Verify(source);
     }
 
     [Test]
-    public Task GB1020_InvalidFormatToken_WithEscaped()
+    public Task GB1020_InvalidFormatToken_WithEscapedBeforeError()
     {
         var source = @"
         public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
         {
             [GobieTemplate]
-            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> /r/n{{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();"";
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> \r\n \n{{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();"";
         }";
 
         return TestHelper.Verify(source);

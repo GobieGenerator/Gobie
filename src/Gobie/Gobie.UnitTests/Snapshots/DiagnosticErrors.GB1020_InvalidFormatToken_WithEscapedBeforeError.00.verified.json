@@ -5,7 +5,7 @@
       "Title": "Gobie",
       "Severity": "Error",
       "WarningLevel": 0,
-      "Location": ": (4,141)-(4,147)",
+      "Location": ": (4,148)-(4,154)",
       "Description": "",
       "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1020",
       "MessageFormat": "The token BADTAG does not match an allowed value, which are 'Pascal' and 'Camel'",

@@ -37,7 +37,7 @@ public readonly struct TemplateText
 
         // TODO handle c#7 strings.
 
-        var literal = false;
+        var isVerbatim = false;
         var inQuotes = false;
 
         var cs = fullText.AsSpan();
@@ -46,7 +46,7 @@ public readonly struct TemplateText
         {
             if (!inQuotes && cs[i] == '@')
             {
-                literal = true;
+                isVerbatim = true;
             }
             else if (!inQuotes && cs[i] == '"')
             {
@@ -55,7 +55,28 @@ public readonly struct TemplateText
             }
         }
 
-        return Location.Create(tree, new TextSpan(fullSpan.Start + stringContentsStart + start, len));
+        //probably badly wrong here. We need to use start to know when to stop somehow. By decrementing?
+        var escapeCharCount = 0;
+        if (isVerbatim == false)
+        {
+            for (int i = stringContentsStart; i < cs.Length; i++)
+            {
+                if (cs[i] == '\\' && IsEscape(cs.Slice(i, 2)))
+                {
+                    // We found an escaped char in a normal string.
+                    i++;
+                    escapeCharCount++;
+                }
+
+                if (i + escapeCharCount >= start)
+                {
+                    break; // We are done looking for escape chars
+                }
+            }
+        }
+
+        // This is right so long as the wrapped text does NOT have escaped char in it.
+        return Location.Create(tree, new TextSpan(fullSpan.Start + stringContentsStart + start + escapeCharCount, len));
     }
 
     /// <summary>
@@ -66,4 +87,11 @@ public readonly struct TemplateText
     {
         return Location.Create(tree, fullSpan);
     }
+
+    private bool IsEscape(ReadOnlySpan<char> chars) => chars switch
+    {
+        @"\r" => true,
+        @"\n" => true,
+        _ => false,
+    };
 }
