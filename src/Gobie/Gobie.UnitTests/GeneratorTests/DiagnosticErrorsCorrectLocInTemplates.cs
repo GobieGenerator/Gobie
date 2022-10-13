@@ -29,6 +29,34 @@ public class DiagnosticErrorsCorrectLocInTemplates
     }
 
     [Test]
+    public Task BaselineNewLine()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection =
+                ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task BaselineVerbatimNewLine()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection =
+                @""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task BadTagWithLeadingEscapedChar()
     {
         var source = @"
