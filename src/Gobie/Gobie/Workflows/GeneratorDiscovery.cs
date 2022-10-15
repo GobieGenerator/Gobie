@@ -1,5 +1,7 @@
 ﻿namespace Gobie.Workflows;
 
+using Microsoft.CodeAnalysis;
+
 public static class GeneratorDiscovery
 {
     public static void GenerateAttributes(
@@ -30,10 +32,10 @@ public static class GeneratorDiscovery
         (UserGeneratorAttributeData, Compilation) s,
         CancellationToken ct)
     {
-        var (data, compliation) = (s.Item1, s.Item2);
+        var (data, compilation) = (s.Item1, s.Item2);
         var diagnostics = new List<Diagnostic>();
 
-        var model = compliation.GetSemanticModel(data.ClassDeclarationSyntax.SyntaxTree);
+        var model = compilation.GetSemanticModel(data.ClassDeclarationSyntax.SyntaxTree);
         var symbol = model.GetDeclaredSymbol(data.ClassDeclarationSyntax);
 
         if (symbol is null)
@@ -41,53 +43,13 @@ public static class GeneratorDiscovery
             return new(diagnostics);
         }
 
-        List<TResult> AccumulateTemplates<TData, TResult>(IEnumerable<TData> templates, Func<TData, TemplateText> selector, Func<TData, Mustache.TemplateDefinition, TResult> map)
-        {
-            var templateDefs = new List<TResult>();
-            foreach (var template in templates)
-            {
-                ct.ThrowIfCancellationRequested();
+        var templates = GetTemplates("GobieTemplate", (_, l, t) => new TemplateText(l, t), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var templateDefs = AccumulateTemplates(templates, x => x, (_, x) => x, diagnostics, ct);
 
-                var tt = selector(template);
-                var res = Mustache.Parse(tt.Text.AsSpan(), tt.GetLocationAt);
-                if (res.Diagnostics is not null)
-                {
-                    diagnostics?.AddRange(res.Diagnostics);
-                }
-                else if (res.Data is not null)
-                {
-                    templateDefs.Add(map(template, res.Data));
-                }
-            }
+        var globalChildTemplates = GetTemplates("GobieGlobalChildTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieGlobalChildTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var globalChildTemplateDefs = AccumulateTemplates(globalChildTemplates, x => x.Value.template, (d, t) => new GlobalChildTemplateData(d.Value.attArg, t), diagnostics, ct);
 
-            return templateDefs;
-        }
-
-        var templates = GetTemplates("GobieTemplate", (_, l, t) => new TemplateText(l, t), data.ClassDeclarationSyntax, compliation, diagnostics, ct);
-        var templateDefs = AccumulateTemplates(templates, x => x, (_, x) => x);
-
-        (string attArg, TemplateText template)? GetAttributeArgAndTemplate(string attributeName, FieldDeclarationSyntax f, LiteralExpressionSyntax l, string t)
-        {
-            foreach (var variable in f.Declaration.Variables)
-            {
-                var model = compliation.GetSemanticModel(f.SyntaxTree);
-                var fieldSymbol = model.GetDeclaredSymbol(variable);
-
-                if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
-                {
-                    var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == attributeName);
-                    var fn = ad.ConstructorArguments[0].Value;
-                    return (fn.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
-                }
-            }
-
-            return null;
-        }
-
-        var globalChildTemplates = GetTemplates("GobieGlobalChildTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieGlobalChildTemplateAttribute", f, l, t), data.ClassDeclarationSyntax, compliation, diagnostics, ct);
-        var globalChildTemplateDefs = AccumulateTemplates(globalChildTemplates, x => x.Value.template, (d, t) => new GlobalChildTemplateData(d.Value.attArg, t));
-
-        var globalTemplates = GetGlobalTemplates(data.ClassDeclarationSyntax, compliation, ct);
+        var globalTemplates = GetGlobalTemplates(data.ClassDeclarationSyntax, compilation, ct);
         var globalTemplateDefs = new List<GlobalTemplateData>();
         foreach (var template in globalTemplates)
         {
@@ -116,8 +78,8 @@ public static class GeneratorDiscovery
             }
         }
 
-        var fileTemplates = GetTemplates("GobieFileTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieFileTemplateAttribute", f, l, t), data.ClassDeclarationSyntax, compliation, diagnostics, ct);
-        var fileTemplateDefs = AccumulateTemplates(fileTemplates, x => x.Value.template, (d, t) => new UserFileTemplateData(d.Value.attArg, t));
+        var fileTemplates = GetTemplates("GobieFileTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieFileTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var fileTemplateDefs = AccumulateTemplates(fileTemplates, x => x.Value.template, (d, t) => new UserFileTemplateData(d.Value.attArg, t), diagnostics, ct);
 
         if (diagnostics.Any())
         {
@@ -138,6 +100,24 @@ public static class GeneratorDiscovery
         }
 
         return new(td, diagnostics);
+    }
+
+    private static (string attArg, TemplateText template)? GetAttributeArgAndTemplate(string attributeName, FieldDeclarationSyntax f, LiteralExpressionSyntax l, string t, Compilation compilation)
+    {
+        foreach (var variable in f.Declaration.Variables)
+        {
+            var model = compilation.GetSemanticModel(f.SyntaxTree);
+            var fieldSymbol = model.GetDeclaredSymbol(variable);
+
+            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+            {
+                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == attributeName);
+                var fn = ad.ConstructorArguments[0].Value;
+                return (fn.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -208,6 +188,28 @@ public static class GeneratorDiscovery
         }
 
         return templates;
+    }
+
+    private static List<TResult> AccumulateTemplates<TData, TResult>(IEnumerable<TData> templates, Func<TData, TemplateText> selector, Func<TData, Mustache.TemplateDefinition, TResult> map, List<Diagnostic> diagnostics, CancellationToken ct)
+    {
+        var templateDefs = new List<TResult>();
+        foreach (var template in templates)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var tt = selector(template);
+            var res = Mustache.Parse(tt.Text.AsSpan(), tt.GetLocationAt);
+            if (res.Diagnostics is not null)
+            {
+                diagnostics?.AddRange(res.Diagnostics);
+            }
+            else if (res.Data is not null)
+            {
+                templateDefs.Add(map(template, res.Data));
+            }
+        }
+
+        return templateDefs;
     }
 
     private static List<(string generatorName, string fileName, string template)> GetGlobalTemplates(
