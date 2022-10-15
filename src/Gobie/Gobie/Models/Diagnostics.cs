@@ -67,6 +67,9 @@
         public static DiagnosticDescriptor TemplateIsInterpolatedString() =>
             Error("GB1021", $"Template strings cannot be interpolated. We currently can't support them. Also, interoploating template strings may be a code smell.");
 
+        public static DiagnosticDescriptor TemplateIsConcatenatedString() =>
+            Error("GB1022", $"Template strings cannot be concatenated. We currently can't support them.");
+
         private static DiagnosticDescriptor Error(string code, string message) => FullDiscriptor(code, message, DiagnosticSeverity.Error);
 
         private static DiagnosticDescriptor Warning(string code, string message) => FullDiscriptor(code, message, DiagnosticSeverity.Warning);

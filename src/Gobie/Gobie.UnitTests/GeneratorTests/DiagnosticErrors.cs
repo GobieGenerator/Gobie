@@ -78,4 +78,19 @@ public class DiagnosticErrors
 
         return TestHelper.Verify(source);
     }
+
+    [Test]
+    public Task GB1022_ConcatenatedConstTemplate()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection2 =
+                ""interpolated const"" +
+                ""{{EncapsulatedCollection : pascal}} "";
+        }";
+
+        return TestHelper.Verify(source);
+    }
 }
