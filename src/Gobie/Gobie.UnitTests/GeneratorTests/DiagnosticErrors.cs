@@ -39,6 +39,36 @@ public class DiagnosticErrors
         return TestHelper.Verify(source);
     }
 
+    [Test]
+    public Task GB1007_GlobalGenWrongTemplateItem()
+    {
+        var source = @"
+        using Gobie;
+
+        public sealed class GlobalExampleGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieGlobalFileTemplate(""EFCoreRegistrationGenerator"", ""SomethingElse"")]
+            private const string Globe = @""{{WRONG}}"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task GB1007_GlobalGenMultipleChildContent()
+    {
+        var source = @"
+        using Gobie;
+
+        public sealed class GlobalExampleGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieGlobalFileTemplate(""EFCoreRegistrationGenerator"", ""SomethingElse"")]
+            private const string Globe = @""{{ChildContent}}{{ChildContent}}"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
     [Ignore("Known to be failing")]
     [Test]
     public Task GBxxxx_EmptyTag()
