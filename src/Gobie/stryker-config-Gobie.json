@@ -8,6 +8,7 @@
             "Console.Write*",  // Ignores all methods starting with Write in the class Console
             "*Exception.ctor", // Ignores all exception constructors
             "Log.*"           // Ignores all logging
-        ]
+        ],
+        "language-version": "Preview"
     }
 }
