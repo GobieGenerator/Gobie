@@ -260,42 +260,6 @@ public static class GeneratorDiscovery
         return templates;
     }
 
-    private static List<(string generatorName, string template)> GetGlobalChildTemplates(ClassDeclarationSyntax cds, Compilation compliation)
-    {
-        var templates = new List<(string generatorName, string template)>();
-
-        foreach (var child in cds.ChildNodes())
-        {
-            if (child is FieldDeclarationSyntax f)
-            {
-                foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
-                {
-                    var a = ((IdentifierNameSyntax)att.Name).Identifier;
-                    if (a.Text == "GobieGlobalChildTemplate")
-                    {
-                        foreach (var variable in f.Declaration.Variables)
-                        {
-                            var model = compliation.GetSemanticModel(f.SyntaxTree);
-                            var fieldSymbol = model.GetDeclaredSymbol(variable);
-
-                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
-                            {
-                                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieGlobalChildTemplateAttribute");
-                                var fn = ad.ConstructorArguments[0].Value;
-                                templates.Add((fn.ToString(), fs.ConstantValue.ToString()));
-                                goto DoneWithField;
-                            }
-                        }
-                    }
-                }
-            }
-
-        DoneWithField:;
-        }
-
-        return templates;
-    }
-
     private static List<(string generatorName, string fileName, string template)> GetGlobalTemplates(
         ClassDeclarationSyntax cds,
         Compilation compliation,
