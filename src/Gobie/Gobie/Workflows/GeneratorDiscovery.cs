@@ -17,7 +17,7 @@ public static class GeneratorDiscovery
     {
         return context.SyntaxProvider
             .CreateSyntaxProvider(
-                predicate: static (s, _) => IsClassDeclaration(s),
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
                 transform: static (ctx, ct) => GetUserTemplate(ctx, ct))
             .Where(static x => x is not null)!;
     }
@@ -100,43 +100,6 @@ public static class GeneratorDiscovery
         }
 
         return new(td, diagnostics);
-    }
-
-    private static (string attArg, TemplateText template)? GetAttributeArgAndTemplate(string attributeName, FieldDeclarationSyntax f, LiteralExpressionSyntax l, string t, Compilation compilation)
-    {
-        foreach (var variable in f.Declaration.Variables)
-        {
-            var model = compilation.GetSemanticModel(f.SyntaxTree);
-            var fieldSymbol = model.GetDeclaredSymbol(variable);
-
-            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
-            {
-                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == attributeName);
-                var fn = ad.ConstructorArguments[0].Value;
-                return (fn.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
-            }
-        }
-
-        return null;
-    }
-
-    private static (string attArg1, string attArg2, TemplateText template)? GetTwoAttributeArgsAndTemplate(string attributeName, FieldDeclarationSyntax f, LiteralExpressionSyntax l, string t, Compilation compilation)
-    {
-        foreach (var variable in f.Declaration.Variables)
-        {
-            var model = compilation.GetSemanticModel(f.SyntaxTree);
-            var fieldSymbol = model.GetDeclaredSymbol(variable);
-
-            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
-            {
-                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == attributeName);
-                var a1 = ad.ConstructorArguments[0].Value;
-                var a2 = ad.ConstructorArguments[1].Value;
-                return (a1.ToString(), a2.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
-            }
-        }
-
-        return null;
     }
 
     /// <summary>
@@ -231,7 +194,42 @@ public static class GeneratorDiscovery
         return templateDefs;
     }
 
-    private static bool IsClassDeclaration(SyntaxNode node) => node is ClassDeclarationSyntax;
+    private static (string attArg, TemplateText template)? GetAttributeArgAndTemplate(string attributeName, FieldDeclarationSyntax f, LiteralExpressionSyntax l, string t, Compilation compilation)
+    {
+        foreach (var variable in f.Declaration.Variables)
+        {
+            var model = compilation.GetSemanticModel(f.SyntaxTree);
+            var fieldSymbol = model.GetDeclaredSymbol(variable);
+
+            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+            {
+                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == attributeName);
+                var fn = ad.ConstructorArguments[0].Value;
+                return (fn.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
+            }
+        }
+
+        return null;
+    }
+
+    private static (string attArg1, string attArg2, TemplateText template)? GetTwoAttributeArgsAndTemplate(string attributeName, FieldDeclarationSyntax f, LiteralExpressionSyntax l, string t, Compilation compilation)
+    {
+        foreach (var variable in f.Declaration.Variables)
+        {
+            var model = compilation.GetSemanticModel(f.SyntaxTree);
+            var fieldSymbol = model.GetDeclaredSymbol(variable);
+
+            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+            {
+                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == attributeName);
+                var a1 = ad.ConstructorArguments[0].Value;
+                var a2 = ad.ConstructorArguments[1].Value;
+                return (a1.ToString(), a2.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
+            }
+        }
+
+        return null;
+    }
 
     private static IEnumerable<Diagnostic> Duplicates(IEnumerable<RequiredParameter> requiredParameters)
     {
