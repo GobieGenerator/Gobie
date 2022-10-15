@@ -46,6 +46,9 @@ public static class GeneratorDiscovery
         var templates = GetTemplates("GobieTemplate", (_, l, t) => new TemplateText(l, t), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
         var templateDefs = AccumulateTemplates(templates, x => x, (_, x) => x, diagnostics, ct);
 
+        var fileTemplates = GetTemplates("GobieFileTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieFileTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var fileTemplateDefs = AccumulateTemplates(fileTemplates, x => x.Value.template, (d, t) => new UserFileTemplateData(d.Value.attArg, t), diagnostics, ct);
+
         var globalChildTemplates = GetTemplates("GobieGlobalChildTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieGlobalChildTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
         var globalChildTemplateDefs = AccumulateTemplates(globalChildTemplates, x => x.Value.template, (d, t) => new GlobalChildTemplateData(d.Value.attArg, t), diagnostics, ct);
 
@@ -78,9 +81,6 @@ public static class GeneratorDiscovery
             }
         }
 
-        var fileTemplates = GetTemplates("GobieFileTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieFileTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
-        var fileTemplateDefs = AccumulateTemplates(fileTemplates, x => x.Value.template, (d, t) => new UserFileTemplateData(d.Value.attArg, t), diagnostics, ct);
-
         if (diagnostics.Any())
         {
             return new(diagnostics);
@@ -103,6 +103,8 @@ public static class GeneratorDiscovery
     }
 
     /// <summary>
+    /// This method **MUST** be used to get templates, because it handles reporting errors in the
+    /// string type.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="templateName"></param>
