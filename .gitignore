@@ -355,4 +355,4 @@ MigrationBackup/
 *.received.json
 
 src/.cr/personal/
-src/Gobie/.cr/personal/FavoritesList/List.xml
+src/Gobie/.cr/personal/
