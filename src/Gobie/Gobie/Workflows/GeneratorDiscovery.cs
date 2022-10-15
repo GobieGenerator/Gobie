@@ -41,25 +41,51 @@ public static class GeneratorDiscovery
             return new(diagnostics);
         }
 
-        var templates = GetTemplates("GobieTemplate", (l, t) => new TemplateText(l, t), data.ClassDeclarationSyntax, compliation, diagnostics, ct);
-        var templateDefs = AccumulateTemplates(templates, x => x, x => x);
-
-        var globalChildTemplates = GetGlobalChildTemplates(data.ClassDeclarationSyntax, compliation);
-        var globalChildTemplateDefs = new List<GlobalChildTemplateData>();
-        foreach (var template in globalChildTemplates)
+        List<TResult> AccumulateTemplates<TData, TResult>(IEnumerable<TData> templates, Func<TData, TemplateText> selector, Func<TData, Mustache.TemplateDefinition, TResult> map)
         {
-            ct.ThrowIfCancellationRequested();
+            var templateDefs = new List<TResult>();
+            foreach (var template in templates)
+            {
+                ct.ThrowIfCancellationRequested();
 
-            var res = Mustache.Parse(template.template.AsSpan(), (_, _) => data.ClassDeclarationSyntax.GetLocation());
-            if (res.Diagnostics is not null)
-            {
-                diagnostics.AddRange(res.Diagnostics);
+                var tt = selector(template);
+                var res = Mustache.Parse(tt.Text.AsSpan(), tt.GetLocationAt);
+                if (res.Diagnostics is not null)
+                {
+                    diagnostics?.AddRange(res.Diagnostics);
+                }
+                else if (res.Data is not null)
+                {
+                    templateDefs.Add(map(template, res.Data));
+                }
             }
-            else if (res.Data is not null)
-            {
-                globalChildTemplateDefs.Add(new(template.generatorName, res.Data));
-            }
+
+            return templateDefs;
         }
+
+        var templates = GetTemplates("GobieTemplate", (_, l, t) => new TemplateText(l, t), data.ClassDeclarationSyntax, compliation, diagnostics, ct);
+        var templateDefs = AccumulateTemplates(templates, x => x, (_, x) => x);
+
+        (string generatorName, TemplateText template)? BuildGlobalChildTemplate(FieldDeclarationSyntax f, LiteralExpressionSyntax l, string t)
+        {
+            foreach (var variable in f.Declaration.Variables)
+            {
+                var model = compliation.GetSemanticModel(f.SyntaxTree);
+                var fieldSymbol = model.GetDeclaredSymbol(variable);
+
+                if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                {
+                    var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieGlobalChildTemplateAttribute");
+                    var fn = ad.ConstructorArguments[0].Value;
+                    return (fn.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
+                }
+            }
+
+            return null;
+        }
+
+        var globalChildTemplates = GetTemplates("GobieGlobalChildTemplate", BuildGlobalChildTemplate, data.ClassDeclarationSyntax, compliation, diagnostics, ct);
+        var globalChildTemplateDefs = AccumulateTemplates(globalChildTemplates, x => x.Value.template, (d, t) => new GlobalChildTemplateData(d.Value.generatorName, t));
 
         var globalTemplates = GetGlobalTemplates(data.ClassDeclarationSyntax, compliation, ct);
         var globalTemplateDefs = new List<GlobalTemplateData>();
@@ -126,33 +152,24 @@ public static class GeneratorDiscovery
         }
 
         return new(td, diagnostics);
-
-        List<TResult> AccumulateTemplates<TData, TResult>(IEnumerable<TData> templates, Func<TData, TemplateText> selector, Func<Mustache.TemplateDefinition, TResult> map)
-        {
-            var templateDefs = new List<TResult>();
-            foreach (var template in templates)
-            {
-                ct.ThrowIfCancellationRequested();
-
-                var tt = selector(template);
-                var res = Mustache.Parse(tt.Text.AsSpan(), tt.GetLocationAt);
-                if (res.Diagnostics is not null)
-                {
-                    diagnostics?.AddRange(res.Diagnostics);
-                }
-                else if (res.Data is not null)
-                {
-                    templateDefs.Add(map(res.Data));
-                }
-            }
-
-            return templateDefs;
-        }
     }
 
+    /// <summary>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="templateName"></param>
+    /// <param name="templateBuilder">
+    /// Generally, we expect we should always get a template out at the point the templateBuilder is
+    /// called. However it is nullable because we can't guarentee it.
+    /// </param>
+    /// <param name="cds"></param>
+    /// <param name="compliation"></param>
+    /// <param name="diagnostics"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     private static List<T> GetTemplates<T>(
         string templateName,
-        Func<LiteralExpressionSyntax, string, T> templateBuilder,
+        Func<FieldDeclarationSyntax, LiteralExpressionSyntax, string, T?> templateBuilder,
         ClassDeclarationSyntax cds,
         Compilation compliation,
         List<Diagnostic> diagnostics,
@@ -189,7 +206,11 @@ public static class GeneratorDiscovery
                             }
                             else if (eqSyntax.ChildNodes().OfType<LiteralExpressionSyntax>().FirstOrDefault() is LiteralExpressionSyntax l)
                             {
-                                templates.Add(templateBuilder(l, fs.ConstantValue.ToString()));
+                                var outTemplate = templateBuilder(field, l, fs.ConstantValue.ToString());
+                                if (outTemplate is not null)
+                                {
+                                    templates.Add(outTemplate);
+                                }
                                 goto DoneWithField;
                             }
                         }
@@ -444,8 +465,6 @@ public static class GeneratorDiscovery
             {
                 if (att?.AttributeClass?.ToString() == "Gobie.Required")
                 {
-                    // Get the requested order if one was provided. Or give it the maximum so it
-                    // goes at the end. Within values at the end they go in the order they were defined.
                     var order = int.MaxValue;
                     if (att.ConstructorArguments.Length > 0)
                     {
