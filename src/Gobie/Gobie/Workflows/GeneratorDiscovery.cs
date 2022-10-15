@@ -41,22 +41,8 @@ public static class GeneratorDiscovery
             return new(diagnostics);
         }
 
-        var templates = GetTemplates(data.ClassDeclarationSyntax, compliation, diagnostics);
-        var templateDefs = new List<Mustache.TemplateDefinition>();
-        foreach (var template in templates)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            var res = Mustache.Parse(template.Text.AsSpan(), template.GetLocationAt);
-            if (res.Diagnostics is not null)
-            {
-                diagnostics.AddRange(res.Diagnostics);
-            }
-            else if (res.Data is not null)
-            {
-                templateDefs.Add(res.Data);
-            }
-        }
+        var templates = GetTemplates("GobieTemplate", (l, t) => new TemplateText(l, t), data.ClassDeclarationSyntax, compliation, diagnostics, ct);
+        var templateDefs = AccumulateTemplates(templates, x => x, x => x);
 
         var globalChildTemplates = GetGlobalChildTemplates(data.ClassDeclarationSyntax, compliation);
         var globalChildTemplateDefs = new List<GlobalChildTemplateData>();
@@ -140,18 +126,48 @@ public static class GeneratorDiscovery
         }
 
         return new(td, diagnostics);
+
+        List<TResult> AccumulateTemplates<TData, TResult>(IEnumerable<TData> templates, Func<TData, TemplateText> selector, Func<Mustache.TemplateDefinition, TResult> map)
+        {
+            var templateDefs = new List<TResult>();
+            foreach (var template in templates)
+            {
+                ct.ThrowIfCancellationRequested();
+
+                var tt = selector(template);
+                var res = Mustache.Parse(tt.Text.AsSpan(), tt.GetLocationAt);
+                if (res.Diagnostics is not null)
+                {
+                    diagnostics?.AddRange(res.Diagnostics);
+                }
+                else if (res.Data is not null)
+                {
+                    templateDefs.Add(map(res.Data));
+                }
+            }
+
+            return templateDefs;
+        }
     }
 
-    private static List<TemplateText> GetTemplates(ClassDeclarationSyntax cds, Compilation compliation, List<Diagnostic> diagnostics)
+    private static List<T> GetTemplates<T>(
+        string templateName,
+        Func<LiteralExpressionSyntax, string, T> templateBuilder,
+        ClassDeclarationSyntax cds,
+        Compilation compliation,
+        List<Diagnostic> diagnostics,
+        CancellationToken ct)
     {
-        var templates = new List<TemplateText>();
+        var templates = new List<T>();
 
         foreach (var field in cds.ChildNodes().OfType<FieldDeclarationSyntax>())
         {
+            ct.ThrowIfCancellationRequested();
+
             foreach (AttributeSyntax att in field.AttributeLists.SelectMany(x => x.Attributes))
             {
                 var a = ((IdentifierNameSyntax)att.Name).Identifier;
-                if (a.Text == "GobieTemplate")
+                if (a.Text == templateName)
                 {
                     foreach (var variable in field.Declaration.Variables)
                     {
@@ -173,7 +189,7 @@ public static class GeneratorDiscovery
                             }
                             else if (eqSyntax.ChildNodes().OfType<LiteralExpressionSyntax>().FirstOrDefault() is LiteralExpressionSyntax l)
                             {
-                                templates.Add(new TemplateText(l, fs.ConstantValue.ToString()));
+                                templates.Add(templateBuilder(l, fs.ConstantValue.ToString()));
                                 goto DoneWithField;
                             }
                         }
