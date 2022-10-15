@@ -80,6 +80,28 @@ public class DiagnosticErrors
     }
 
     [Test]
+    public Task GB1021_InterpolatedConstMultipleTemplates()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection1 = $@""Just using the $ is disallowed"";
+
+            [GobieFileTemplate(""StateLog"")]
+            private const string EncapsulatedCollection2 = $@""Just using the $ is disallowed"";
+
+            [GobieGlobalChildTemplate(""EFCoreRegistrationGenerator"")]
+            private const string EncapsulatedCollection3 = $@""Just using the $ is disallowed"";
+
+            [GobieGlobalFileTemplate(""EFCoreRegistrationGenerator"", ""SomethingElse"")]
+            private const string EncapsulatedCollection3 = $@""Just using the $ is disallowed"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task GB1022_ConcatenatedConstTemplate()
     {
         var source = @"
@@ -87,6 +109,36 @@ public class DiagnosticErrors
         {
             [GobieTemplate]
             private const string EncapsulatedCollection2 =
+                ""interpolated const"" +
+                ""{{EncapsulatedCollection : pascal}} "";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task GB1022_ConcatenatedMultipleTemplates()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection1 =
+                ""interpolated const"" +
+                ""{{EncapsulatedCollection : pascal}} "";
+
+            [GobieFileTemplate(""StateLog"")]
+            private const string EncapsulatedCollection2 =
+                ""interpolated const"" +
+                ""{{EncapsulatedCollection : pascal}} "";
+
+            [GobieGlobalChildTemplate(""EFCoreRegistrationGenerator"")]
+            private const string EncapsulatedCollection3 =
+                ""interpolated const"" +
+                ""{{EncapsulatedCollection : pascal}} "";
+
+            [GobieGlobalFileTemplate(""EFCoreRegistrationGenerator"", ""SomethingElse"")]
+            private const string EncapsulatedCollection3 =
                 ""interpolated const"" +
                 ""{{EncapsulatedCollection : pascal}} "";
         }";
