@@ -160,8 +160,16 @@ public static class GeneratorDiscovery
                             var model = compliation.GetSemanticModel(f.SyntaxTree);
                             var fieldSymbol = model.GetDeclaredSymbol(variable);
                             var eqSyntax = variable.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
-
-                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null && eqSyntax is not null)
+                            var and = eqSyntax.ChildNodes();
+                            if (eqSyntax.ChildNodes().OfType<BinaryExpressionSyntax>().FirstOrDefault() is BinaryExpressionSyntax bes)
+                            {
+                                diagnostics.Add(
+                                      Diagnostic.Create(
+                                          Diagnostics.TemplateIsConcatenatedString(),
+                                          bes.GetLocation()));
+                                goto DoneWithField;
+                            }
+                            else if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null && eqSyntax is not null)
                             {
                                 if (eqSyntax.ChildNodes().OfType<InterpolatedStringExpressionSyntax>().FirstOrDefault() is InterpolatedStringExpressionSyntax i)
                                 {
