@@ -146,43 +146,35 @@ public static class GeneratorDiscovery
     {
         var templates = new List<TemplateText>();
 
-        foreach (var child in cds.ChildNodes())
+        foreach (var field in cds.ChildNodes().OfType<FieldDeclarationSyntax>())
         {
-            if (child is FieldDeclarationSyntax f)
+            foreach (AttributeSyntax att in field.AttributeLists.SelectMany(x => x.Attributes))
             {
-                foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
+                var a = ((IdentifierNameSyntax)att.Name).Identifier;
+                if (a.Text == "GobieTemplate")
                 {
-                    var a = ((IdentifierNameSyntax)att.Name).Identifier;
-                    if (a.Text == "GobieTemplate")
+                    foreach (var variable in field.Declaration.Variables)
                     {
-                        foreach (var variable in f.Declaration.Variables)
+                        var model = compliation.GetSemanticModel(field.SyntaxTree);
+                        var fieldSymbol = model.GetDeclaredSymbol(variable);
+                        var eqSyntax = variable.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
+
+                        if (eqSyntax.ChildNodes().OfType<BinaryExpressionSyntax>().FirstOrDefault() is BinaryExpressionSyntax bes)
                         {
-                            var model = compliation.GetSemanticModel(f.SyntaxTree);
-                            var fieldSymbol = model.GetDeclaredSymbol(variable);
-                            var eqSyntax = variable.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
-                            var and = eqSyntax.ChildNodes();
-                            if (eqSyntax.ChildNodes().OfType<BinaryExpressionSyntax>().FirstOrDefault() is BinaryExpressionSyntax bes)
+                            diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsConcatenatedString(), bes.GetLocation()));
+                            goto DoneWithField;
+                        }
+                        else if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null && eqSyntax is not null)
+                        {
+                            if (eqSyntax.ChildNodes().OfType<InterpolatedStringExpressionSyntax>().FirstOrDefault() is InterpolatedStringExpressionSyntax i)
                             {
-                                diagnostics.Add(
-                                      Diagnostic.Create(
-                                          Diagnostics.TemplateIsConcatenatedString(),
-                                          bes.GetLocation()));
+                                diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsInterpolatedString(), i.GetLocation()));
                                 goto DoneWithField;
                             }
-                            else if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null && eqSyntax is not null)
+                            else if (eqSyntax.ChildNodes().OfType<LiteralExpressionSyntax>().FirstOrDefault() is LiteralExpressionSyntax l)
                             {
-                                if (eqSyntax.ChildNodes().OfType<InterpolatedStringExpressionSyntax>().FirstOrDefault() is InterpolatedStringExpressionSyntax i)
-                                {
-                                    diagnostics.Add(
-                                        Diagnostic.Create(
-                                            Diagnostics.TemplateIsInterpolatedString(),
-                                            i.GetLocation()));
-                                }
-                                else if (eqSyntax.ChildNodes().OfType<LiteralExpressionSyntax>().FirstOrDefault() is LiteralExpressionSyntax l)
-                                {
-                                    templates.Add(new TemplateText(l, fs.ConstantValue.ToString()));
-                                    goto DoneWithField;
-                                }
+                                templates.Add(new TemplateText(l, fs.ConstantValue.ToString()));
+                                goto DoneWithField;
                             }
                         }
                     }
