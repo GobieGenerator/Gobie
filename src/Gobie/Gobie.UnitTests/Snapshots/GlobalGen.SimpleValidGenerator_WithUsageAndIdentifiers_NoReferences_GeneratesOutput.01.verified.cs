@@ -1,4 +1,4 @@
-﻿//HintName: EFCoreRegistrationGenerator.g.cs
+﻿//HintName: EFCoreRegistration.g.cs
 namespace SomeNamespace;
 public sealed static class EFCoreRegistration
 {

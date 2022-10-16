@@ -91,10 +91,10 @@ public static class CodeGeneration
         {
             ct.ThrowIfCancellationRequested();
 
-            var hintName = $"{assemblyTemplate.GlobalGeneratorName}.g.cs";
+            var hintName = $"{assemblyTemplate.GeneratorLabel}.g.cs";
             var renderData = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
 
-            var code = globalTemplates.TryGetValue(assemblyTemplate.GlobalGeneratorName, out var sb) ? sb.ToString() : string.Empty;
+            var code = globalTemplates.TryGetValue(assemblyTemplate.GeneratorLabel, out var sb) ? sb.ToString() : string.Empty;
             renderData.Add("ChildContent", new Mustache.RenderData("ChildContent", code, code.Length > 0));
             var renderedTemplate = Mustache.RenderTemplate(assemblyTemplate.GlobalTemplate, renderData.ToImmutable());
             var fullCode = CSharpSyntaxTree.ParseText(renderedTemplate).GetRoot().NormalizeWhitespace().ToFullString();

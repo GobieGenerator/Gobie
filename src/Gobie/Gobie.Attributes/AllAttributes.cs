@@ -94,17 +94,16 @@
     {
         /// <summary>
         /// </summary>
-        /// <param name="fileName">Must be unique across all... File name is suffixed with '.g.cs'</param>
+        /// <param name="templateName">
+        /// Name of the template, also used as the output name from the generator '.g.cs'
+        /// </param>
         /// <exception cref="ArgumentNullException"></exception>
-        public GobieGlobalFileTemplateAttribute(string templateName, string fileName)
+        public GobieGlobalFileTemplateAttribute(string templateName)
         {
             TemplateName = templateName ?? throw new ArgumentNullException(nameof(templateName));
-            FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         }
 
         public string TemplateName { get; }
-
-        public string FileName { get; }
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]

@@ -13,7 +13,7 @@ public class GlobalGen
 
         public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
         {
-            [GobieGlobalFileTemplate(""Log"", ""EFCoreRegistration"")]
+            [GobieGlobalFileTemplate(""EFCoreRegistration"")]
             private const string KeyString = @""
             namespace SomeNamespace;
 
@@ -40,7 +40,7 @@ public class GlobalGen
             using Gobie;
             public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
             {
-                [GobieGlobalFileTemplate(""Log"", ""EFCoreRegistration"")]
+                [GobieGlobalFileTemplate(""EFCoreRegistration"")]
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
@@ -68,7 +68,7 @@ public class GlobalGen
             using Gobie;
             public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
             {
-                [GobieGlobalFileTemplate(""Log"", ""EFCoreRegistration"")]
+                [GobieGlobalFileTemplate(""EFCoreRegistration"")]
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
@@ -103,7 +103,7 @@ public class GlobalGen
             using Gobie;
             public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
             {
-                [GobieGlobalFileTemplate(""Log"", ""EFCoreRegistration"")]
+                [GobieGlobalFileTemplate(""EFCoreRegistration"")]
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
@@ -130,7 +130,6 @@ public class GlobalGen
     [Test]
     public Task SimpleValidGenerator_WithUsageAndIdentifiers_References_GeneratesOutput()
     {
-        // TODO this isn't using GobieGlobalFileTemplate for the template name
         var source = @"
         [assembly: EFCoreRegistration]
         namespace SomeNamespace
@@ -138,7 +137,7 @@ public class GlobalGen
             using Gobie;
             public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
             {
-                [GobieGlobalFileTemplate(""EFCoreRegistration"", ""EFCoreRegistration"")]
+                [GobieGlobalFileTemplate(""EFCoreRegistration"")]
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
@@ -163,7 +162,7 @@ public class GlobalGen
                 [GobieTemplate]
                 private const string ReadonlyCollection = ""public IEnumerable<{{FieldGenericType}}> {{FieldName : pascal}} => {{FieldName}}.AsReadOnly(); // Encapsulating {{FieldType}}"";
 
-                [GobieGlobalChildTemplate(""EFCoreRegistrationGenerator"")]
+                [GobieGlobalChildTemplate(""EFCoreRegistration"")]
                 private const string EfCoreRegistration = ""// Hello From {{ClassName}}.{{FieldName}}"";
             }
 

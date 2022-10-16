@@ -47,7 +47,7 @@ public class DiagnosticErrors
 
         public sealed class GlobalExampleGenerator : Gobie.GobieClassGenerator
         {
-            [GobieGlobalFileTemplate(""EFCoreRegistrationGenerator"", ""SomethingElse"")]
+            [GobieGlobalFileTemplate(""EFCoreRegistrationGenerator"")]
             private const string Globe = @""{{WRONG}}"";
         }";
 
@@ -62,7 +62,7 @@ public class DiagnosticErrors
 
         public sealed class GlobalExampleGenerator : Gobie.GobieClassGenerator
         {
-            [GobieGlobalFileTemplate(""EFCoreRegistrationGenerator"", ""SomethingElse"")]
+            [GobieGlobalFileTemplate(""EFCoreRegistrationGenerator"")]
             private const string Globe = @""{{ChildContent}}{{ChildContent}}"";
         }";
 

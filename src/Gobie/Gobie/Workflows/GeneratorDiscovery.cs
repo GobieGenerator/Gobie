@@ -52,7 +52,7 @@ public static class GeneratorDiscovery
         var globalChildTemplates = GetTemplates("GobieGlobalChildTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieGlobalChildTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
         var globalChildTemplateDefs = AccumulateTemplates(globalChildTemplates, x => x.Value.template, (d, t) => new GlobalChildTemplateData(d.Value.attArg, t), diagnostics, ct);
 
-        var globalTemplates = GetTemplates("GobieGlobalFileTemplate", (f, l, t) => GetTwoAttributeArgsAndTemplate("GobieGlobalFileTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var globalTemplates = GetTemplates("GobieGlobalFileTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieGlobalFileTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
         var globalTemplateDefs = new List<GlobalTemplateData>();
         foreach (var template in globalTemplates.Where(x => x is not null))
         {
@@ -77,7 +77,7 @@ public static class GeneratorDiscovery
                     continue;
                 }
 
-                globalTemplateDefs.Add(new(template.Value.attArg1, template.Value.attArg2, t));
+                globalTemplateDefs.Add(new(template.Value.attArg, t));
             }
         }
 
@@ -208,25 +208,6 @@ public static class GeneratorDiscovery
                 var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass?.Name == attributeName);
                 var fn = ad.ConstructorArguments[0].Value;
                 return (fn.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
-            }
-        }
-
-        return null;
-    }
-
-    private static (string attArg1, string attArg2, TemplateText template)? GetTwoAttributeArgsAndTemplate(string attributeName, FieldDeclarationSyntax f, LiteralExpressionSyntax l, string t, Compilation compilation)
-    {
-        foreach (var variable in f.Declaration.Variables)
-        {
-            var model = compilation.GetSemanticModel(f.SyntaxTree);
-            var fieldSymbol = model.GetDeclaredSymbol(variable);
-
-            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
-            {
-                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass?.Name == attributeName);
-                var a1 = ad.ConstructorArguments[0].Value;
-                var a2 = ad.ConstructorArguments[1].Value;
-                return (a1.ToString(), a2.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
             }
         }
 

@@ -64,7 +64,7 @@ public class TargetDiscovery
 
             if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
             {
-                var at = new AssemblyTargetAndTemplateData(template.AttributeData.DefinitionIdentifier.ClassName, template.GlobalTemplate[0].Template);
+                var at = new AssemblyTargetAndTemplateData(template.AttributeData.DefinitionIdentifier.ClassName, template.GlobalTemplate[0].TemplateName, template.GlobalTemplate[0].Template);
                 return new(at);
             }
         }
