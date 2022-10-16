@@ -131,10 +131,10 @@ public class GlobalGen
     public Task SimpleValidGenerator_WithUsageAndIdentifiers_References_GeneratesOutput()
     {
         var source = @"
+        using Gobie;
         [assembly: EFCoreRegistration]
         namespace SomeNamespace
         {
-            using Gobie;
             public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
             {
                 [GobieGlobalFileTemplate(""EFCoreRegistration"")]
@@ -186,12 +186,12 @@ public class GlobalGen
     public Task TwoValidGenerators_WithUsageAndIdentifiers_References_GeneratesOutput()
     {
         var source = @"
+        using Gobie;
         [assembly: EFCoreRegistration]
         [assembly: OtherGlobal]
         namespace SomeNamespace
         {
             // ============= First Generator ============
-            using Gobie;
             public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
             {
                 [GobieGlobalFileTemplate(""EFCoreRegistration"")]
