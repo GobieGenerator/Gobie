@@ -183,6 +183,62 @@ public class GlobalGen
     }
 
     [Test]
+    public Task SimpleValidGenerator_WithUsageAndIdentifiers_References_GeneratesOutput_FullNamespace()
+    {
+        var source = @"
+        [assembly: Gobie.EFCoreRegistration]
+        namespace SomeNamespace
+        {
+            using Gobie;  // <==== Using here means we need to fully qualify the generator above.
+
+            public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
+            {
+                [GobieGlobalFileTemplate(""EFCoreRegistration"")]
+                private const string KeyString = @""
+                namespace SomeNamespace;
+
+                public sealed static class EFCoreRegistration
+                {
+                    public static void Register()
+                    {
+                        {{#ChildContent}}
+                            // Global generator code
+                            {{ChildContent}}
+                        {{/ChildContent}}
+                        {{^ChildContent}}
+                            // No generators reference this global generator.
+                        {{/ChildContent}}
+                    }
+                }
+                "";
+            }
+
+            public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
+            {
+                [GobieTemplate]
+                private const string ReadonlyCollection = ""public IEnumerable<{{FieldGenericType}}> {{FieldName : pascal}} => {{FieldName}}.AsReadOnly(); // Encapsulating {{FieldType}}"";
+
+                [GobieGlobalChildTemplate(""EFCoreRegistration"")]
+                private const string EfCoreRegistration = ""// Hello From {{ClassName}}.{{FieldName}}"";
+            }
+
+            public partial class TemplateTarget
+            {
+                [EncapsulatedCollection]
+                private readonly List<string> names = new(), addresses = new(), books = new();
+            }
+
+            public partial class OtherTarget
+            {
+                [EncapsulatedCollection]
+                private readonly List<string> names = new();
+            }
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task TwoValidGenerators_WithUsageAndIdentifiers_References_GeneratesOutput()
     {
         var source = @"

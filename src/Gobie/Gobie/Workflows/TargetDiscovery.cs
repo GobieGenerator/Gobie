@@ -62,7 +62,8 @@ public class TargetDiscovery
         {
             if (template.GlobalTemplate.Count == 0) continue;
 
-            if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
+            var cn = template.AttributeData.AttributeIdentifier.ClassName;
+            if (ctypeName == cn || ctypeName == "Gobie." + cn)
             {
                 var at = new AssemblyTargetAndTemplateData(template.AttributeData.DefinitionIdentifier.ClassName, template.GlobalTemplate[0].TemplateName, template.GlobalTemplate[0].Template);
                 return new(at);
@@ -84,7 +85,7 @@ public class TargetDiscovery
     }
 
     private static DataOrDiagnostics<ImmutableArray<MemberTargetAndTemplateData>> GetTargetsOrDiagnostics(
-            MemberDeclarationSyntax? mds,
+        MemberDeclarationSyntax? mds,
         ImmutableArray<UserGeneratorTemplateData>? templates,
         Compilation compilation,
         CancellationToken ct)
