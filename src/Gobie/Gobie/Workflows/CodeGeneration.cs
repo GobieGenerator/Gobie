@@ -3,6 +3,8 @@
 using Gobie.Models.Unions;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 public static class CodeGeneration
 {
@@ -10,7 +12,40 @@ public static class CodeGeneration
     {
         foreach (var source in sources)
         {
-            spc.AddSource(source.HintName, source.Code);
+            spc.AddSource(Sanatize(source.HintName), source.Code);
+        }
+
+        static string Sanatize(string rawHintName)
+        {
+            // Simplified and adapted from the code that validates the hintname. Replaces any
+            // illegal characters with an underscore.
+            var sb = new StringBuilder();
+            foreach (var c in rawHintName)
+            {
+                if (char.IsLetterOrDigit(c)
+                    || c == '.'
+                    || c == ','
+                    || c == '-'
+                    || c == '+'
+                    || c == '`'
+                    || c == '_'
+                    || c == ' '
+                    || c == '('
+                    || c == ')'
+                    || c == '['
+                    || c == ']'
+                    || c == '{'
+                    || c == '}')
+                {
+                    sb.Append(c);
+                }
+                else
+                {
+                    sb.Append('_');
+                }
+            }
+
+            return sb.ToString();
         }
     }
 
