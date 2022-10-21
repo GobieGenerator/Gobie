@@ -238,19 +238,19 @@ public class GlobalGen
         return TestHelper.Verify(source);
     }
 
-    [Test]
-    public Task TwoValidGenerators_WithUsageAndIdentifiers_References_GeneratesOutput()
+    [TestCase("")]
+    public Task ComplexExample_GeneratesOutput(string prefix)
     {
         var source = @"
         using Gobie;
-        [assembly: EFCoreRegistration]
-        [assembly: OtherGlobal]
+        [assembly: [ATTPREFIX]EFCoreRegistration]
+        [assembly: [ATTPREFIX]OtherGlobal]
         namespace SomeNamespace
         {
             // ============= First Generator ============
             public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
             {
-                [GobieGlobalFileTemplate(""EFCoreRegistration"")]
+                [[ATTPREFIX]GobieGlobalFileTemplate(""EFCoreRegistration"")]
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
@@ -272,32 +272,32 @@ public class GlobalGen
 
             public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
             {
-                [GobieTemplate]
+                [[ATTPREFIX]GobieTemplate]
                 private const string ReadonlyCollection = ""public IEnumerable<{{FieldGenericType}}> {{FieldName : pascal}} => {{FieldName}}.AsReadOnly(); // Encapsulating {{FieldType}}"";
 
-                [GobieGlobalChildTemplate(""EFCoreRegistration"")]
+                [[ATTPREFIX]GobieGlobalChildTemplate(""EFCoreRegistration"")]
                 private const string EfCoreRegistration = ""// Hello EFCoreRegistration From {{ClassName}}.{{FieldName}}"";
 
-                [GobieGlobalChildTemplate(""OtherGlobal"")]
+                [[ATTPREFIX]GobieGlobalChildTemplate(""OtherGlobal"")]
                 private const string OtherRegistration = ""// Hello OtherGlobal From {{ClassName}}.{{FieldName}}"";
             }
 
             public partial class TemplateTarget
             {
-                [EncapsulatedCollection]
+                [[ATTPREFIX]EncapsulatedCollection]
                 private readonly List<string> names = new(), addresses = new(), books = new();
             }
 
             public partial class OtherTarget
             {
-                [EncapsulatedCollection]
+                [[ATTPREFIX]EncapsulatedCollection]
                 private readonly List<string> names = new();
             }
 
             // ============= Second Generator ============
             public sealed class OtherGlobalGenerator : GobieGlobalGenerator
             {
-                [GobieGlobalFileTemplate(""OtherGlobal"")]
+                [[ATTPREFIX]GobieGlobalFileTemplate(""OtherGlobal"")]
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
@@ -318,6 +318,7 @@ public class GlobalGen
             }
         }";
 
+        source = source.Replace("[ATTPREFIX]", prefix);
         return TestHelper.Verify(source);
     }
 }
