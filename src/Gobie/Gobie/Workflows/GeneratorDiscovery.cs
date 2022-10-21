@@ -133,8 +133,10 @@ public static class GeneratorDiscovery
 
             foreach (AttributeSyntax att in field.AttributeLists.SelectMany(x => x.Attributes))
             {
-                var a = ((IdentifierNameSyntax)att.Name).Identifier;
-                if (a.Text == templateName)
+                var name = SyntaxHelpers.GetName(att.Name);
+                if (name is null) { continue; }
+
+                if (name == templateName)
                 {
                     foreach (var variable in field.Declaration.Variables)
                     {

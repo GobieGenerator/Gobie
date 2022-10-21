@@ -28,6 +28,16 @@
             return null;
         }
 
+        public static string? GetName(NameSyntax node)
+        {
+            return node switch
+            {
+                IdentifierNameSyntax i => i.Identifier.Text,
+                QualifiedNameSyntax q => q.Right.Identifier.Text,
+                _ => null,
+            };
+        }
+
         ////internal static bool ClassInheritsFrom(Compilation compilation, ClassDeclarationSyntax c, string targetName)
         ////{
         ////    var sm = compilation.GetSemanticModel(c.SyntaxTree);

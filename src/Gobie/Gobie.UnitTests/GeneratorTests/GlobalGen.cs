@@ -239,6 +239,8 @@ public class GlobalGen
     }
 
     [TestCase("")]
+    [TestCase("Gobie.")]
+    [TestCase("global::Gobie.")]
     public Task ComplexExample_GeneratesOutput(string prefix)
     {
         var source = @"
