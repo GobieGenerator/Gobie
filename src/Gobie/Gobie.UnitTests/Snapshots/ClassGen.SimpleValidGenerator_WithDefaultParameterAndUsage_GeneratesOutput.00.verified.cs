@@ -5,14 +5,14 @@ namespace Gobie
     /// run <see cref = "Gobie.NamePropertyGenerator"/> to run. </summary>
     public sealed class NamePropertyAttribute : global::Gobie.GobieClassGeneratorAttribute
     {
-        public NamePropertyAttribute(string initialName, int id = 2048234)
+        public NamePropertyAttribute(string initialName, int person_Id = 2048234)
         {
             this.InitialName = initialName;
-            this.Id = id;
+            this.Person_Id = person_Id;
         }
 
         public string InitialName { get; }
 
-        public int Id { get; }
+        public int Person_Id { get; }
     }
 }

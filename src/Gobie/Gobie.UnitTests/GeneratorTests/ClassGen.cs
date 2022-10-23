@@ -466,13 +466,13 @@ public class ClassGen
         public sealed class NamePropertyGenerator : GobieClassGenerator
         {
             [GobieTemplate]
-            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Person_Id}}{{^Person_Id}}Numberless{{/Person_Id}}\"";"";
 
             [Required(1)]
             public string InitialName { get; set; }
 
             [Required(2)]
-            public int Id { get; set; } = 2048234;
+            public int Person_Id { get; set; } = 2048234;
         }
 
         [NameProperty(""Mike"")]
