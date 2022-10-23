@@ -76,9 +76,7 @@ public class Mustache
             {
                 AddOrCombine(tokens, new Token(i, i, TokenType.Whitespace));
             }
-            else if (char.IsNumber(template[i])
-                     || char.IsLetter(template[i])
-                     || template[i] == '_')
+            else if (char.IsLetterOrDigit(template[i]) || template[i] == '_')
             {
                 AddOrCombine(tokens, new Token(i, i, TokenType.Identifier));
             }
@@ -478,12 +476,9 @@ public class Mustache
                 {
                     return text;
                 }
-                else if (text.Length == 1)
-                {
-                    return char.ToUpperInvariant(text[0]).ToString();
-                }
 
-                return char.ToUpperInvariant(text[0]) + text.Substring(1);
+                return char.ToUpperInvariant(text[0]) +
+                    (text.Length > 1 ? text.Substring(1) : string.Empty);
             }
 
             static string ToCamel(string text)
@@ -492,12 +487,9 @@ public class Mustache
                 {
                     return text;
                 }
-                else if (text.Length == 1)
-                {
-                    return char.ToLowerInvariant(text[0]).ToString();
-                }
 
-                return char.ToLowerInvariant(text[0]) + text.Substring(1);
+                return char.ToLowerInvariant(text[0]) +
+                    (text.Length > 1 ? text.Substring(1) : string.Empty);
             }
         }
     }
@@ -692,9 +684,9 @@ public class Mustache
 
         public TemplateSyntaxType Type { get; }
 
-        public string LiteralText { get; } = string.Empty;
+        public string LiteralText { get; }
 
-        public string Identifier { get; } = string.Empty;
+        public string Identifier { get; }
 
         public FormatSetting Format { get; }
 
