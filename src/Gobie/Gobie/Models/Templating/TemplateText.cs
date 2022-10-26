@@ -55,7 +55,6 @@ public readonly struct TemplateText
             }
         }
 
-        //probably badly wrong here. We need to use start to know when to stop somehow. By decrementing?
         var escapeCharCount = 0;
         if (isVerbatim == false)
         {
