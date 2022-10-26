@@ -533,4 +533,31 @@ public class ClassGen
 
         return TestHelper.Verify(source);
     }
+
+    [Ignore("Need to verify this happens in regular code. Doesn't seem to have a problem here.")]
+    [Test]
+    public Task SimpleValidGenerator_WithNullParameterUsage_GenOutsideNamespace_GeneratesOutput()
+    {
+        var source = @"
+        using Gobie;
+
+        public sealed class NamePropertyGenerator : GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
+
+            [Required(1)]
+            public string InitialName { get; set; }
+
+            public string Id { get; set; }
+        }
+
+        namespace SomeNamespace {
+            [NameProperty(null, Id = null)]
+            public partial class TemplateTarget
+            { }
+        }";
+
+        return TestHelper.Verify(source);
+    }
 }
