@@ -95,4 +95,19 @@ public class DiagnosticErrorsCorrectLocInTemplates
 
         return TestHelper.Verify(source);
     }
+
+    [Test]
+    public Task BadTagWithLeadingTabs()
+    {
+        // Tabs, unsurprisingly, are counted as single characters.
+
+        var source =
+        "public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator \r\n" +
+        "{ \r\n" +
+        "    [GobieTemplate]\r\n" +
+        "\t\tprivate const string EncapsulatedCollection = \"public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();\";\r\n" +
+        "}";
+
+        return TestHelper.Verify(source);
+    }
 }
