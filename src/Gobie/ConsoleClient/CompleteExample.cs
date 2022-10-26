@@ -15,7 +15,7 @@ public enum AuthorTrigger
 [GobieGeneratorName("EFCoreRegistrationAttribute", Namespace = "ConsoleClient")]
 public sealed class EFCoreRegistrationGenerator : GobieGlobalGenerator
 {
-    [GobieGlobalFileTemplate("EFCoreRegistrationGenerator", "EFCoreRegistration")]
+    [GobieGlobalFileTemplate("EFCoreRegistrationGenerator")]
     private const string KeyString = @"
             namespace SomeNamespace;
 
