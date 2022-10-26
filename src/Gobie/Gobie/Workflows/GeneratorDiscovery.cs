@@ -208,8 +208,16 @@ public static class GeneratorDiscovery
             if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
             {
                 var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass?.Name == attributeName);
-                var fn = ad.ConstructorArguments[0].Value;
-                return (fn.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
+
+                if (ad.ConstructorArguments.Length == 0)
+                {
+                    // NOTE, this happens when the args dont match the method signature (extra,
+                    // missing, wrong type). So we rely on Roslyn to show errors to the user.
+                    return null;
+                }
+
+                var arg = ad.ConstructorArguments[0].Value;
+                return (arg!.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
             }
         }
 
