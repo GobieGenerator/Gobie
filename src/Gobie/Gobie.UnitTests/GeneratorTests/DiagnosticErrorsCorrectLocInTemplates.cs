@@ -63,7 +63,7 @@ public class DiagnosticErrorsCorrectLocInTemplates
         public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
         {
             [GobieTemplate]
-            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> \r\n\n \n{{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();\n\n"";
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> \r\n \n{{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();\n\n"";
         }";
 
         return TestHelper.Verify(source);
