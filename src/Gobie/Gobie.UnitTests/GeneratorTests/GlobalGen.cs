@@ -17,7 +17,7 @@ public class GlobalGen
             private const string KeyString = @""
             namespace SomeNamespace;
 
-            public sealed static class EFCoreRegistration
+            public static class EFCoreRegistration
             {
                 public static void Register()
                 {
@@ -44,7 +44,7 @@ public class GlobalGen
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
-                public sealed static class EFCoreRegistration
+                public static class EFCoreRegistration
                 {
                     public static void Register()
                     {
@@ -72,7 +72,7 @@ public class GlobalGen
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
-                public sealed static class EFCoreRegistration
+                public static class EFCoreRegistration
                 {
                     public static void Register()
                     {
@@ -107,7 +107,7 @@ public class GlobalGen
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
-                public sealed static class EFCoreRegistration
+                public static class EFCoreRegistration
                 {
                     public static void Register()
                     {
@@ -141,7 +141,7 @@ public class GlobalGen
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
-                public sealed static class EFCoreRegistration
+                public static class EFCoreRegistration
                 {
                     public static void Register()
                     {
@@ -197,7 +197,7 @@ public class GlobalGen
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
-                public sealed static class EFCoreRegistration
+                public static class EFCoreRegistration
                 {
                     public static void Register()
                     {
@@ -256,7 +256,7 @@ public class GlobalGen
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
-                public sealed static class EFCoreRegistration
+                public static class EFCoreRegistration
                 {
                     public static void Register()
                     {
@@ -303,7 +303,7 @@ public class GlobalGen
                 private const string KeyString = @""
                 namespace SomeNamespace;
 
-                public sealed static class OtherGlobal
+                public static class OtherGlobal
                 {
                     public static void Register()
                     {

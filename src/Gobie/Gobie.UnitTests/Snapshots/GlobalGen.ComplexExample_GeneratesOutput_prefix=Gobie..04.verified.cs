@@ -1,6 +1,6 @@
 ﻿//HintName: OtherGlobal.g.cs
 namespace SomeNamespace;
-public sealed static class OtherGlobal
+public static class OtherGlobal
 {
     public static void Register()
     {

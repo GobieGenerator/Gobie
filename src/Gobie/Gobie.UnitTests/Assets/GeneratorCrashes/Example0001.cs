@@ -17,7 +17,7 @@ namespace SomeNamespace
         private const string KeyString = @"
             namespace SomeNamespace;
 
-            public sealed static class EFCoreRegistration
+            public static class EFCoreRegistration
             {
                 public static void Register(Microsoft.EntityFrameworkCore.ModelBuilder mb)
                 {
