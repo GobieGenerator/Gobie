@@ -110,4 +110,75 @@ public class DiagnosticErrorsCorrectLocInTemplates
 
         return TestHelper.Verify(source);
     }
+
+    [Test]
+    public Task MultiLineRawStringLiteral_BadTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = """"""
+                 public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();
+"""""";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task MultiLineRawStringLiteral_Indenting_BadTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = """"""
+                 public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();
+                 """""";  // <-Removes leading spaces from string contents
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task MultiLineRawStringLiteral_ExtraQuotes_BadTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = """"""""""
+                 public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();
+                 """""""""";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task SingleLineRawStringLiteral_BadTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = """"""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();"""""";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task SingleLineRawStringLiteral_ExtraQuotes_BadTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = """"""""""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();"""""""""";
+        }";
+
+        return TestHelper.Verify(source);
+    }
 }

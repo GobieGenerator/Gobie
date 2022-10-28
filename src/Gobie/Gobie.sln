@@ -9,7 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClient", "ConsoleCli
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gobie.Attributes", "Gobie.Attributes\Gobie.Attributes.csproj", "{D8A18896-B625-43A5-9133-7C974D3AAB22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gobie.UnitTests", "Gobie.UnitTests\Gobie.UnitTests.csproj", "{0BBFDE67-C5EF-46F0-9205-5B6DC0CB499D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gobie.UnitTests", "Gobie.UnitTests\Gobie.UnitTests.csproj", "{0BBFDE67-C5EF-46F0-9205-5B6DC0CB499D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{949E4E01-22F1-4CAE-9079-A443CD9118B4}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

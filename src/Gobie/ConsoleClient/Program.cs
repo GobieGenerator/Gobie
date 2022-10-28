@@ -32,6 +32,14 @@ namespace ConsoleClient
         [GobieTemplate]
         private const string EncapsulatedCollection2 =
             "interpolated const \r\n{{EncapsulatedCollection : pascal}} ";
+
+        [GobieTemplate]
+        private const string NameOther = """interpolated const {{EncapsulatedCollection : pascal}}""";
+
+        [GobieTemplate]
+        private const string Name = """
+            interpolated const {{EncapsulatedCollection : pascal}}
+            """;
     }
 
     ////public sealed class UserDefined3Generator : Gobie.GobieClassGenerator
