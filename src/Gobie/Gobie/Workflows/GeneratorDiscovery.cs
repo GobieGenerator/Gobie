@@ -136,36 +136,38 @@ public static class GeneratorDiscovery
                 var name = SyntaxHelpers.GetName(att.Name);
                 if (name is null) { continue; }
 
-                if (name == templateName)
+                if (name != templateName)
                 {
-                    foreach (var variable in field.Declaration.Variables)
-                    {
-                        var model = compliation.GetSemanticModel(field.SyntaxTree);
-                        var fieldSymbol = model.GetDeclaredSymbol(variable);
-                        var eqSyntax = variable.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
+                    continue;
+                }
 
-                        if (eqSyntax.ChildNodes().OfType<BinaryExpressionSyntax>().FirstOrDefault() is BinaryExpressionSyntax bes)
+                foreach (var variable in field.Declaration.Variables)
+                {
+                    var model = compliation.GetSemanticModel(field.SyntaxTree);
+                    var fieldSymbol = model.GetDeclaredSymbol(variable);
+                    var eqSyntax = variable.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
+
+                    if (eqSyntax.ChildNodes().OfType<BinaryExpressionSyntax>().FirstOrDefault() is BinaryExpressionSyntax bes)
+                    {
+                        diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsConcatenatedString(), bes.GetLocation()));
+                        goto DoneWithField;
+                    }
+                    else if (eqSyntax is not null && fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                    {
+                        if (eqSyntax.ChildNodes().OfType<InterpolatedStringExpressionSyntax>().FirstOrDefault() is InterpolatedStringExpressionSyntax i)
                         {
-                            diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsConcatenatedString(), bes.GetLocation()));
+                            diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsInterpolatedString(), i.GetLocation()));
                             goto DoneWithField;
                         }
-                        else if (eqSyntax is not null && fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                        else if (eqSyntax.ChildNodes().OfType<LiteralExpressionSyntax>().FirstOrDefault() is LiteralExpressionSyntax l)
                         {
-                            if (eqSyntax.ChildNodes().OfType<InterpolatedStringExpressionSyntax>().FirstOrDefault() is InterpolatedStringExpressionSyntax i)
+                            var outTemplate = templateBuilder(field, l, fs.ConstantValue.ToString());
+                            if (outTemplate is not null)
                             {
-                                diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsInterpolatedString(), i.GetLocation()));
-                                goto DoneWithField;
+                                templates.Add(outTemplate);
                             }
-                            else if (eqSyntax.ChildNodes().OfType<LiteralExpressionSyntax>().FirstOrDefault() is LiteralExpressionSyntax l)
-                            {
-                                var outTemplate = templateBuilder(field, l, fs.ConstantValue.ToString());
-                                if (outTemplate is not null)
-                                {
-                                    templates.Add(outTemplate);
-                                }
 
-                                goto DoneWithField;
-                            }
+                            goto DoneWithField;
                         }
                     }
                 }
