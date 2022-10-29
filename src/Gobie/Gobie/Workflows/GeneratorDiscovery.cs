@@ -325,7 +325,7 @@ public static class GeneratorDiscovery
         }
 
         var requiredPropertyNumber = 1;
-        foreach (PropertyDeclarationSyntax node in cds.ChildNodes().Where(x => x is PropertyDeclarationSyntax))
+        foreach (var node in cds.ChildNodes().OfType<PropertyDeclarationSyntax>())
         {
             ct.ThrowIfCancellationRequested();
 
