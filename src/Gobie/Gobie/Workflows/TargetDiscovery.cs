@@ -1,6 +1,6 @@
 ﻿namespace Gobie.Workflows;
 
-public class TargetDiscovery
+public static class TargetDiscovery
 {
     private const string ClassName = "ClassName";
     private const string ClassNamespace = "ClassNamespace";
@@ -53,14 +53,21 @@ public class TargetDiscovery
     {
         var d = new List<Diagnostic>();
 
+        if (attributeSyntax is null || templates is null)
+        {
+            return new(d);
+        }
+
         var attName = attributeSyntax.Name.ToFullString();
-        var ctypeName = attName + (attName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute");
+        var ctypeName = attName + (attName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? string.Empty : "Attribute");
 
         // TODO diagnostics if there are more than one template or similar.
-
         foreach (var template in templates)
         {
-            if (template.GlobalTemplate.Count == 0) continue;
+            if (template.GlobalTemplate.Count == 0)
+            {
+                continue;
+            }
 
             if (NameMatches(ctypeName, template.AttributeData.AttributeIdentifier.ClassName))
             {
@@ -70,9 +77,6 @@ public class TargetDiscovery
         }
 
         return new(d);
-
-        ////throw new NotImplementedException();
-        ////var at = new AssemblyTargetAndTemplateData()
     }
 
     private static bool NameMatches(string possiblyQualifiedName, string baseName)
@@ -129,7 +133,7 @@ public class TargetDiscovery
             // another whether that is even viable. And in that case we might be able to see the
             // full class when the dependant lib compiles.
             var attName = att.Name.ToFullString();
-            var ctypeName = attName + (attName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute");
+            var ctypeName = attName + (attName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? string.Empty : "Attribute");
 
             foreach (var template in templates)
             {
@@ -202,7 +206,6 @@ public class TargetDiscovery
                         if (intersections.Any())
                         {
                             // TODO output diagnostic about duplicate entry.
-
                             continue;
                         }
 
@@ -340,8 +343,12 @@ public class TargetDiscovery
             ct.ThrowIfCancellationRequested();
 
             var classAttName = SyntaxHelpers.GetName(item.Name);
-            if (classAttName is null) continue;
-            classAttName += classAttName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute";
+            if (classAttName is null)
+            {
+                continue;
+            }
+
+            classAttName += classAttName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? string.Empty : "Attribute";
 
             foreach (var gen in userGenerators)
             {

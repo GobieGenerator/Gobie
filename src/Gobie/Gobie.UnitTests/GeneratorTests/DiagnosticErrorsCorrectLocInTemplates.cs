@@ -99,8 +99,8 @@ public class DiagnosticErrorsCorrectLocInTemplates
     [Test]
     public Task BadTagWithLeadingTabs()
     {
-        // Tabs, unsurprisingly, are counted as single characters.
-
+        // Tabs, unsurprisingly, are counted as single characters. So no special handling was needed
+        // to correctly issue the diagnostic.
         var source =
         "public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator \r\n" +
         "{ \r\n" +

@@ -29,10 +29,10 @@ public static class GeneratorDiscovery
     }
 
     private static DataOrDiagnostics<UserGeneratorTemplateData> GetFullTemplateDeclaration(
-        (UserGeneratorAttributeData, Compilation) s,
+        (UserGeneratorAttributeData Data, Compilation Comp) s,
         CancellationToken ct)
     {
-        var (data, compilation) = (s.Item1, s.Item2);
+        var (data, compilation) = (s.Data, s.Comp);
         var diagnostics = new List<Diagnostic>();
 
         var model = compilation.GetSemanticModel(data.ClassDeclarationSyntax.SyntaxTree);
@@ -46,19 +46,19 @@ public static class GeneratorDiscovery
         var templates = GetTemplates("GobieTemplate", (_, l, t) => new TemplateText(l, t), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
         var templateDefs = AccumulateTemplates(templates, x => x, (_, x) => x, diagnostics, ct);
 
-        var fileTemplates = GetTemplates("GobieFileTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieFileTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
-        var fileTemplateDefs = AccumulateTemplates(fileTemplates, x => x.Value.template, (d, t) => new UserFileTemplateData(d.Value.attArg, t), diagnostics, ct);
+        var fileTemplates = GetTemplates("GobieFileTemplate", (f, l, _) => GetAttributeArgAndTemplate("GobieFileTemplateAttribute", f, l, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var fileTemplateDefs = AccumulateTemplates(fileTemplates, x => x.Value.Template, (d, t) => new UserFileTemplateData(d.Value.AttArg, t), diagnostics, ct);
 
-        var globalChildTemplates = GetTemplates("GobieGlobalChildTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieGlobalChildTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
-        var globalChildTemplateDefs = AccumulateTemplates(globalChildTemplates, x => x.Value.template, (d, t) => new GlobalChildTemplateData(d.Value.attArg, t), diagnostics, ct);
+        var globalChildTemplates = GetTemplates("GobieGlobalChildTemplate", (f, l, _) => GetAttributeArgAndTemplate("GobieGlobalChildTemplateAttribute", f, l, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var globalChildTemplateDefs = AccumulateTemplates(globalChildTemplates, x => x.Value.Template, (d, t) => new GlobalChildTemplateData(d.Value.AttArg, t), diagnostics, ct);
 
-        var globalTemplates = GetTemplates("GobieGlobalFileTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieGlobalFileTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var globalTemplates = GetTemplates("GobieGlobalFileTemplate", (f, l, _) => GetAttributeArgAndTemplate("GobieGlobalFileTemplateAttribute", f, l, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
         var globalTemplateDefs = new List<GlobalTemplateData>();
         foreach (var template in globalTemplates.Where(x => x is not null))
         {
             ct.ThrowIfCancellationRequested();
 
-            var res = Mustache.Parse(template!.Value.template.Text.AsSpan(), template!.Value.template.GetLocationAt);
+            var res = Mustache.Parse(template!.Value.Template.Text.AsSpan(), template!.Value.Template.GetLocationAt);
             if (res.Diagnostics is not null)
             {
                 diagnostics.AddRange(res.Diagnostics);
@@ -69,15 +69,13 @@ public static class GeneratorDiscovery
                 // have a single identifier node for ChildContent. Logical nodes which use
                 // ChildContent are allowed, though the use case isn't clear.
                 if (t.Identifiers.Count > 1 ||
-                    t.Identifiers.Count == 1 &&
-                      ((t.Identifiers.First() != "ChildContent") ||
-                       (t.Syntax.CountNodes(x => x.Type == Mustache.TemplateSyntaxType.Identifier) != 1)))
+                    (t.Identifiers.Count == 1 && ((t.Identifiers.First() != "ChildContent") || (t.Syntax.CountNodes(x => x.Type == Mustache.TemplateSyntaxType.Identifier) != 1))))
                 {
-                    diagnostics.Add(Diagnostic.Create(Diagnostics.GobieGlobalTemplateIdentifierIssue, template.Value.template.GetLocation()));
+                    diagnostics.Add(Diagnostic.Create(Diagnostics.GobieGlobalTemplateIdentifierIssue, template.Value.Template.GetLocation()));
                     continue;
                 }
 
-                globalTemplateDefs.Add(new(template.Value.attArg, t));
+                globalTemplateDefs.Add(new(template.Value.AttArg, t));
             }
         }
 
@@ -134,9 +132,7 @@ public static class GeneratorDiscovery
             foreach (AttributeSyntax att in field.AttributeLists.SelectMany(x => x.Attributes))
             {
                 var name = SyntaxHelpers.GetName(att.Name);
-                if (name is null) { continue; }
-
-                if (name != templateName)
+                if (name is null || name != templateName)
                 {
                     continue;
                 }
@@ -177,7 +173,12 @@ public static class GeneratorDiscovery
         return templates;
     }
 
-    private static List<TResult> AccumulateTemplates<TData, TResult>(IEnumerable<TData> templates, Func<TData, TemplateText> selector, Func<TData, Mustache.TemplateDefinition, TResult> map, List<Diagnostic> diagnostics, CancellationToken ct)
+    private static List<TResult> AccumulateTemplates<TData, TResult>(
+        IEnumerable<TData> templates,
+        Func<TData, TemplateText> selector,
+        Func<TData, Mustache.TemplateDefinition, TResult> map,
+        List<Diagnostic> diagnostics,
+        CancellationToken ct)
     {
         var templateDefs = new List<TResult>();
         foreach (var template in templates)
@@ -199,7 +200,11 @@ public static class GeneratorDiscovery
         return templateDefs;
     }
 
-    private static (string attArg, TemplateText template)? GetAttributeArgAndTemplate(string attributeName, FieldDeclarationSyntax f, LiteralExpressionSyntax l, string t, Compilation compilation)
+    private static (string AttArg, TemplateText Template)? GetAttributeArgAndTemplate(
+        string attributeName,
+        FieldDeclarationSyntax f,
+        LiteralExpressionSyntax l,
+        Compilation compilation)
     {
         foreach (var variable in f.Declaration.Variables)
         {
@@ -285,10 +290,9 @@ public static class GeneratorDiscovery
         {
             ct.ThrowIfCancellationRequested();
 
-            var b = attribute?.AttributeClass?.ToString();
             if (attribute?.AttributeClass?.ToString() == "Gobie.GobieGeneratorNameAttribute")
             {
-                if (attribute!.ConstructorArguments.Count() == 0)
+                if (attribute!.ConstructorArguments.Length == 0)
                 {
                     continue;
                 }
