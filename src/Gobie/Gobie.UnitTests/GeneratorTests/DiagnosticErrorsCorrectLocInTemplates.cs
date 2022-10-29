@@ -149,7 +149,8 @@ public class DiagnosticErrorsCorrectLocInTemplates
         {
             [GobieTemplate]
             private const string EncapsulatedCollection = """"""
-                 // Some comment text....
+                 //// Some comment text....
+                 //// Even More text...
                  public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();
                  """""";  // <-Removes leading spaces from string contents
         }";

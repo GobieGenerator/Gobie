@@ -83,9 +83,11 @@ public readonly struct TemplateText
 
     private Location GetLocationAtFromMultiLineRaw(int start, int len)
     {
-        var a = fullText.Split(newLine, StringSplitOptions.None);
+        var lines = fullText.Split(newLine, StringSplitOptions.None);
+        var firstLineLength = lines[0].Length + 1;
         var padding = 0;
-        var lastLine = a.Last();
+        var targetRow = 0;
+        var lastLine = lines.Last();
         for (var i = 0; i < lastLine.Length; i++)
         {
             if (lastLine[i] == '"')
@@ -95,7 +97,18 @@ public readonly struct TemplateText
             }
         }
 
-        return Location.Create(tree, new TextSpan(span.Start + start + a[0].Length + 1 + padding, len));
+        var remainingChars = start - firstLineLength;
+        for (int i = 1; i < lines.Length; i++)
+        {
+            targetRow++;
+            remainingChars -= lines[i].Length + 1 - padding;
+            if (remainingChars <= 0)
+            {
+                break;
+            }
+        }
+
+        return Location.Create(tree, new TextSpan(span.Start + start + firstLineLength + (padding * targetRow), len));
     }
 
     private Location GetLocationAtFromNormalString(int start, int len)
