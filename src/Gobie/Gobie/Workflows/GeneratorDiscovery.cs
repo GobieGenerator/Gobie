@@ -149,7 +149,7 @@ public static class GeneratorDiscovery
                             diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsConcatenatedString(), bes.GetLocation()));
                             goto DoneWithField;
                         }
-                        else if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null && eqSyntax is not null)
+                        else if (eqSyntax is not null && fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
                         {
                             if (eqSyntax.ChildNodes().OfType<InterpolatedStringExpressionSyntax>().FirstOrDefault() is InterpolatedStringExpressionSyntax i)
                             {
@@ -163,6 +163,7 @@ public static class GeneratorDiscovery
                                 {
                                     templates.Add(outTemplate);
                                 }
+
                                 goto DoneWithField;
                             }
                         }
@@ -170,7 +171,7 @@ public static class GeneratorDiscovery
                 }
             }
 
-        DoneWithField:;
+DoneWithField:;
         }
 
         return templates;
@@ -384,7 +385,7 @@ public static class GeneratorDiscovery
                             node.Identifier.Text,
                             propertyType,
                             propertyInitalizer));
-        RequiredPropertyHandeled:;
+RequiredPropertyHandeled:;
         }
 
         diagnostics.AddRange(Duplicates(genData.RequiredParameters));
