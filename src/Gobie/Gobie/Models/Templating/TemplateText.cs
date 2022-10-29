@@ -5,14 +5,11 @@
 /// </summary>
 public readonly struct TemplateText
 {
+    private static readonly char[] newLine = new char[] { '\n' };
     private readonly string constantText;
-    private readonly SyntaxTree tree;
-
-    /// <summary>
-    /// Full text includes enclosing quotes, @ symbols and can even include escaped characters like
-    /// /n which are actually a new line in the constantText.
-    /// </summary>
     private readonly string fullText;
+    private readonly SyntaxTree tree;
+    private readonly SyntaxKind syntaxKind;
 
     private readonly TextSpan span;
 
@@ -21,6 +18,7 @@ public readonly struct TemplateText
         this.constantText = constantText;
         tree = literalExpressionSyntax.SyntaxTree;
         fullText = literalExpressionSyntax.Token.Text;
+        syntaxKind = literalExpressionSyntax.Token.Kind();
         span = literalExpressionSyntax.Span; //Span, but excluding leading trivia.
     }
 
@@ -35,8 +33,73 @@ public readonly struct TemplateText
         // the text the user intended to be output after escape characters or similar, and point
         // back to the orginal text so we can point at exact errors within the source code.
 
-        // TODO handle c#7 strings.
+        return syntaxKind switch
+        {
+            SyntaxKind.SingleLineRawStringLiteralToken => GetLocationAtFromSingleLineRaw(start, len),
+            SyntaxKind.MultiLineRawStringLiteralToken => GetLocationAtFromMultiLineRaw(start, len),
+            _ => GetLocationAtFromNormalString(start, len),
+        };
+    }
 
+    /// <summary>
+    /// Returns the location of the text from <see cref="Text"/>, along with leading and trailing
+    /// quotes, @ symbols...
+    /// </summary>
+    public Location GetLocation()
+    {
+        return Location.Create(tree, span);
+    }
+
+    private static bool IsEscape(ReadOnlySpan<char> chars) => chars switch
+    {
+        @"\'" => true,
+        @"\""" => true,
+        @"\\" => true,
+        @"\0" => true,
+        @"\a" => true,
+        @"\b" => true,
+        @"\f" => true,
+        @"\n" => true,
+        @"\r" => true,
+        @"\t" => true,
+        @"\v" => true,
+        // For now at least, deliberatly ignoring unicode escape chars.
+        _ => false,
+    };
+
+    private Location GetLocationAtFromSingleLineRaw(int start, int len)
+    {
+        // We start at 3, becaue raw single line must begin with at least 3 quotes.
+        for (var i = 3; i < fullText.Length; i++)
+        {
+            if (fullText[i] != '"')
+            {
+                return Location.Create(tree, new TextSpan(span.Start + start + i, len));
+            }
+        }
+
+        return GetLocation();
+    }
+
+    private Location GetLocationAtFromMultiLineRaw(int start, int len)
+    {
+        var a = fullText.Split(newLine, StringSplitOptions.None);
+        var padding = 0;
+        var lastLine = a.Last();
+        for (var i = 0; i < lastLine.Length; i++)
+        {
+            if (lastLine[i] == '"')
+            {
+                padding = i;
+                break;
+            }
+        }
+
+        return Location.Create(tree, new TextSpan(span.Start + start + a[0].Length + 1 + padding, len));
+    }
+
+    private Location GetLocationAtFromNormalString(int start, int len)
+    {
         var isVerbatim = false;
         var inQuotes = false;
 
@@ -77,30 +140,4 @@ public readonly struct TemplateText
         // This is right so long as the wrapped text does NOT have escaped char in it.
         return Location.Create(tree, new TextSpan(span.Start + stringContentsStart + start + escapeCharCount, len));
     }
-
-    /// <summary>
-    /// Returns the location of the text from <see cref="Text"/>, along with leading and trailing
-    /// quotes, @ symbols...
-    /// </summary>
-    public Location GetLocation()
-    {
-        return Location.Create(tree, span);
-    }
-
-    private bool IsEscape(ReadOnlySpan<char> chars) => chars switch
-    {
-        @"\'" => true,
-        @"\""" => true,
-        @"\\" => true,
-        @"\0" => true,
-        @"\a" => true,
-        @"\b" => true,
-        @"\f" => true,
-        @"\n" => true,
-        @"\r" => true,
-        @"\t" => true,
-        @"\v" => true,
-        // For now at least, deliberatly ignoring unicode escape chars.
-        _ => false,
-    };
 }

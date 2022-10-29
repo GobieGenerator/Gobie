@@ -142,6 +142,22 @@ public class DiagnosticErrorsCorrectLocInTemplates
     }
 
     [Test]
+    public Task MultiLineRawStringLiteral_IndentingMultipleLines_BadTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = """"""
+                 // Some comment text....
+                 public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : BADTAG}} => {{FieldName}}.AsReadOnly();
+                 """""";  // <-Removes leading spaces from string contents
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task MultiLineRawStringLiteral_ExtraQuotes_BadTag()
     {
         var source = @"
