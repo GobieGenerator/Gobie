@@ -150,14 +150,14 @@ public static class GeneratorDiscovery
                     if (eqSyntax.ChildNodes().OfType<BinaryExpressionSyntax>().FirstOrDefault() is BinaryExpressionSyntax bes)
                     {
                         diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsConcatenatedString(), bes.GetLocation()));
-                        goto DoneWithField;
+                        break;
                     }
                     else if (eqSyntax is not null && fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
                     {
                         if (eqSyntax.ChildNodes().OfType<InterpolatedStringExpressionSyntax>().FirstOrDefault() is InterpolatedStringExpressionSyntax i)
                         {
                             diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsInterpolatedString(), i.GetLocation()));
-                            goto DoneWithField;
+                            break;
                         }
                         else if (eqSyntax.ChildNodes().OfType<LiteralExpressionSyntax>().FirstOrDefault() is LiteralExpressionSyntax l)
                         {
@@ -167,13 +167,11 @@ public static class GeneratorDiscovery
                                 templates.Add(outTemplate);
                             }
 
-                            goto DoneWithField;
+                            break;
                         }
                     }
                 }
             }
-
-DoneWithField:;
         }
 
         return templates;
