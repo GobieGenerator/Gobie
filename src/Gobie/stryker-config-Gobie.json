@@ -7,7 +7,10 @@
         "ignore-methods": [
             "Console.Write*",  // Ignores all methods starting with Write in the class Console
             "*Exception.ctor", // Ignores all exception constructors
-            "Log.*"           // Ignores all logging
-        ]
+            "Log.*"          ,// Ignores all logging
+            "First"          ,// Mutation to FirstOrDefault not too important.
+            "Single"          // Mutation to SingleOrDefault not too important.
+        ],
+        "language-version": "Preview"
     }
 }

@@ -1,16 +1,16 @@
 ﻿{
   "Diagnostics": [
     {
-      "Id": "GB0010",
+      "Id": "GB1004",
       "Title": "Gobie",
       "Severity": "Error",
       "WarningLevel": 0,
       "Location": ": (3,36)-(3,56)",
       "Description": "",
-      "HelpLink": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1004",
       "MessageFormat": "Classes that declare user templates cannot be partial. We don't current support user templates having source in multiple files.",
       "Message": "Classes that declare user templates cannot be partial. We don't current support user templates having source in multiple files.",
-      "Category": "Gobie Usage",
+      "Category": "Gobie",
       "CustomTags": []
     }
   ]

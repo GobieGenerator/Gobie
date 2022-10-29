@@ -1,0 +1,17 @@
+﻿{
+  "Diagnostics": [
+    {
+      "Id": "GB1021",
+      "Title": "Gobie",
+      "Severity": "Error",
+      "WarningLevel": 0,
+      "Location": ": (4,58)-(4,92)",
+      "Description": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1021",
+      "MessageFormat": "Template strings cannot be interpolated. We currently can't support them. Also, interoploating template strings may be a code smell.",
+      "Message": "Template strings cannot be interpolated. We currently can't support them. Also, interoploating template strings may be a code smell.",
+      "Category": "Gobie",
+      "CustomTags": []
+    }
+  ]
+}

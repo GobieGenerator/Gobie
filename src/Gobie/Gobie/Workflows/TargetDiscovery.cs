@@ -62,9 +62,9 @@ public class TargetDiscovery
         {
             if (template.GlobalTemplate.Count == 0) continue;
 
-            if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
+            if (NameMatches(ctypeName, template.AttributeData.AttributeIdentifier.ClassName))
             {
-                var at = new AssemblyTargetAndTemplateData(template.AttributeData.DefinitionIdentifier.ClassName, template.GlobalTemplate[0].Template);
+                var at = new AssemblyTargetAndTemplateData(template.AttributeData.DefinitionIdentifier.ClassName, template.GlobalTemplate[0].TemplateName, template.GlobalTemplate[0].Template);
                 return new(at);
             }
         }
@@ -73,6 +73,13 @@ public class TargetDiscovery
 
         ////throw new NotImplementedException();
         ////var at = new AssemblyTargetAndTemplateData()
+    }
+
+    private static bool NameMatches(string possiblyQualifiedName, string baseName)
+    {
+        return possiblyQualifiedName == baseName ||
+            possiblyQualifiedName == "Gobie." + baseName ||
+            possiblyQualifiedName == "global::Gobie." + baseName;
     }
 
     private static (AttributeSyntax, ImmutableArray<UserGeneratorTemplateData>)? FindProbableAssemblyTargets(
@@ -84,7 +91,7 @@ public class TargetDiscovery
     }
 
     private static DataOrDiagnostics<ImmutableArray<MemberTargetAndTemplateData>> GetTargetsOrDiagnostics(
-            MemberDeclarationSyntax? mds,
+        MemberDeclarationSyntax? mds,
         ImmutableArray<UserGeneratorTemplateData>? templates,
         Compilation compilation,
         CancellationToken ct)
@@ -128,7 +135,7 @@ public class TargetDiscovery
             {
                 ct.ThrowIfCancellationRequested();
 
-                if (ctypeName == template.AttributeData.AttributeIdentifier.ClassName)
+                if (NameMatches(ctypeName, template.AttributeData.AttributeIdentifier.ClassName))
                 {
                     // First thing we do, now that we know we have work to do, is to initialize data
                     // we will use for every template we are generating.
@@ -331,7 +338,8 @@ public class TargetDiscovery
         foreach (var item in mds.AttributeLists.SelectMany(x => x.Attributes))
         {
             ct.ThrowIfCancellationRequested();
-            var classAttName = (item.Name as IdentifierNameSyntax)?.Identifier.Text;
+
+            var classAttName = SyntaxHelpers.GetName(item.Name);
             if (classAttName is null) continue;
             classAttName += classAttName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? "" : "Attribute";
 

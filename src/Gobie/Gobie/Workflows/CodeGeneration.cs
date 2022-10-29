@@ -3,6 +3,8 @@
 using Gobie.Models.Unions;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 public static class CodeGeneration
 {
@@ -10,7 +12,40 @@ public static class CodeGeneration
     {
         foreach (var source in sources)
         {
-            spc.AddSource(source.HintName, source.Code);
+            spc.AddSource(Sanatize(source.HintName), source.Code);
+        }
+
+        static string Sanatize(string rawHintName)
+        {
+            // Simplified and adapted from the code that validates the hintname. Replaces any
+            // illegal characters with an underscore.
+            var sb = new StringBuilder();
+            foreach (var c in rawHintName)
+            {
+                if (char.IsLetterOrDigit(c)
+                    || c == '.'
+                    || c == ','
+                    || c == '-'
+                    || c == '+'
+                    || c == '`'
+                    || c == '_'
+                    || c == ' '
+                    || c == '('
+                    || c == ')'
+                    || c == '['
+                    || c == ']'
+                    || c == '{'
+                    || c == '}')
+                {
+                    sb.Append(c);
+                }
+                else
+                {
+                    sb.Append('_');
+                }
+            }
+
+            return sb.ToString();
         }
     }
 
@@ -91,10 +126,10 @@ public static class CodeGeneration
         {
             ct.ThrowIfCancellationRequested();
 
-            var hintName = $"{assemblyTemplate.GlobalGeneratorName}.g.cs";
+            var hintName = $"{assemblyTemplate.GeneratorLabel}.g.cs";
             var renderData = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
 
-            var code = globalTemplates.TryGetValue(assemblyTemplate.GlobalGeneratorName, out var sb) ? sb.ToString() : string.Empty;
+            var code = globalTemplates.TryGetValue(assemblyTemplate.GeneratorLabel, out var sb) ? sb.ToString() : string.Empty;
             renderData.Add("ChildContent", new Mustache.RenderData("ChildContent", code, code.Length > 0));
             var renderedTemplate = Mustache.RenderTemplate(assemblyTemplate.GlobalTemplate, renderData.ToImmutable());
             var fullCode = CSharpSyntaxTree.ParseText(renderedTemplate).GetRoot().NormalizeWhitespace().ToFullString();

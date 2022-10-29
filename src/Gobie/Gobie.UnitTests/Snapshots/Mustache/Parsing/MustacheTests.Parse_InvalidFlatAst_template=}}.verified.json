@@ -7,13 +7,13 @@
     },
     "Diagnostics": [
       {
-        "Id": "GB1001",
+        "Id": "GB1010",
         "Title": "Gobie",
         "Severity": "Error",
         "WarningLevel": 0,
         "Location": ": (0,0)-(0,0)",
         "Description": "",
-        "HelpLink": "",
+        "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1010",
         "MessageFormat": "The token '}}' was not expected. There is no corresponding open token",
         "Message": "The token '}}' was not expected. There is no corresponding open token",
         "Category": "Gobie",

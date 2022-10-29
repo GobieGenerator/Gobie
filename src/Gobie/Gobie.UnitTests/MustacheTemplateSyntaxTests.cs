@@ -8,7 +8,7 @@ public class MustacheTemplateSyntaxTests
     public void CountNodes_AllNodes_Succeeds(int expectedCount, string template)
     {
         // Keep in mind there is always a root node
-        var parse = Mustache.Parse(template);
+        var parse = Mustache.Parse(template, null);
         Assert.AreEqual(expectedCount, parse.Data?.Syntax.CountNodes(x => true));
     }
 
@@ -19,7 +19,7 @@ public class MustacheTemplateSyntaxTests
     public void CountNodes_LogicalNodes_Succeeds(int expectedCount, string template)
     {
         // Keep in mind there is always a root node
-        var parse = Mustache.Parse(template);
+        var parse = Mustache.Parse(template, null);
         Assert.AreEqual(expectedCount, parse.Data?.Syntax.CountNodes(
             x => x.Type is Mustache.TemplateSyntaxType.If or Mustache.TemplateSyntaxType.Not));
     }

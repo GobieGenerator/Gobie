@@ -1,29 +1,29 @@
 ﻿{
   "Diagnostics": [
     {
-      "Id": "GB0010",
+      "Id": "GB1004",
       "Title": "Gobie",
       "Severity": "Error",
       "WarningLevel": 0,
       "Location": ": (3,29)-(3,49)",
       "Description": "",
-      "HelpLink": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1004",
       "MessageFormat": "Classes that declare user templates cannot be partial. We don't current support user templates having source in multiple files.",
       "Message": "Classes that declare user templates cannot be partial. We don't current support user templates having source in multiple files.",
-      "Category": "Gobie Usage",
+      "Category": "Gobie",
       "CustomTags": []
     },
     {
-      "Id": "GB0011",
+      "Id": "GB1005",
       "Title": "Gobie",
       "Severity": "Error",
       "WarningLevel": 0,
       "Location": ": (3,29)-(3,49)",
       "Description": "",
-      "HelpLink": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1005",
       "MessageFormat": "Classes that declare user templates must be sealed. We don't currently support inheritance of user templates.",
       "Message": "Classes that declare user templates must be sealed. We don't currently support inheritance of user templates.",
-      "Category": "Gobie Usage",
+      "Category": "Gobie",
       "CustomTags": []
     }
   ]

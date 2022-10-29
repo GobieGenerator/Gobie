@@ -1,5 +1,7 @@
 ﻿namespace Gobie.Workflows;
 
+using Microsoft.CodeAnalysis;
+
 public static class GeneratorDiscovery
 {
     public static void GenerateAttributes(
@@ -15,7 +17,7 @@ public static class GeneratorDiscovery
     {
         return context.SyntaxProvider
             .CreateSyntaxProvider(
-                predicate: static (s, _) => IsClassDeclaration(s),
+                predicate: static (s, _) => s is ClassDeclarationSyntax,
                 transform: static (ctx, ct) => GetUserTemplate(ctx, ct))
             .Where(static x => x is not null)!;
     }
@@ -30,10 +32,10 @@ public static class GeneratorDiscovery
         (UserGeneratorAttributeData, Compilation) s,
         CancellationToken ct)
     {
-        var (data, compliation) = (s.Item1, s.Item2);
+        var (data, compilation) = (s.Item1, s.Item2);
         var diagnostics = new List<Diagnostic>();
 
-        var model = compliation.GetSemanticModel(data.ClassDeclarationSyntax.SyntaxTree);
+        var model = compilation.GetSemanticModel(data.ClassDeclarationSyntax.SyntaxTree);
         var symbol = model.GetDeclaredSymbol(data.ClassDeclarationSyntax);
 
         if (symbol is null)
@@ -41,47 +43,22 @@ public static class GeneratorDiscovery
             return new(diagnostics);
         }
 
-        var templates = GetTemplates(data.ClassDeclarationSyntax, compliation);
-        var templateDefs = new List<Mustache.TemplateDefinition>();
-        foreach (var template in templates)
-        {
-            ct.ThrowIfCancellationRequested();
+        var templates = GetTemplates("GobieTemplate", (_, l, t) => new TemplateText(l, t), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var templateDefs = AccumulateTemplates(templates, x => x, (_, x) => x, diagnostics, ct);
 
-            var res = Mustache.Parse(template.AsSpan());
-            if (res.Diagnostics is not null)
-            {
-                diagnostics.AddRange(res.Diagnostics);
-            }
-            else if (res.Data is not null)
-            {
-                templateDefs.Add(res.Data);
-            }
-        }
+        var fileTemplates = GetTemplates("GobieFileTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieFileTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var fileTemplateDefs = AccumulateTemplates(fileTemplates, x => x.Value.template, (d, t) => new UserFileTemplateData(d.Value.attArg, t), diagnostics, ct);
 
-        var globalChildTemplates = GetGlobalChildTemplates(data.ClassDeclarationSyntax, compliation);
-        var globalChildTemplateDefs = new List<GlobalChildTemplateData>();
-        foreach (var template in globalChildTemplates)
-        {
-            ct.ThrowIfCancellationRequested();
+        var globalChildTemplates = GetTemplates("GobieGlobalChildTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieGlobalChildTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
+        var globalChildTemplateDefs = AccumulateTemplates(globalChildTemplates, x => x.Value.template, (d, t) => new GlobalChildTemplateData(d.Value.attArg, t), diagnostics, ct);
 
-            var res = Mustache.Parse(template.template.AsSpan());
-            if (res.Diagnostics is not null)
-            {
-                diagnostics.AddRange(res.Diagnostics);
-            }
-            else if (res.Data is not null)
-            {
-                globalChildTemplateDefs.Add(new(template.generatorName, res.Data));
-            }
-        }
-
-        var globalTemplates = GetGlobalTemplates(data.ClassDeclarationSyntax, compliation, ct);
+        var globalTemplates = GetTemplates("GobieGlobalFileTemplate", (f, l, t) => GetAttributeArgAndTemplate("GobieGlobalFileTemplateAttribute", f, l, t, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
         var globalTemplateDefs = new List<GlobalTemplateData>();
-        foreach (var template in globalTemplates)
+        foreach (var template in globalTemplates.Where(x => x is not null))
         {
             ct.ThrowIfCancellationRequested();
 
-            var res = Mustache.Parse(template.template.AsSpan());
+            var res = Mustache.Parse(template!.Value.template.Text.AsSpan(), template!.Value.template.GetLocationAt);
             if (res.Diagnostics is not null)
             {
                 diagnostics.AddRange(res.Diagnostics);
@@ -89,35 +66,18 @@ public static class GeneratorDiscovery
             else if (res.Data is Mustache.TemplateDefinition t)
             {
                 // Here we apply special rules to global templates. The only allowable option is to
-                // have a single identifier node for ChildContent. Logical nodes are allowed if they
-                // work off of ChildContent, but the use case isn't clear.
+                // have a single identifier node for ChildContent. Logical nodes which use
+                // ChildContent are allowed, though the use case isn't clear.
                 if (t.Identifiers.Count > 1 ||
                     t.Identifiers.Count == 1 &&
                       ((t.Identifiers.First() != "ChildContent") ||
                        (t.Syntax.CountNodes(x => x.Type == Mustache.TemplateSyntaxType.Identifier) != 1)))
                 {
-                    diagnostics.Add(Diagnostic.Create(Errors.GobieGlobalTemplateIdentifierIssue, null));
+                    diagnostics.Add(Diagnostic.Create(Diagnostics.GobieGlobalTemplateIdentifierIssue, template.Value.template.GetLocation()));
                     continue;
                 }
 
-                globalTemplateDefs.Add(new(template.generatorName, template.fileName, t));
-            }
-        }
-
-        var fileTemplates = GetFileTemplates(data.ClassDeclarationSyntax, compliation);
-        var fileTemplateDefs = new List<UserFileTemplateData>();
-        foreach (var template in fileTemplates)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            var res = Mustache.Parse(template.template.AsSpan());
-            if (res.Diagnostics is not null)
-            {
-                diagnostics.AddRange(res.Diagnostics);
-            }
-            else if (res.Data is not null)
-            {
-                fileTemplateDefs.Add(new(template.fileName, res.Data));
+                globalTemplateDefs.Add(new(template.Value.attArg, t));
             }
         }
 
@@ -133,166 +93,137 @@ public static class GeneratorDiscovery
                      globalTemplateDefs,
                      globalChildTemplateDefs);
 
-        if(td.HasAnyTemplate == false)
+        if (td.HasAnyTemplate == false)
         {
             // Warn the user this won't do anything as is.
-            diagnostics.Add(Diagnostic.Create(Warnings.UserTemplateIsEmpty(td.AttributeData.DefinitionIdentifier.ClassName), null));
+            diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsEmpty(td.AttributeData.DefinitionIdentifier.ClassName), null));
         }
-
 
         return new(td, diagnostics);
     }
 
-    private static List<string> GetTemplates(ClassDeclarationSyntax cds, Compilation compliation)
-    {
-        var templates = new List<string>();
-
-        foreach (var child in cds.ChildNodes())
-        {
-            if (child is FieldDeclarationSyntax f)
-            {
-                foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
-                {
-                    var a = ((IdentifierNameSyntax)att.Name).Identifier;
-                    if (a.Text == "GobieTemplate")
-                    {
-                        foreach (var variable in f.Declaration.Variables)
-                        {
-                            var model = compliation.GetSemanticModel(f.SyntaxTree);
-                            var fieldSymbol = model.GetDeclaredSymbol(variable);
-
-                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
-                            {
-                                templates.Add(fs.ConstantValue.ToString());
-                                goto DoneWithField;
-                            }
-                        }
-                    }
-                }
-            }
-
-        DoneWithField:;
-        }
-
-        return templates;
-    }
-
-    private static List<(string fileName, string template)> GetFileTemplates(ClassDeclarationSyntax cds, Compilation compliation)
-    {
-        var templates = new List<(string fileName, string template)>();
-
-        foreach (var child in cds.ChildNodes())
-        {
-            if (child is FieldDeclarationSyntax f)
-            {
-                foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
-                {
-                    var a = ((IdentifierNameSyntax)att.Name).Identifier;
-                    if (a.Text == "GobieFileTemplate")
-                    {
-                        foreach (var variable in f.Declaration.Variables)
-                        {
-                            var model = compliation.GetSemanticModel(f.SyntaxTree);
-                            var fieldSymbol = model.GetDeclaredSymbol(variable);
-
-                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
-                            {
-                                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieFileTemplateAttribute");
-                                var fn = ad.ConstructorArguments[0].Value;
-                                templates.Add((fn.ToString(), fs.ConstantValue.ToString()));
-                                goto DoneWithField;
-                            }
-                        }
-                    }
-                }
-            }
-
-        DoneWithField:;
-        }
-
-        return templates;
-    }
-
-    private static List<(string generatorName, string template)> GetGlobalChildTemplates(ClassDeclarationSyntax cds, Compilation compliation)
-    {
-        var templates = new List<(string generatorName, string template)>();
-
-        foreach (var child in cds.ChildNodes())
-        {
-            if (child is FieldDeclarationSyntax f)
-            {
-                foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
-                {
-                    var a = ((IdentifierNameSyntax)att.Name).Identifier;
-                    if (a.Text == "GobieGlobalChildTemplate")
-                    {
-                        foreach (var variable in f.Declaration.Variables)
-                        {
-                            var model = compliation.GetSemanticModel(f.SyntaxTree);
-                            var fieldSymbol = model.GetDeclaredSymbol(variable);
-
-                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
-                            {
-                                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieGlobalChildTemplateAttribute");
-                                var fn = ad.ConstructorArguments[0].Value;
-                                templates.Add((fn.ToString(), fs.ConstantValue.ToString()));
-                                goto DoneWithField;
-                            }
-                        }
-                    }
-                }
-            }
-
-        DoneWithField:;
-        }
-
-        return templates;
-    }
-
-    private static List<(string generatorName, string fileName, string template)> GetGlobalTemplates(
+    /// <summary>
+    /// This method **MUST** be used to get templates, because it handles reporting errors in the
+    /// string type.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="templateName"></param>
+    /// <param name="templateBuilder">
+    /// Generally, we expect we should always get a template out at the point the templateBuilder is
+    /// called. However it is nullable because we can't guarentee it.
+    /// </param>
+    /// <param name="cds"></param>
+    /// <param name="compliation"></param>
+    /// <param name="diagnostics"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    private static List<T> GetTemplates<T>(
+        string templateName,
+        Func<FieldDeclarationSyntax, LiteralExpressionSyntax, string, T?> templateBuilder,
         ClassDeclarationSyntax cds,
         Compilation compliation,
+        List<Diagnostic> diagnostics,
         CancellationToken ct)
     {
-        var templates = new List<(string generatorName, string fileName, string template)>();
+        var templates = new List<T>();
 
-        foreach (var child in cds.ChildNodes())
+        foreach (var field in cds.ChildNodes().OfType<FieldDeclarationSyntax>())
         {
             ct.ThrowIfCancellationRequested();
 
-            if (child is FieldDeclarationSyntax f)
+            foreach (AttributeSyntax att in field.AttributeLists.SelectMany(x => x.Attributes))
             {
-                foreach (AttributeSyntax att in f.AttributeLists.SelectMany(x => x.Attributes))
-                {
-                    var a = ((IdentifierNameSyntax)att.Name).Identifier;
-                    if (a.Text == "GobieGlobalFileTemplate")
-                    {
-                        foreach (var variable in f.Declaration.Variables)
-                        {
-                            var model = compliation.GetSemanticModel(f.SyntaxTree);
-                            var fieldSymbol = model.GetDeclaredSymbol(variable);
+                var name = SyntaxHelpers.GetName(att.Name);
+                if (name is null) { continue; }
 
-                            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                if (name != templateName)
+                {
+                    continue;
+                }
+
+                foreach (var variable in field.Declaration.Variables)
+                {
+                    var model = compliation.GetSemanticModel(field.SyntaxTree);
+                    var fieldSymbol = model.GetDeclaredSymbol(variable);
+                    var eqSyntax = variable.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
+
+                    if (eqSyntax.ChildNodes().OfType<BinaryExpressionSyntax>().FirstOrDefault() is BinaryExpressionSyntax bes)
+                    {
+                        diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsConcatenatedString(), bes.GetLocation()));
+                        break;
+                    }
+                    else if (eqSyntax is not null && fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+                    {
+                        if (eqSyntax.ChildNodes().OfType<InterpolatedStringExpressionSyntax>().FirstOrDefault() is InterpolatedStringExpressionSyntax i)
+                        {
+                            diagnostics.Add(Diagnostic.Create(Diagnostics.TemplateIsInterpolatedString(), i.GetLocation()));
+                            break;
+                        }
+                        else if (eqSyntax.ChildNodes().OfType<LiteralExpressionSyntax>().FirstOrDefault() is LiteralExpressionSyntax l)
+                        {
+                            var outTemplate = templateBuilder(field, l, fs.ConstantValue.ToString());
+                            if (outTemplate is not null)
                             {
-                                var awre = fieldSymbol.GetAttributes();
-                                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass.Name == "GobieGlobalFileTemplateAttribute");
-                                var generatorName = ad.ConstructorArguments[0].Value;
-                                var fn = ad.ConstructorArguments[1].Value;
-                                templates.Add((generatorName.ToString(), fn.ToString(), fs.ConstantValue.ToString()));
-                                goto DoneWithField;
+                                templates.Add(outTemplate);
                             }
+
+                            break;
                         }
                     }
                 }
             }
-
-        DoneWithField:;
         }
 
         return templates;
     }
 
-    private static bool IsClassDeclaration(SyntaxNode node) => node is ClassDeclarationSyntax;
+    private static List<TResult> AccumulateTemplates<TData, TResult>(IEnumerable<TData> templates, Func<TData, TemplateText> selector, Func<TData, Mustache.TemplateDefinition, TResult> map, List<Diagnostic> diagnostics, CancellationToken ct)
+    {
+        var templateDefs = new List<TResult>();
+        foreach (var template in templates)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var tt = selector(template);
+            var res = Mustache.Parse(tt.Text.AsSpan(), tt.GetLocationAt);
+            if (res.Diagnostics is not null)
+            {
+                diagnostics?.AddRange(res.Diagnostics);
+            }
+            else if (res.Data is not null)
+            {
+                templateDefs.Add(map(template, res.Data));
+            }
+        }
+
+        return templateDefs;
+    }
+
+    private static (string attArg, TemplateText template)? GetAttributeArgAndTemplate(string attributeName, FieldDeclarationSyntax f, LiteralExpressionSyntax l, string t, Compilation compilation)
+    {
+        foreach (var variable in f.Declaration.Variables)
+        {
+            var model = compilation.GetSemanticModel(f.SyntaxTree);
+            var fieldSymbol = model.GetDeclaredSymbol(variable);
+
+            if (fieldSymbol is IFieldSymbol fs && fs.ConstantValue is not null)
+            {
+                var ad = fieldSymbol.GetAttributes().First(x => x.AttributeClass?.Name == attributeName);
+
+                if (ad.ConstructorArguments.Length == 0)
+                {
+                    // NOTE, this happens when the args dont match the method signature (extra,
+                    // missing, wrong type). So we rely on Roslyn to show errors to the user.
+                    return null;
+                }
+
+                var arg = ad.ConstructorArguments[0].Value;
+                return (arg!.ToString(), new TemplateText(l, fs.ConstantValue.ToString()));
+            }
+        }
+
+        return null;
+    }
 
     private static IEnumerable<Diagnostic> Duplicates(IEnumerable<RequiredParameter> requiredParameters)
     {
@@ -304,7 +235,7 @@ public static class GeneratorDiscovery
             {
                 diagnostics.Add(
                     Diagnostic.Create(
-                        Warnings.PriorityAlreadyDeclared(req.RequestedOrder),
+                        Diagnostics.PriorityAlreadyDeclared(req.RequestedOrder),
                         req.RequestedOrderLocation));
             }
         }
@@ -339,12 +270,12 @@ public static class GeneratorDiscovery
         var diagnostics = new List<Diagnostic>();
         if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)))
         {
-            diagnostics.Add(Diagnostic.Create(Errors.UserTemplateIsPartial, classLocation));
+            diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsPartial, classLocation));
         }
 
         if (cds.Modifiers.Any(x => x.IsKind(SyntaxKind.SealedKeyword)) == false)
         {
-            diagnostics.Add(Diagnostic.Create(Errors.UserTemplateIsNotSealed, classLocation));
+            diagnostics.Add(Diagnostic.Create(Diagnostics.UserTemplateIsNotSealed, classLocation));
         }
 
         var classSymbol = context.SemanticModel.GetDeclaredSymbol(context.Node);
@@ -380,7 +311,7 @@ public static class GeneratorDiscovery
 
         if (invalidName)
         {
-            diagnostics.Add(Diagnostic.Create(Errors.GeneratorNameInvalid, classLocation));
+            diagnostics.Add(Diagnostic.Create(Diagnostics.GeneratorNameInvalid, classLocation));
         }
 
         //! Diagnostics before here are errors that stop generation.
@@ -397,7 +328,7 @@ public static class GeneratorDiscovery
             if (ConstantTypes.IsAllowedConstantType(node.Type, out var propertyType) == false)
             {
                 // We don't need to break the whole template when they do this wrong.
-                diagnostics.Add(Diagnostic.Create(Errors.DisallowedTemplateParameterType("TODO"), node.Type.GetLocation()));
+                diagnostics.Add(Diagnostic.Create(Diagnostics.DisallowedTemplateParameterType("TODO"), node.Type.GetLocation()));
                 continue;
             }
 
@@ -418,8 +349,6 @@ public static class GeneratorDiscovery
             {
                 if (att?.AttributeClass?.ToString() == "Gobie.Required")
                 {
-                    // Get the requested order if one was provided. Or give it the maximum so it
-                    // goes at the end. Within values at the end they go in the order they were defined.
                     var order = int.MaxValue;
                     if (att.ConstructorArguments.Length > 0)
                     {
@@ -456,7 +385,7 @@ public static class GeneratorDiscovery
                             node.Identifier.Text,
                             propertyType,
                             propertyInitalizer));
-        RequiredPropertyHandeled:;
+RequiredPropertyHandeled:;
         }
 
         diagnostics.AddRange(Duplicates(genData.RequiredParameters));

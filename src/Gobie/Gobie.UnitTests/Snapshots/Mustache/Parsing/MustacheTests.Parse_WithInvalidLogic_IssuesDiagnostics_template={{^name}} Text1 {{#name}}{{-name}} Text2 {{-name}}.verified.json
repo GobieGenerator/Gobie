@@ -7,13 +7,13 @@
     },
     "Diagnostics": [
       {
-        "Id": "GB1001",
+        "Id": "GB1015",
         "Title": "Gobie",
         "Severity": "Error",
         "WarningLevel": 0,
         "Location": ": (0,0)-(0,0)",
         "Description": "",
-        "HelpLink": "",
+        "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1015",
         "MessageFormat": "This section of the template will never be reached. You cannot use the identifier 'name' here because it is surrounded by a not node (i.e. {{^name}} )",
         "Message": "This section of the template will never be reached. You cannot use the identifier 'name' here because it is surrounded by a not node (i.e. {{^name}} )",
         "Category": "Gobie",

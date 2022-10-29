@@ -1,0 +1,17 @@
+﻿{
+  "Diagnostics": [
+    {
+      "Id": "GB1018",
+      "Title": "Gobie",
+      "Severity": "Warning",
+      "WarningLevel": 1,
+      "Location": ": (0,0)-(0,0)",
+      "Description": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1018",
+      "MessageFormat": "The generator EFCoreRegistrationGenerator does not have any templates defined. Therefore it will not generate any code.",
+      "Message": "The generator EFCoreRegistrationGenerator does not have any templates defined. Therefore it will not generate any code.",
+      "Category": "Gobie",
+      "CustomTags": []
+    }
+  ]
+}

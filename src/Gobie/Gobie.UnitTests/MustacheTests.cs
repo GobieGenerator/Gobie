@@ -52,7 +52,7 @@ public class MustacheTests
         data.Add("job", new Mustache.RenderData("job", "programmer", true));
         data.Add("foo", new Mustache.RenderData("foo", "", false));
 
-        var parse = Mustache.Parse(template);
+        var parse = Mustache.Parse(template, null);
         var render = Mustache.RenderTemplate(parse.Data!, data.ToImmutable());
 
         return Verify(render).UseDirectory("Snapshots/Mustache/Render");
@@ -69,13 +69,13 @@ public class MustacheTests
         // Its important that if we for some reason render a template missing data that we don't
         // crash the generator.
         var data = ImmutableDictionary.CreateBuilder<string, Mustache.RenderData>();
-        var parse = Mustache.Parse(template);
+        var parse = Mustache.Parse(template, null);
         Assert.DoesNotThrow(() => Mustache.RenderTemplate(parse.Data!, data.ToImmutable()));
     }
 
     private static Task TestParsing(string template)
     {
-        var parsed = Mustache.Parse(template);
+        var parsed = Mustache.Parse(template, null);
 
         return Verify(new ParseResult(template, new(parsed.Data, parsed.Diagnostics)))
               .UseDirectory("Snapshots/Mustache/Parsing");

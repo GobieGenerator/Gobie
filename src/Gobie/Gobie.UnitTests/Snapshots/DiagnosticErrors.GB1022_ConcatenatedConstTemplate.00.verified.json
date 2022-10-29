@@ -1,0 +1,17 @@
+﻿{
+  "Diagnostics": [
+    {
+      "Id": "GB1022",
+      "Title": "Gobie",
+      "Severity": "Error",
+      "WarningLevel": 0,
+      "Location": ": (5,16)-(6,54)",
+      "Description": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1022",
+      "MessageFormat": "Template strings cannot be concatenated. We currently do not support them.",
+      "Message": "Template strings cannot be concatenated. We currently do not support them.",
+      "Category": "Gobie",
+      "CustomTags": []
+    }
+  ]
+}

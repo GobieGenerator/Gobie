@@ -1,5 +1,7 @@
 ﻿namespace Gobie.Models.Templating;
 
+using Microsoft.CodeAnalysis;
+
 public class Mustache
 {
     public enum TokenType
@@ -74,9 +76,7 @@ public class Mustache
             {
                 AddOrCombine(tokens, new Token(i, i, TokenType.Whitespace));
             }
-            else if (char.IsNumber(template[i])
-                     || char.IsLetter(template[i])
-                     || template[i] == '_')
+            else if (char.IsLetterOrDigit(template[i]) || template[i] == '_')
             {
                 AddOrCombine(tokens, new Token(i, i, TokenType.Identifier));
             }
@@ -133,7 +133,7 @@ public class Mustache
         return tokens.Slice(0, t + 1);
     }
 
-    public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template)
+    public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template, Func<int, int, Location>? initialLocation)
     {
         var tokens = Tokenize(template);
         var root = new TemplateSyntax(null, TemplateSyntaxType.Root, string.Empty, string.Empty, FormatSetting.None);
@@ -174,7 +174,7 @@ public class Mustache
             {
                 diagnostics.Add(
                     Diagnostic.Create(
-                        Errors.UnexpectedToken(
+                        Diagnostics.UnexpectedToken(
                             GetText(template, tokens[i]),
                             "There is no corresponding open token"),
                         null));
@@ -196,24 +196,22 @@ public class Mustache
                 {
                     tagClosed = true;
                     identifier = GetText(template, upcommingTokens[0].token);
-                    var formatToken = GetText(template, upcommingTokens[2].token);
+
+                    var formatToken = upcommingTokens[2].token;
+                    var formatTokenText = GetText(template, formatToken);
                     i = upcommingTokens[3].index;
 
-                    if (IdentifierIsFormatToken(formatToken, out FormatSetting f))
+                    if (IdentifierIsFormatToken(formatTokenText, out FormatSetting f))
                     {
                         // We do have a valid formatted identifier
                         formatSetting = f;
                     }
                     else
                     {
-                        // The identifier where we expect a format token is not valid and needs a
-                        // custom diagnostic.
                         diagnostics.Add(
                             Diagnostic.Create(
-                                Errors.UnexpectedToken(
-                                    GetText(template, upcommingTokens[0].token),
-                                    "Expected a format string ('camel' or 'pascal'). Case insensitive"),
-                                null));
+                                Diagnostics.InvalidFormatToken(formatTokenText),
+                                initialLocation?.Invoke(formatToken.Start, formatToken.End - formatToken.Start + 1)));
                     }
                 }
                 else if (initialToken.TokenType == TokenType.TemplateTokenOpen &&
@@ -228,7 +226,7 @@ public class Mustache
                         // We should just be missing a colon
                         diagnostics.Add(
                             Diagnostic.Create(
-                                Errors.MissingToken(":"),
+                                Diagnostics.MissingToken(":"),
                                 null));
                     }
                     else
@@ -236,7 +234,7 @@ public class Mustache
                         // Not sure what is wrong
                         diagnostics.Add(
                             Diagnostic.Create(
-                                Errors.UnexpectedToken(
+                                Diagnostics.UnexpectedToken(
                                     GetText(template, upcommingTokens[1].token),
                                     "This is either missing a colon or has a second unexpected identifier"),
                                 null));
@@ -282,7 +280,7 @@ public class Mustache
                     i = upcommingTokens[0].index;
                     diagnostics.Add(
                         Diagnostic.Create(
-                            Errors.UnexpectedToken(
+                            Diagnostics.UnexpectedToken(
                                 GetText(template, upcommingTokens[0].token),
                                 "Expected an identifier string, which contains only letters, numbers, and underscores"),
                             null));
@@ -315,7 +313,7 @@ public class Mustache
                     {
                         diagnostics.Add(
                             Diagnostic.Create(
-                                Errors.UnreachableTemplateSection(
+                                Diagnostics.UnreachableTemplateSection(
                                     $"You cannot use the identifier '{identifier}' here because it is surrounded " +
                                     $"by a not node (i.e. {{{{^{identifier}}}}} )"),
                                 null));
@@ -324,7 +322,7 @@ public class Mustache
                     {
                         diagnostics.Add(
                            Diagnostic.Create(
-                              Errors.UnreachableTemplateSection(
+                              Diagnostics.UnreachableTemplateSection(
                                   $"You cannot exclude the identifier '{identifier}' here because it is surrounded " +
                                   $"by an if node (i.e. {{{{#{identifier}}}}} )"),
                               null));
@@ -357,7 +355,7 @@ public class Mustache
                             {
                                 diagnostics.Add(
                                     Diagnostic.Create(
-                                        Errors.UnexpectedIdentifier(
+                                        Diagnostics.UnexpectedIdentifier(
                                             identifier,
                                             $"The provided identifier differs only in case from '{currentNode.Identifier}'. Identifier matching is case sensitive."),
                                         null));
@@ -367,7 +365,7 @@ public class Mustache
                                 // The node doesn't match at all, so show what we expect.
                                 diagnostics.Add(
                                    Diagnostic.Create(
-                                       Errors.LogicalEndMissing("{{\\" + currentNode.Identifier + "}}"),
+                                       Diagnostics.LogicalEndMissing("{{\\" + currentNode.Identifier + "}}"),
                                        null));
                             }
                         }
@@ -377,7 +375,7 @@ public class Mustache
                         // Here, we aren't able to close a node. So we issue a diagnostic.
                         diagnostics.Add(
                             Diagnostic.Create(
-                                Errors.UnexpectedToken(
+                                Diagnostics.UnexpectedToken(
                                     GetText(template, tokens[i]),
                                     "There is no corresponding if or not tag (i.e. {{#name}} or {{^name}} for this to close"),
                                 null));
@@ -411,19 +409,19 @@ public class Mustache
         static void AddTemplateIncomplete(List<Diagnostic> diagnostics) =>
             diagnostics.Add(
                 Diagnostic.Create(
-                    Errors.UnfinishedTemplate("Template is incomplete"),
+                    Diagnostics.UnfinishedTemplate("Template is incomplete"),
                     null));
 
         static void AddExpectedClosingToken(List<Diagnostic> diagnostics, string actualText) =>
             diagnostics.Add(
                 Diagnostic.Create(
-                    Errors.UnexpectedToken(actualText, "Expected closing '}}' token."),
+                    Diagnostics.UnexpectedToken(actualText, "Expected closing '}}' token."),
                     null));
 
         static void AddMissingToken(List<Diagnostic> diagnostics, string missingToken) =>
             diagnostics.Add(
                 Diagnostic.Create(
-                    Errors.MissingToken(missingToken),
+                    Diagnostics.MissingToken(missingToken),
                     null));
     }
 
@@ -478,12 +476,9 @@ public class Mustache
                 {
                     return text;
                 }
-                else if (text.Length == 1)
-                {
-                    return char.ToUpperInvariant(text[0]).ToString();
-                }
 
-                return char.ToUpperInvariant(text[0]) + text.Substring(1);
+                return char.ToUpperInvariant(text[0]) +
+                    (text.Length > 1 ? text.Substring(1) : string.Empty);
             }
 
             static string ToCamel(string text)
@@ -492,12 +487,9 @@ public class Mustache
                 {
                     return text;
                 }
-                else if (text.Length == 1)
-                {
-                    return char.ToLowerInvariant(text[0]).ToString();
-                }
 
-                return char.ToLowerInvariant(text[0]) + text.Substring(1);
+                return char.ToLowerInvariant(text[0]) +
+                    (text.Length > 1 ? text.Substring(1) : string.Empty);
             }
         }
     }
@@ -692,9 +684,9 @@ public class Mustache
 
         public TemplateSyntaxType Type { get; }
 
-        public string LiteralText { get; } = string.Empty;
+        public string LiteralText { get; }
 
-        public string Identifier { get; } = string.Empty;
+        public string Identifier { get; }
 
         public FormatSetting Format { get; }
 
