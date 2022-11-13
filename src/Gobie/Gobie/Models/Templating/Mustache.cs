@@ -458,11 +458,18 @@ public class Mustache
                     sb.Append(formatted);
                     return;
                 }
-
-                if (syntax.Type == TemplateSyntaxType.If && renderData.Render == false)
+                else if (syntax.Type == TemplateSyntaxType.If && renderData.Render == false)
+                {
                     return;
-                if (syntax.Type == TemplateSyntaxType.Not && renderData.Render == true)
+                }
+                else if (syntax.Type == TemplateSyntaxType.Not && renderData.Render == true)
+                {
                     return;
+                }
+            }
+            else if (syntax.Type == TemplateSyntaxType.If)
+            {
+                return; // We didn't find the identifier, so don't render the IF section.
             }
 
             foreach (var child in syntax.Children)
