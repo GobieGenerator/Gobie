@@ -456,6 +456,31 @@ public class ClassGen
     }
 
     [Test]
+    public Task SimpleValidGenerator_OptionalParametersSkipped_GeneratesOutput()
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class NamePropertyGenerator : GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{#InitialName}}Named{{/InitialName}}{{InitialName}}{{^InitialName}}Nameless{{/InitialName}}-{{#Id}}Numbered{{/Id}}{{Id}}{{^Id}}Numberless{{/Id}}\"";"";
+
+            public string InitialName { get; set; }
+
+            public int Id { get; set; }
+        }
+
+        [NameProperty]
+        public partial class TemplateTarget
+        { }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task SimpleValidGenerator_WithDefaultParameterAndUsage_GeneratesOutput()
     {
         var source = @"
