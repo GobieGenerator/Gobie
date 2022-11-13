@@ -211,7 +211,7 @@ public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
 ";
 
     [Required]
-    public string CustomValidator { get; set; } = null;
+    public string CustomValidator { get; set; } = null!;
 }
 
 //[StatefullLoggedClass(nameof(AuthorState), nameof(AuthorTrigger))]
