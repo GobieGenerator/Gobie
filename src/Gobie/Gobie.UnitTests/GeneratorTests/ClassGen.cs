@@ -508,6 +508,57 @@ public class ClassGen
     }
 
     [Test]
+    public Task SimpleValidGenerator_TokensAreNotCaseSensitive_GeneratesOutput()
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class NamePropertyGenerator : GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{#INITIALNAME}}Named{{/initialname}}{{initialname}}{{^INITIALNAME}}Nameless{{/initialname}}-{{#id}}Numbered{{/ID}}{{ID}}{{^id}}Numberless{{/ID}}\"";"";
+
+            [Required(1)]
+            public string InitialName { get; set; }
+
+            public int Id { get; set; }
+        }
+
+        [NameProperty(initialName: ""Mike"", Id = 2048234)]
+        public partial class TemplateTarget
+        { }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task SimpleValidGenerator_TokensAreNotCaseSensitive_IdentifiersNotSupplied_GeneratesOutput()
+    {
+        var source = @"
+        using Gobie;
+
+        namespace SomeNamespace;
+
+        public sealed class NamePropertyGenerator : GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string KeyString = ""public string RobotName { get; set; } = \""{{#INITIALNAME}}Named{{/initialname}}{{initialname}}{{^INITIALNAME}}Nameless{{/initialname}}-{{#id}}Numbered{{/ID}}{{ID}}{{^id}}Numberless{{/ID}}\"";"";
+
+            public string InitialName { get; set; }
+
+            public int Id { get; set; }
+        }
+
+        [NameProperty]
+        public partial class TemplateTarget
+        { }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task SimpleValidGenerator_WithNamedParameterUsage_GeneratesOutput()
     {
         var source = @"
