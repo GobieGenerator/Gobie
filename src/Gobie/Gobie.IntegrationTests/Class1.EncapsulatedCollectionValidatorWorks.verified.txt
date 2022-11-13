@@ -1,0 +1,12 @@
+﻿{
+  Authors: [
+    AB,
+    ABCD
+  ],
+  Books: [
+    A,
+    AB,
+    ABC,
+    ABCD
+  ]
+}

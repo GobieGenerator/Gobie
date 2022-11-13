@@ -17,15 +17,15 @@ public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
                 throw new ArgumentNullException(nameof(s));
             }
 
-            {{#CustomValidator}}
+            {{#customvalidator}}
             if({{CustomValidator}}(s))
             {
-                {{FieldName}}.Add(s);
+                {{fieldName}}.Add(s);
             }
             {{/CustomValidator}}
 
             {{^CustomValidator}}
-                {{FieldName}}.Add(s);
+                {{fieldName}}.Add(s);
             {{/CustomValidator}}
         }
         """;
@@ -33,16 +33,37 @@ public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
     public string CustomValidator { get; set; } = null!;
 }
 
-public partial class Encapsulation
+public partial class Library
 {
-    [EncapsulatedCollection]
+    [EncapsulatedCollection(CustomValidator = nameof(ValidateAuthor))]
     private List<string> authors = new();
+
+    [EncapsulatedCollection]
+    private List<string> books = new();
+
+    private static bool ValidateAuthor(string author)
+    {
+        return author.Length % 2 == 0;
+    }
 }
 
 public class Class1
 {
     [Test]
-    public void Test()
+    public Task EncapsulatedCollectionValidatorWorks()
     {
+        var lib = new Library();
+
+        lib.AddBooks("A");
+        lib.AddBooks("AB");
+        lib.AddBooks("ABC");
+        lib.AddBooks("ABCD");
+
+        lib.AddAuthors("A");
+        lib.AddAuthors("AB");
+        lib.AddAuthors("ABC");
+        lib.AddAuthors("ABCD");
+
+        return Verify(lib);
     }
 }
