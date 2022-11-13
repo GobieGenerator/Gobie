@@ -343,31 +343,18 @@ public class Mustache
 
                     if (currentNode.Type is TemplateSyntaxType.If or TemplateSyntaxType.Not)
                     {
-                        if (currentNode.Identifier.Equals(identifier, StringComparison.Ordinal))
+                        if (currentNode.Identifier.Equals(identifier, StringComparison.OrdinalIgnoreCase))
                         {
                             // The node matches, so we close it, by navigating back to the parent
                             currentNode = currentNode.Parent;
                         }
                         else
                         {
-                            // The logical end doesn't match, so we issue a diagnostic.
-                            if (currentNode.Identifier.Equals(identifier, StringComparison.OrdinalIgnoreCase))
-                            {
-                                diagnostics.Add(
-                                    Diagnostic.Create(
-                                        Diagnostics.UnexpectedIdentifier(
-                                            identifier,
-                                            $"The provided identifier differs only in case from '{currentNode.Identifier}'. Identifier matching is case sensitive."),
-                                        null));
-                            }
-                            else
-                            {
-                                // The node doesn't match at all, so show what we expect.
-                                diagnostics.Add(
-                                   Diagnostic.Create(
-                                       Diagnostics.LogicalEndMissing("{{\\" + currentNode.Identifier + "}}"),
-                                       null));
-                            }
+                            // The node doesn't match at all, so show what we expect.
+                            diagnostics.Add(
+                               Diagnostic.Create(
+                                   Diagnostics.LogicalEndMissing("{{\\" + currentNode.Identifier + "}}"),
+                                   null));
                         }
                     }
                     else
@@ -430,6 +417,7 @@ public class Mustache
             ImmutableDictionary<string, RenderData> data)
     {
         var sb = new StringBuilder();
+        data = data.WithComparers(StringComparer.OrdinalIgnoreCase); // Render without being case sensitive to identifiers.
 
         Render(sb, template.Syntax, data);
 
