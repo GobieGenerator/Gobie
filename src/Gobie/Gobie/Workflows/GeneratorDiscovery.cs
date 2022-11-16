@@ -399,25 +399,26 @@ RequiredPropertyHandeled:;
 
     private static void BuildUserGeneratorAttributes(SourceProductionContext spc, UserGeneratorAttributeData data)
     {
-        var generatedCode = @$"
+        var generatedCode = $$"""
+            namespace {{data.AttributeIdentifier.NamespaceName}}
+            {
+                /// <summary>
+                /// This attribute will cause the generator <see
+                /// cref="{{data.DefinitionIdentifier.FullName}}"/> to run.
+                /// </summary>
+                public sealed class {{data.AttributeIdentifier.ClassName}} : {{data.AttributeBase}}
+                {
+                    public {{data.AttributeIdentifier.ClassName}}({{string.Join(", ", data.RequiredParameters.Select(x => x.CtorArgumentString))}})
+                    {
+                        {{string.Join(Environment.NewLine, data.RequiredParameters.Select(x => x.CtorAssignmentString))}}
+                    }
 
-            namespace {data.AttributeIdentifier.NamespaceName}
-            {{
-                /// <summary> This attribute will cause the generator defined by this thing here to
-                /// run <see cref=""{data.DefinitionIdentifier.FullName}""/> to run. </summary>
-                public sealed class {data.AttributeIdentifier.ClassName} : {data.AttributeBase}
-                {{
-                    public {data.AttributeIdentifier.ClassName}({string.Join(", ", data.RequiredParameters.Select(x => x.CtorArgumentString))})
-                    {{
-                        {string.Join(Environment.NewLine, data.RequiredParameters.Select(x => x.CtorAssignmentString))}
-                    }}
+                    {{string.Join(Environment.NewLine, data.RequiredParameters.Select(x => x.PropertyString))}}
 
-                    {string.Join(Environment.NewLine, data.RequiredParameters.Select(x => x.PropertyString))}
-
-                    {string.Join(Environment.NewLine, data.OptionalParameters.Select(x => x.PropertyString))}
-                }}
-            }}
-            ";
+                    {{string.Join(Environment.NewLine, data.OptionalParameters.Select(x => x.PropertyString))}}
+                }
+            }
+            """;
 
         generatedCode = CSharpSyntaxTree.ParseText(generatedCode).GetRoot().NormalizeWhitespace().ToFullString();
         spc.AddSource($"_{data.AttributeIdentifier.FullName}.g.cs", generatedCode);
