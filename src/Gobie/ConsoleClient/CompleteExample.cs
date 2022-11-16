@@ -1,10 +1,10 @@
-﻿////[assembly: EFCoreRegistration]
+﻿[assembly: ConsoleClient.EFCoreRegistration]
 
 namespace ConsoleClient;
 
-using Gobie;
 using System;
 using System.Collections.Generic;
+using Gobie;
 
 public enum AuthorState
 { }
