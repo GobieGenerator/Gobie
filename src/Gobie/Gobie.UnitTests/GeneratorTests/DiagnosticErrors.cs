@@ -69,7 +69,6 @@ public class DiagnosticErrors
         return TestHelper.Verify(source);
     }
 
-    [Ignore("Known to be failing")]
     [Test]
     public Task GBxxxx_EmptyTag()
     {
@@ -78,6 +77,32 @@ public class DiagnosticErrors
         {
             [GobieTemplate]
             private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ }} => {{FieldName}}.AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task GBxxxx_UnexpectedTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ ImUnexpected }} => {{FieldName}}.AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task GBxxxx_InvalidTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ ImUne'xpected }} => {{FieldName}}.AsReadOnly();"";
         }";
 
         return TestHelper.Verify(source);
