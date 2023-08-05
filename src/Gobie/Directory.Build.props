@@ -8,6 +8,7 @@
   <PropertyGroup>
     <!--In this section pin nuget versions across projects.-->
     <CodeAnalysisCsharpVersion>4.6.0</CodeAnalysisCsharpVersion>
+    <CoverletCollectorVersion>3.1.2</CoverletCollectorVersion>
     <NetTestSdkVersion>17.7.0</NetTestSdkVersion>
     <NUnitVersion>3.13.3</NUnitVersion>
     <NUnitTestAdapterVersion>4.5.0</NUnitTestAdapterVersion>
