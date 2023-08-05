@@ -8,14 +8,14 @@
   <PropertyGroup>
     <!--In this section pin nuget versions across projects.-->
     <CodeAnalysisCsharpVersion>4.4.0-4.final</CodeAnalysisCsharpVersion>
-    <NetTestSdkVersion>17.1.0</NetTestSdkVersion>
+    <NetTestSdkVersion>17.7.0</NetTestSdkVersion>
     <NUnitVersion>3.13.3</NUnitVersion>
-    <NUnitTestAdapterVersion>4.2.1</NUnitTestAdapterVersion>
+    <NUnitTestAdapterVersion>4.5.0</NUnitTestAdapterVersion>
     <VerifyVersion>16.7.0</VerifyVersion>
     <VerifySourceGeneratorsVersion>1.4.0</VerifySourceGeneratorsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.48.0.56517" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.7.0.75501" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
   </ItemGroup>
 </Project>
