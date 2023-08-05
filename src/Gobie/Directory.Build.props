@@ -8,6 +8,11 @@
   <PropertyGroup>
     <!--In this section pin nuget versions across projects.-->
     <CodeAnalysisCsharpVersion>4.4.0-4.final</CodeAnalysisCsharpVersion>
+    <NetTestSdkVersion>17.1.0</NetTestSdkVersion>
+    <NUnitVersion>3.13.3</NUnitVersion>
+    <NUnitTestAdapterVersion>4.2.1</NUnitTestAdapterVersion>
+    <VerifyVersion>16.7.0</VerifyVersion>
+    <VerifySourceGeneratorsVersion>1.4.0</VerifySourceGeneratorsVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
