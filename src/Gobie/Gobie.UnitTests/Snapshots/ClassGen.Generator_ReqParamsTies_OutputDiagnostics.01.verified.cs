@@ -16,11 +16,8 @@ namespace Gobie
         }
 
         public int ReqRequestedFirst { get; }
-
         public string ReqRequestedFifth { get; }
-
         public int AlsoReqRequestedFifth { get; }
-
         public int AnotherReqRequestedFifth { get; }
     }
 }

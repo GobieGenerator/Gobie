@@ -13,9 +13,7 @@ namespace Gobie
         }
 
         public string ReqParam { get; }
-
         public string MyParam { get; set; }
-
         public string OtherParam { get; set; } = "My Initial Value";
     }
 }

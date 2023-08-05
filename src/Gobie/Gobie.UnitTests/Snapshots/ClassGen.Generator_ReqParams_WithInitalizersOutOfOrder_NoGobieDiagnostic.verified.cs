@@ -14,7 +14,6 @@ namespace Gobie
         }
 
         public int MyInt { get; }
-
         public string MyString { get; }
     }
 }

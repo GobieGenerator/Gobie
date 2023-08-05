@@ -12,7 +12,6 @@ namespace Gobie
         }
 
         public string InitialName { get; set; }
-
         public int Id { get; set; }
     }
 }
