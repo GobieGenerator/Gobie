@@ -3,6 +3,27 @@
 using Gobie;
 using NUnit.Framework;
 
+public class EncapsulatedGeneratorIntegrationTests
+{
+    [Test]
+    public Task EncapsulatedCollectionValidatorWorks()
+    {
+        var lib = new Library();
+
+        lib.AddBooks("A");
+        lib.AddBooks("AB");
+        lib.AddBooks("ABC");
+        lib.AddBooks("ABCD");
+
+        lib.AddAuthors("A"); // Omitted by custom validator
+        lib.AddAuthors("AB");
+        lib.AddAuthors("ABC"); // Omitted by custom validator
+        lib.AddAuthors("ABCD");
+
+        return Verify(lib).UseDirectory("Snapshots");
+    }
+}
+
 public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
 {
     [GobieTemplate]
@@ -16,6 +37,8 @@ public sealed class EncapsulatedCollectionGenerator : GobieFieldGenerator
             {
                 throw new ArgumentNullException(nameof(s));
             }
+
+            {{ asfd1blkj }}
 
             {{#customvalidator}}
             if({{CustomValidator}}(s))
@@ -44,26 +67,5 @@ public partial class Library
     private static bool ValidateAuthor(string author)
     {
         return author.Length % 2 == 0;
-    }
-}
-
-public class Class1
-{
-    [Test]
-    public Task EncapsulatedCollectionValidatorWorks()
-    {
-        var lib = new Library();
-
-        lib.AddBooks("A");
-        lib.AddBooks("AB");
-        lib.AddBooks("ABC");
-        lib.AddBooks("ABCD");
-
-        lib.AddAuthors("A");
-        lib.AddAuthors("AB");
-        lib.AddAuthors("ABC");
-        lib.AddAuthors("ABCD");
-
-        return Verify(lib);
     }
 }
