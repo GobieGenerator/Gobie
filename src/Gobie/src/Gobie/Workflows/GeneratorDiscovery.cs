@@ -1,6 +1,7 @@
 ﻿namespace Gobie.Workflows;
 
 using Microsoft.CodeAnalysis;
+using static Gobie.Models.Templating.Mustache;
 
 public static class GeneratorDiscovery
 {
@@ -44,13 +45,13 @@ public static class GeneratorDiscovery
         }
 
         var templates = GetTemplates("GobieTemplate", (_, l, t) => new TemplateText(l, t), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
-        var templateDefs = AccumulateTemplates(templates, x => x, (_, x) => x, diagnostics, ct);
+        var templateDefs = AccumulateTemplates(templates, x => x, (_, x) => x, data, diagnostics, ct);
 
         var fileTemplates = GetTemplates("GobieFileTemplate", (f, l, _) => GetAttributeArgAndTemplate("GobieFileTemplateAttribute", f, l, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
-        var fileTemplateDefs = AccumulateTemplates(fileTemplates, x => x.Value.Template, (d, t) => new UserFileTemplateData(d.Value.AttArg, t), diagnostics, ct);
+        var fileTemplateDefs = AccumulateTemplates(fileTemplates, x => x.Value.Template, (d, t) => new UserFileTemplateData(d.Value.AttArg, t), data, diagnostics, ct);
 
         var globalChildTemplates = GetTemplates("GobieGlobalChildTemplate", (f, l, _) => GetAttributeArgAndTemplate("GobieGlobalChildTemplateAttribute", f, l, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
-        var globalChildTemplateDefs = AccumulateTemplates(globalChildTemplates, x => x.Value.Template, (d, t) => new GlobalChildTemplateData(d.Value.AttArg, t), diagnostics, ct);
+        var globalChildTemplateDefs = AccumulateTemplates(globalChildTemplates, x => x.Value.Template, (d, t) => new GlobalChildTemplateData(d.Value.AttArg, t), data, diagnostics, ct);
 
         var globalTemplates = GetTemplates("GobieGlobalFileTemplate", (f, l, _) => GetAttributeArgAndTemplate("GobieGlobalFileTemplateAttribute", f, l, compilation), data.ClassDeclarationSyntax, compilation, diagnostics, ct);
         var globalTemplateDefs = new List<GlobalTemplateData>();
@@ -173,10 +174,23 @@ public static class GeneratorDiscovery
         return templates;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TData"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="templates"></param>
+    /// <param name="selector"></param>
+    /// <param name="map"></param>
+    /// <param name="userGeneratorAttributeData">Used to figure out if a template has parameters that don't make sense.</param>
+    /// <param name="diagnostics"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     private static List<TResult> AccumulateTemplates<TData, TResult>(
         IEnumerable<TData> templates,
         Func<TData, TemplateText> selector,
         Func<TData, Mustache.TemplateDefinition, TResult> map,
+        UserGeneratorAttributeData userGeneratorAttributeData,
         List<Diagnostic> diagnostics,
         CancellationToken ct)
     {
@@ -189,16 +203,67 @@ public static class GeneratorDiscovery
             var res = Mustache.Parse(tt.Text.AsSpan(), tt.GetLocationAt);
             if (res.Diagnostics is not null)
             {
-                diagnostics?.AddRange(res.Diagnostics);
+                diagnostics.AddRange(res.Diagnostics);
             }
             else if (res.Data is not null)
             {
-                templateDefs.Add(map(template, res.Data));
+                // Here we can find discrepant identifiers.
+                var idDiagnostics = GetDiagnosticsForIdentifierIssues(res.Data, userGeneratorAttributeData, tt.GetLocationAt);
+                if (idDiagnostics.Count > 0)
+                {
+                    diagnostics.AddRange(idDiagnostics);
+                }
+                else
+                {
+                    templateDefs.Add(map(template, res.Data));
+                }
             }
         }
 
         return templateDefs;
     }
+
+    /// <summary>
+    /// Here we check for 3 things, identifers a template uses but aren't defined. Attempts to redefine gobie reserved identifiers??? Use of gobie reserved identifiers in the wrong context.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="genData"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    private static List<Diagnostic> GetDiagnosticsForIdentifierIssues(Mustache.TemplateDefinition data, UserGeneratorAttributeData genData, Func<int, int, Location> getLocationAt)
+    {
+        //TODO get second and third use case sorted.
+        var diagnostics = new List<Diagnostic>();
+
+        var badIds = new List<string>();
+        foreach (var id in data.Identifiers)
+        {
+            if (Identifiers.IdentifierTokens.Contains(id) || genData.OptionalParameters.Exists(x => x.NamePascal == id) || genData.RequiredParameters.Any(x => x.NamePascal == id))
+            {
+                continue;
+            }
+
+            badIds.Add(id);
+        }
+
+        if (badIds.Count > 0)
+        {
+            TemplateSyntax.TraverseNodes(data.Syntax, t =>
+            {
+            if (t.Type == TemplateSyntaxType.Identifier && badIds.Contains(t.Identifier))
+            {
+                diagnostics.Add(
+                    Diagnostic.Create(
+                        Diagnostics.TemplateIdentifierIsUnexpected(t.Identifier),
+                        null)); // TODO locations aren't being calculated correctly for start/End  getLocationAt(t.Start, t.End - t.Start)));
+                }
+            });
+        }
+
+        return diagnostics;
+    }
+
+
 
     private static (string AttArg, TemplateText Template)? GetAttributeArgAndTemplate(
         string attributeName,

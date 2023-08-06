@@ -5,8 +5,6 @@
 /// </summary>
 public static class Identifiers
 {
-
-
     public const string ClassNameIdentifier = "ClassName";
     public const string ClassNamespaceIdentifier = "ClassNamespace";
     public const string FieldGenericTypeIdentifier = "FieldGenericType";
@@ -22,7 +20,6 @@ public static class Identifiers
         hs.Add(FieldNameIdentifier);
         hs.Add(FieldTypeIdentifier);
         IdentifierTokens = hs.ToImmutable();
-
     }
 
     public static ImmutableHashSet<string> IdentifierTokens { get; }

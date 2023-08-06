@@ -76,8 +76,8 @@ public static class Diagnostics
     public static DiagnosticDescriptor TemplateTagIsInvalid() =>
         Error("GB1024", $"The contents of this tag is not valid.");
 
-    public static DiagnosticDescriptor TemplateIsUnexpected(string tag) =>
-        Error("GB1025", $"The template tag '{tag}' is not a defined tag.");
+    public static DiagnosticDescriptor TemplateIdentifierIsUnexpected(string id) =>
+        Error("GB1025", $"The identifier '{id}' is not defined in your template and is not a standard identifier Gobie provides.");
 
     private static DiagnosticDescriptor Error(string code, string message) => FullDiscriptor(code, message, DiagnosticSeverity.Error);
 

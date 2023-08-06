@@ -1,0 +1,43 @@
+﻿{
+  "Diagnostics": [
+    {
+      "Id": "GB1025",
+      "Title": "Gobie",
+      "Severity": "Error",
+      "WarningLevel": 0,
+      "Location": ": (0,0)-(0,0)",
+      "Description": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1025",
+      "MessageFormat": "The identifier 'ImUnexpected' is not defined in your template and is not a standard identifier Gobie provides.",
+      "Message": "The identifier 'ImUnexpected' is not defined in your template and is not a standard identifier Gobie provides.",
+      "Category": "Gobie",
+      "CustomTags": []
+    },
+    {
+      "Id": "GB1025",
+      "Title": "Gobie",
+      "Severity": "Error",
+      "WarningLevel": 0,
+      "Location": ": (0,0)-(0,0)",
+      "Description": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1025",
+      "MessageFormat": "The identifier 'ImUnexpected' is not defined in your template and is not a standard identifier Gobie provides.",
+      "Message": "The identifier 'ImUnexpected' is not defined in your template and is not a standard identifier Gobie provides.",
+      "Category": "Gobie",
+      "CustomTags": []
+    },
+    {
+      "Id": "GB1025",
+      "Title": "Gobie",
+      "Severity": "Error",
+      "WarningLevel": 0,
+      "Location": ": (0,0)-(0,0)",
+      "Description": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1025",
+      "MessageFormat": "The identifier 'MeToo' is not defined in your template and is not a standard identifier Gobie provides.",
+      "Message": "The identifier 'MeToo' is not defined in your template and is not a standard identifier Gobie provides.",
+      "Category": "Gobie",
+      "CustomTags": []
+    }
+  ]
+}

@@ -234,7 +234,9 @@ public class DiagnosticErrors
         public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
         {
             [GobieTemplate]
-            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ ImUnexpected }} => {{FieldName}}.AsReadOnly();"";
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ ImExpected }}{{ ImUnexpected }} => {{FieldName}}.AsReadOnly();  {{ ImUnexpected }} {{ MeToo }}"";
+
+            public string ImExpected { get; set; }
         }";
 
         return TestHelper.Verify(source);

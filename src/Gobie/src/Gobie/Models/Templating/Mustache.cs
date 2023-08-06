@@ -137,7 +137,7 @@ public class Mustache
     public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template, Func<int, int, Location>? initialLocation)
     {
         var tokens = Tokenize(template);
-        var root = new TemplateSyntax(null, TemplateSyntaxType.Root, string.Empty, string.Empty, FormatSetting.None);
+        var root = new TemplateSyntax(null, TemplateSyntaxType.Root, string.Empty, string.Empty, FormatSetting.None, tokens[0].Start, tokens[tokens.Length - 1].End);
         var diagnostics = new List<Diagnostic>();
         var identifiers = ImmutableHashSet.CreateBuilder<string>();
 
@@ -169,7 +169,7 @@ public class Mustache
                     sb.Append(GetText(template, tokens[i]));
                 }
 
-                currentNode.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, sb.ToString(), string.Empty, FormatSetting.None));
+                currentNode.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, sb.ToString(), string.Empty, FormatSetting.None, currentNode.Start, tokens[i].End));
             }
             else if (tokens[i].TokenType is TokenType.Close)
             {
@@ -354,7 +354,7 @@ public class Mustache
                     // We close the syntax even if identifier isn't valid, b/c we don't want
                     // inaccurate alerts saying the template is incomplete.
                     identifiers.Add(identifier);
-                    var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier, formatSetting);
+                    var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier, formatSetting, currentNode.Start, currentNode.End);
                     currentNode.Children.Add(ts);
                     currentNode = ts.Type == TemplateSyntaxType.Identifier ? currentNode : ts;
                 }
@@ -571,12 +571,12 @@ public class Mustache
 
         foreach (var t in tokens)
         {
-            if(t.Token.TokenType == type)
+            if (t.Token.TokenType == type)
             {
                 found = t;
                 return true;
             }
-            else if(t.Token.TokenType == stopAt)
+            else if (t.Token.TokenType == stopAt)
             {
                 return false;
             }
@@ -729,13 +729,17 @@ public class Mustache
             TemplateSyntaxType type,
             string literalText,
             string identifier,
-            FormatSetting format)
+            FormatSetting format, 
+            int start, 
+            int end)
         {
             Parent = parent;
             Type = type;
             LiteralText = literalText ?? throw new ArgumentNullException(nameof(literalText));
             Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
             Format = format;
+            Start = start;
+            End = end;
         }
 
         public TemplateSyntaxType Type { get; }
@@ -743,6 +747,10 @@ public class Mustache
         public string LiteralText { get; }
 
         public string Identifier { get; }
+
+        public int Start { get; }
+        
+        public int End { get; }
 
         public FormatSetting Format { get; }
 
@@ -759,17 +767,25 @@ public class Mustache
         {
             int count = 0;
 
-            if (selector(this))
+            TraverseNodes(this, n =>
             {
-                count++;
-            }
-
-            foreach (var child in Children)
-            {
-                count += child.CountNodes(selector);
-            }
+                if (selector(n))
+                {
+                    count++;
+                }
+            });
 
             return count;
+        }
+
+        public static void TraverseNodes(TemplateSyntax node, Action<TemplateSyntax> action)
+        {
+            action(node);
+
+            foreach (var child in node.Children)
+            {
+                TraverseNodes(child, action);
+            }
         }
     }
 }
