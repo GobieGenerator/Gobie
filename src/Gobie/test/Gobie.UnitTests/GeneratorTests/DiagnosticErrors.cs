@@ -70,6 +70,32 @@ public class DiagnosticErrors
     }
 
     [Test]
+    public Task GB1011_MissingClosedTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName .AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test(Description = "We could error this as an invalid tag, but because we run into an Open tag after an Open, its probably more clear that the Close tag is missing.")]
+    public Task GB1011_MissingClosedTag_NotGB1024()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName a s b {{.AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task GB1020_InvalidFormatToken()
     {
         var source = @"
