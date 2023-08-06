@@ -1,15 +1,16 @@
 {
     "stryker-config": {
         "test-projects": [
-            "./Gobie.UnitTests/Gobie.UnitTests.csproj"
+            "./test/Gobie.UnitTests/Gobie.UnitTests.csproj"
         ],
         "project": "/Gobie/Gobie.csproj",
         "ignore-methods": [
-            "Console.Write*",  // Ignores all methods starting with Write in the class Console
-            "*Exception.ctor", // Ignores all exception constructors
-            "Log.*"          ,// Ignores all logging
-            "First"          ,// Mutation to FirstOrDefault not too important.
-            "Single"          // Mutation to SingleOrDefault not too important.
+            "Console.Write*",              // Ignores all methods starting with Write in the class Console
+            "*Exception.ctor",             // Ignores all exception constructors
+            "Log.*",                       // Ignores all logging
+            "First",                       // Mutation to FirstOrDefault not too important.
+            "Single",                      // Mutation to SingleOrDefault not too important.
+            "ThrowIfCancellationRequested" // No good way to test this in all its use cases
         ],
         "language-version": "Preview"
     }
