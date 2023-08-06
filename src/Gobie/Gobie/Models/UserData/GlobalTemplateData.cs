@@ -1,15 +1,14 @@
-﻿namespace Gobie.Models.UserData
+﻿namespace Gobie.Models.UserData;
+
+public class GlobalTemplateData
 {
-    public class GlobalTemplateData
+    public GlobalTemplateData(string templateName, Mustache.TemplateDefinition template)
     {
-        public GlobalTemplateData(string templateName, Mustache.TemplateDefinition template)
-        {
-            TemplateName = templateName;
-            Template = template;
-        }
-
-        public string TemplateName { get; }
-
-        public Mustache.TemplateDefinition Template { get; }
+        TemplateName = templateName;
+        Template = template;
     }
+
+    public string TemplateName { get; }
+
+    public Mustache.TemplateDefinition Template { get; }
 }

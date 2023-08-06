@@ -2,12 +2,12 @@
 using System;
 using System.Linq;
 
-namespace ConsoleClient
+namespace ConsoleClient;
+
+public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
 {
-    public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
-    {
-        [GobieTemplate]
-        private const string EncapsulatedCollection = @"
+    [GobieTemplate]
+    private const string EncapsulatedCollection = @"
             public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{FieldName : pascal}} => {{FieldName}}.AsReadOnly();
 
             public void Add{{ FieldName : pascal }}({{FieldGenericType}} s)
@@ -29,39 +29,38 @@ namespace ConsoleClient
                 {{/CustomValidator}}
             }";
 
-        [GobieTemplate]
-        private const string EncapsulatedCollection2 =
-            "interpolated const \r\n{{EncapsulatedCollection : pascal}} ";
+    [GobieTemplate]
+    private const string EncapsulatedCollection2 =
+        "interpolated const \r\n{{EncapsulatedCollection : pascal}} ";
 
-        [GobieTemplate]
-        private const string NameOther = """interpolated const {{EncapsulatedCollection : pascal}}""";
+    [GobieTemplate]
+    private const string NameOther = """interpolated const {{EncapsulatedCollection : pascal}}""";
 
-        [GobieTemplate]
-        private const string Name = """
+    [GobieTemplate]
+    private const string Name = """
             interpolated const {{EncapsulatedCollection : pascal}}
             """;
-    }
+}
 
-    ////public sealed class UserDefined3Generator : Gobie.GobieClassGenerator
-    ////{
-    ////    [GobieTemplate]
-    ////    private const string EncapsulatedCollection = "public System.Collections.Generic.IEnumerable<{{FieldGenericType}}>  {{FieldName : BADTAsdfsdG}} => {{FieldName}}.AsReadOnly();";
-    ////}
+////public sealed class UserDefined3Generator : Gobie.GobieClassGenerator
+////{
+////    [GobieTemplate]
+////    private const string EncapsulatedCollection = "public System.Collections.Generic.IEnumerable<{{FieldGenericType}}>  {{FieldName : BADTAsdfsdG}} => {{FieldName}}.AsReadOnly();";
+////}
 
-    internal class Program
+internal class Program
+{
+    private static void Main(string[] args)
     {
-        private static void Main(string[] args)
+        var auth = new Author();
+        auth.AddBooks(new Book { Title = "Spellmonger" });
+        auth.AddBooks(new Book { Title = "The Warrior's Apprentice" });
+
+        foreach (var book in auth.Books)
         {
-            var auth = new Author();
-            auth.AddBooks(new Book { Title = "Spellmonger" });
-            auth.AddBooks(new Book { Title = "The Warrior's Apprentice" });
-
-            foreach (var book in auth.Books)
-            {
-                Console.WriteLine(book.Title);
-            }
-
-            //Console.WriteLine($"Author has {auth.StateLog.Count()} log entries");
+            Console.WriteLine(book.Title);
         }
+
+        //Console.WriteLine($"Author has {auth.StateLog.Count()} log entries");
     }
 }
