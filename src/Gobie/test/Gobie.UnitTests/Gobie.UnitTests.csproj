@@ -27,8 +27,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Gobie.Attributes\Gobie.Attributes.csproj" />
-		<ProjectReference Include="..\Gobie\Gobie.csproj" />
+		<ProjectReference Include="..\..\src\Gobie.Attributes\Gobie.Attributes.csproj" />
+		<ProjectReference Include="..\..\src\Gobie\Gobie.csproj" />
 	</ItemGroup>
 
 </Project>

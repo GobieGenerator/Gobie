@@ -3,21 +3,26 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gobie", "Gobie\Gobie.csproj", "{CB436752-4AFF-46FA-9FA2-374B984EB90E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClient", "ConsoleClient\ConsoleClient.csproj", "{AAA26288-BE06-42F8-89CB-06061133950F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gobie.Attributes", "Gobie.Attributes\Gobie.Attributes.csproj", "{D8A18896-B625-43A5-9133-7C974D3AAB22}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gobie.UnitTests", "Gobie.UnitTests\Gobie.UnitTests.csproj", "{0BBFDE67-C5EF-46F0-9205-5B6DC0CB499D}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{949E4E01-22F1-4CAE-9079-A443CD9118B4}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
+		test\testproject.editorconfig = test\testproject.editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gobie.IntegrationTests", "Gobie.IntegrationTests\Gobie.IntegrationTests.csproj", "{DC48354C-8CFA-440D-B68B-83CF293C039C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7E81957A-1AAD-47BE-9E6E-8707543A0489}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C20665AD-4F18-4EC9-BD09-B22C83F4EACD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleClient", "ConsoleClient\ConsoleClient.csproj", "{AAA26288-BE06-42F8-89CB-06061133950F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gobie", "src\Gobie\Gobie.csproj", "{CB436752-4AFF-46FA-9FA2-374B984EB90E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gobie.Attributes", "src\Gobie.Attributes\Gobie.Attributes.csproj", "{D8A18896-B625-43A5-9133-7C974D3AAB22}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gobie.UnitTests", "test\Gobie.UnitTests\Gobie.UnitTests.csproj", "{0BBFDE67-C5EF-46F0-9205-5B6DC0CB499D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gobie.IntegrationTests", "test\Gobie.IntegrationTests\Gobie.IntegrationTests.csproj", "{DC48354C-8CFA-440D-B68B-83CF293C039C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +30,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CB436752-4AFF-46FA-9FA2-374B984EB90E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB436752-4AFF-46FA-9FA2-374B984EB90E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB436752-4AFF-46FA-9FA2-374B984EB90E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB436752-4AFF-46FA-9FA2-374B984EB90E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AAA26288-BE06-42F8-89CB-06061133950F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AAA26288-BE06-42F8-89CB-06061133950F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAA26288-BE06-42F8-89CB-06061133950F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAA26288-BE06-42F8-89CB-06061133950F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB436752-4AFF-46FA-9FA2-374B984EB90E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB436752-4AFF-46FA-9FA2-374B984EB90E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB436752-4AFF-46FA-9FA2-374B984EB90E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB436752-4AFF-46FA-9FA2-374B984EB90E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D8A18896-B625-43A5-9133-7C974D3AAB22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D8A18896-B625-43A5-9133-7C974D3AAB22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8A18896-B625-43A5-9133-7C974D3AAB22}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -48,6 +53,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CB436752-4AFF-46FA-9FA2-374B984EB90E} = {7E81957A-1AAD-47BE-9E6E-8707543A0489}
+		{D8A18896-B625-43A5-9133-7C974D3AAB22} = {7E81957A-1AAD-47BE-9E6E-8707543A0489}
+		{0BBFDE67-C5EF-46F0-9205-5B6DC0CB499D} = {C20665AD-4F18-4EC9-BD09-B22C83F4EACD}
+		{DC48354C-8CFA-440D-B68B-83CF293C039C} = {C20665AD-4F18-4EC9-BD09-B22C83F4EACD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E60A0BCC-9980-4B45-A14A-323DCFEE4D2F}

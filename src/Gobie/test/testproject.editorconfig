@@ -1,0 +1,20 @@
+﻿###############################
+# Test Project EditorConfig Options   #
+###############################
+
+root = false # Most settings come from the sln file
+
+###############################
+# .NET Coding Conventions     #
+###############################
+
+[*.{cs,vb}]
+
+# SA1316: Tuple element names should use correct casing
+dotnet_diagnostic.SA1316.severity = none
+
+# SA1414: Tuple types in signatures should have element names
+dotnet_diagnostic.SA1414.severity = none
+
+# CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = none
