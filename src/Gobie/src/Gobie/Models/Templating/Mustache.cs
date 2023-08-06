@@ -190,7 +190,7 @@ public class Mustache
                 var formatSetting = FormatSetting.None;
                 var initialToken = tokens[i];
 
-                var upcommingTokens = PeekNonWhitespace(tokens, i, 4);
+                var upcommingTokens = PeekNonWhitespace(tokens, i);
 
                 // Move the next loop forward, because we have handled the following number of upcommingTokens.
                 void AdvanceNextToken(ReadOnlySpan<IndexedToken> upcomming, int upcommingTokensHandled) => i = upcomming[upcommingTokensHandled - 1].Index;
@@ -635,7 +635,6 @@ public class Mustache
     private static ReadOnlySpan<IndexedToken> PeekNonWhitespace(
         ReadOnlySpan<Token> tokens,
         int i,
-        int tokenCount,
         List<IndexedToken>? nonWhitespaceTokens = null)
     {
         //TODO remove allocations in this method and return.
@@ -649,12 +648,7 @@ public class Mustache
                 nonWhitespaceTokens.Add(new(i, tokens[i]));
             }
 
-            if (nonWhitespaceTokens.Count == tokenCount)
-            {
-                return new ReadOnlySpan<IndexedToken>(nonWhitespaceTokens.ToArray()); 
-            }
-
-            return PeekNonWhitespace(tokens, i, tokenCount, nonWhitespaceTokens);
+            return PeekNonWhitespace(tokens, i, nonWhitespaceTokens);
         }
         else
         {
