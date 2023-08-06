@@ -7,15 +7,15 @@
     },
     "Diagnostics": [
       {
-        "Id": "GB1010",
+        "Id": "GB1023",
         "Title": "Gobie",
         "Severity": "Error",
         "WarningLevel": 0,
         "Location": ": (0,0)-(0,0)",
         "Description": "",
-        "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1010",
-        "MessageFormat": "The token '}}' was not expected. Expected an identifier string, which contains only letters, numbers, and underscores",
-        "Message": "The token '}}' was not expected. Expected an identifier string, which contains only letters, numbers, and underscores",
+        "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1023",
+        "MessageFormat": "This template tag is empty, a value must be provided.",
+        "Message": "This template tag is empty, a value must be provided.",
         "Category": "Gobie",
         "CustomTags": []
       }

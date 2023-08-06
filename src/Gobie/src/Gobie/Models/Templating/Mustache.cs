@@ -1,5 +1,6 @@
 ﻿namespace Gobie.Models.Templating;
 
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 
 public class Mustache
@@ -191,6 +192,9 @@ public class Mustache
 
                 var upcommingTokens = PeekNonWhitespace(tokens, i, 4);
 
+                // Move the next loop forward, because we have handled the following number of upcommingTokens.
+                void AdvanceNextToken(int upcommingTokensHandled) => i = upcommingTokens![upcommingTokensHandled - 1].index;
+
                 if (initialToken.TokenType == TokenType.TemplateTokenOpen &&
                     TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Colon, TokenType.Identifier, TokenType.Close))
                 {
@@ -199,7 +203,7 @@ public class Mustache
 
                     var formatToken = upcommingTokens[2].token;
                     var formatTokenText = GetText(template, formatToken);
-                    i = upcommingTokens[3].index;
+                    AdvanceNextToken(4);
 
                     if (IdentifierIsFormatToken(formatTokenText, out FormatSetting f))
                     {
@@ -219,7 +223,7 @@ public class Mustache
                 {
                     // Looks like {{ a b }}. Either missing a colon or two
                     var formatToken = GetText(template, upcommingTokens[1].token);
-                    i = upcommingTokens[2].index;
+                    AdvanceNextToken(3);
 
                     if (IdentifierIsFormatToken(formatToken, out FormatSetting _))
                     {
@@ -258,7 +262,7 @@ public class Mustache
                 {
                     // We have a complete and finalized token
                     tagClosed = true;
-                    i = upcommingTokens[1].index;
+                    AdvanceNextToken(2);
                     identifier = GetText(template, upcommingTokens[0].token);
                 }
                 else if (TokenKindsMatch(upcommingTokens, TokenType.Identifier))
@@ -274,10 +278,19 @@ public class Mustache
                         AddMissingToken(diagnostics, "}}");
                     }
                 }
+                else if (TokenKindsMatch(upcommingTokens, TokenType.Close))
+                {
+                    tagClosed = true;
+                    AdvanceNextToken(1);
+                    diagnostics.Add(
+                        Diagnostic.Create(
+                            Diagnostics.TemplateTagIsEmpty(),
+                            initialLocation?.Invoke(initialToken.Start, upcommingTokens[0].token.End - initialToken.Start + 1)));
+                }
                 else if (upcommingTokens.Count == 1)
                 {
                     // The first token should be an identifier but isn't.
-                    i = upcommingTokens[0].index;
+                    AdvanceNextToken(1);
                     diagnostics.Add(
                         Diagnostic.Create(
                             Diagnostics.UnexpectedToken(

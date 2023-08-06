@@ -1,1 +1,17 @@
-﻿
+﻿{
+  "Diagnostics": [
+    {
+      "Id": "GB1023",
+      "Title": "Gobie",
+      "Severity": "Error",
+      "WarningLevel": 0,
+      "Location": ": (4,127)-(4,132)",
+      "Description": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1023",
+      "MessageFormat": "This template tag is empty, a value must be provided.",
+      "Message": "This template tag is empty, a value must be provided.",
+      "Category": "Gobie",
+      "CustomTags": []
+    }
+  ]
+}
