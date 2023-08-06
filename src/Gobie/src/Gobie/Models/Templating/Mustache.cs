@@ -193,7 +193,7 @@ public class Mustache
                 var upcommingTokens = PeekNonWhitespace(tokens, i, 4);
 
                 // Move the next loop forward, because we have handled the following number of upcommingTokens.
-                void AdvanceNextToken(int upcommingTokensHandled) => i = upcommingTokens![upcommingTokensHandled - 1].index;
+                void AdvanceNextToken(ReadOnlySpan<IndexedToken> upcomming, int upcommingTokensHandled) => i = upcomming[upcommingTokensHandled - 1].Index;
 
                 if (initialToken.TokenType == TokenType.TemplateTokenOpen &&
                     TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Colon, TokenType.Identifier, TokenType.Close))
@@ -632,12 +632,13 @@ public class Mustache
     /// <param name="tokens">Token collection</param>
     /// <param name="i">Starting index</param>
     /// <returns>Index and token of the next token, or null if none exists.</returns>
-    private static List<(int index, Token token)> PeekNonWhitespace(
+    private static ReadOnlySpan<IndexedToken> PeekNonWhitespace(
         ReadOnlySpan<Token> tokens,
         int i,
         int tokenCount,
-        List<(int index, Token token)>? nonWhitespaceTokens = null)
+        List<IndexedToken>? nonWhitespaceTokens = null)
     {
+        //TODO remove allocations in this method and return.
         nonWhitespaceTokens ??= new();
 
         if (i + 1 < tokens.Length)
@@ -645,19 +646,19 @@ public class Mustache
             i++;
             if (tokens[i].TokenType != TokenType.Whitespace)
             {
-                nonWhitespaceTokens.Add((i, tokens[i]));
+                nonWhitespaceTokens.Add(new(i, tokens[i]));
             }
 
             if (nonWhitespaceTokens.Count == tokenCount)
             {
-                return nonWhitespaceTokens;
+                return new ReadOnlySpan<IndexedToken>(nonWhitespaceTokens.ToArray()); 
             }
 
             return PeekNonWhitespace(tokens, i, tokenCount, nonWhitespaceTokens);
         }
         else
         {
-            return nonWhitespaceTokens;
+            return new ReadOnlySpan<IndexedToken>(nonWhitespaceTokens.ToArray());
         }
     }
 
