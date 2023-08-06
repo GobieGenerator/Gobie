@@ -1,9 +1,10 @@
 ﻿namespace Gobie.Workflows;
 
+using static Gobie.Models.Identifiers;
+
 public static class TargetDiscovery
 {
-    private const string ClassName = "ClassName";
-    private const string ClassNamespace = "ClassNamespace";
+    private const string Attribute = "Attribute";
 
     public static IncrementalValuesProvider<MemberDeclarationSyntax> FindMembersWithAttributes(IncrementalGeneratorInitializationContext context)
     {
@@ -59,7 +60,7 @@ public static class TargetDiscovery
         }
 
         var attName = attributeSyntax.Name.ToFullString();
-        var ctypeName = attName + (attName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? string.Empty : "Attribute");
+        var ctypeName = attName + (attName.EndsWith(Attribute, StringComparison.OrdinalIgnoreCase) ? string.Empty : Attribute);
 
         // TODO diagnostics if there are more than one template or similar.
         foreach (var template in templates)
@@ -133,7 +134,7 @@ public static class TargetDiscovery
             // another whether that is even viable. And in that case we might be able to see the
             // full class when the dependant lib compiles.
             var attName = att.Name.ToFullString();
-            var ctypeName = attName + (attName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? string.Empty : "Attribute");
+            var ctypeName = attName + (attName.EndsWith(Attribute, StringComparison.OrdinalIgnoreCase) ? string.Empty : Attribute);
 
             foreach (var template in templates)
             {
@@ -222,7 +223,7 @@ public static class TargetDiscovery
                             new MemberTargetAndTemplateData(
                                 TemplateType.Complete,
                                 ctypeName,
-                                new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
+                                new ClassIdentifier(fullTemplateData[ClassNamespaceIdentifier].RenderString, fullTemplateData[ClassNameIdentifier].RenderString),
                                 sb.ToString()));
 
                         foreach (var t in template.GlobalChildTemplates)
@@ -232,7 +233,7 @@ public static class TargetDiscovery
                                 new MemberTargetAndTemplateData(
                                     TemplateType.GlobalChild,
                                     t.GlobalTemplateName,
-                                    new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
+                                    new ClassIdentifier(fullTemplateData[ClassNamespaceIdentifier].RenderString, fullTemplateData[ClassNameIdentifier].RenderString),
                                     childFragement));
                         }
 
@@ -243,7 +244,7 @@ public static class TargetDiscovery
                                 new MemberTargetAndTemplateData(
                                     TemplateType.File,
                                     ctypeName + "_" + t.FileName,
-                                    new ClassIdentifier(fullTemplateData[ClassNamespace].RenderString, fullTemplateData[ClassName].RenderString),
+                                    new ClassIdentifier(fullTemplateData[ClassNamespaceIdentifier].RenderString, fullTemplateData[ClassNameIdentifier].RenderString),
                                     fileContents));
                         }
                     }
@@ -269,7 +270,7 @@ public static class TargetDiscovery
         else if (mds is FieldDeclarationSyntax fds)
         {
             var fieldType = fds.Declaration.Type.ToFullString();
-            data.Add(new Mustache.RenderData("FieldType", fieldType, true));
+            data.Add(new Mustache.RenderData(FieldTypeIdentifier, fieldType, true));
 
             if (SyntaxHelpers.FindClass(fds) is ClassDeclarationSyntax fieldClass)
             {
@@ -282,17 +283,17 @@ public static class TargetDiscovery
                 var genericEnd = gns.TypeArgumentList.GreaterThanToken.FullSpan.Start;
                 var fs = fds.SyntaxTree.GetText().ToString(new TextSpan(genericStart, genericEnd - genericStart));
 
-                data.Add(new Mustache.RenderData("FieldGenericType", fs, true));
+                data.Add(new Mustache.RenderData(FieldGenericTypeIdentifier, fs, true));
             }
             else
             {
-                data.Add(new Mustache.RenderData("FieldGenericType", string.Empty, false));
+                data.Add(new Mustache.RenderData(FieldGenericTypeIdentifier, string.Empty, false));
             }
 
             if (fds.Declaration.Variables.Count == 0)
             {
                 // The field declaration isn't complete, just keep going.
-                data.Add(new Mustache.RenderData("FieldName", string.Empty, false));
+                data.Add(new Mustache.RenderData(FieldNameIdentifier, string.Empty, false));
                 listOfData.Add(data.ToImmutable());
             }
             else
@@ -301,7 +302,7 @@ public static class TargetDiscovery
                 foreach (var variable in fds.Declaration.Variables)
                 {
                     var varData = constData.ToBuilder();
-                    varData.Add(new Mustache.RenderData("FieldName", variable.Identifier.Text, true));
+                    varData.Add(new Mustache.RenderData(FieldNameIdentifier, variable.Identifier.Text, true));
                     listOfData.Add(varData.ToImmutable());
                 }
             }
@@ -319,8 +320,8 @@ public static class TargetDiscovery
                 return;
             }
 
-            data.Add(new Mustache.RenderData(ClassNamespace, typeInfo.ContainingNamespace.ToString(), true));
-            data.Add(new Mustache.RenderData(ClassName, typeInfo.Name, true));
+            data.Add(new Mustache.RenderData(ClassNamespaceIdentifier, typeInfo.ContainingNamespace.ToString(), true));
+            data.Add(new Mustache.RenderData(ClassNameIdentifier, typeInfo.Name, true));
         }
     }
 
@@ -348,7 +349,7 @@ public static class TargetDiscovery
                 continue;
             }
 
-            classAttName += classAttName.EndsWith("Attribute", StringComparison.OrdinalIgnoreCase) ? string.Empty : "Attribute";
+            classAttName += classAttName.EndsWith(Attribute, StringComparison.OrdinalIgnoreCase) ? string.Empty : Attribute;
 
             foreach (var gen in userGenerators)
             {

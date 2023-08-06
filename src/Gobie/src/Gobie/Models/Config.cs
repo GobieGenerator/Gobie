@@ -4,14 +4,14 @@ public static class Config
 {
     static Config()
     {
-        var db = ImmutableDictionary.CreateBuilder<string, string>();
-        db.Add("GobieClassGenerator", "global::Gobie.GobieClassGeneratorAttribute");
-        db.Add("Gobie.GobieClassGenerator", "global::Gobie.GobieClassGeneratorAttribute");
-        db.Add("GobieFieldGenerator", "global::Gobie.GobieFieldGeneratorAttribute");
-        db.Add("Gobie.GobieFieldGenerator", "global::Gobie.GobieFieldGeneratorAttribute");
-        db.Add("GobieGlobalGenerator", "global::Gobie.GobieAssemblyGeneratorAttribute");
-        db.Add("Gobie.GobieGlobalGenerator", "global::Gobie.GobieAssemblyGeneratorAttribute");
-        GenToAttribute = db.ToImmutable();
+        var dict = ImmutableDictionary.CreateBuilder<string, string>();
+        dict.Add("GobieClassGenerator", "global::Gobie.GobieClassGeneratorAttribute");
+        dict.Add("Gobie.GobieClassGenerator", "global::Gobie.GobieClassGeneratorAttribute");
+        dict.Add("GobieFieldGenerator", "global::Gobie.GobieFieldGeneratorAttribute");
+        dict.Add("Gobie.GobieFieldGenerator", "global::Gobie.GobieFieldGeneratorAttribute");
+        dict.Add("GobieGlobalGenerator", "global::Gobie.GobieAssemblyGeneratorAttribute");
+        dict.Add("Gobie.GobieGlobalGenerator", "global::Gobie.GobieAssemblyGeneratorAttribute");
+        GenToAttribute = dict.ToImmutable();
     }
 
     public static ImmutableDictionary<string, string> GenToAttribute { get; }

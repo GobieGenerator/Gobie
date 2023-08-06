@@ -721,6 +721,7 @@ public class Mustache
         public ImmutableHashSet<string> Identifiers { get; }
     }
 
+    [DebuggerDisplay("{Type}: Id {Identifier} Text {LiteralText}")]
     public class TemplateSyntax
     {
         public TemplateSyntax(
