@@ -1,1 +1,17 @@
-﻿
+﻿{
+  "Diagnostics": [
+    {
+      "Id": "GB1024",
+      "Title": "Gobie",
+      "Severity": "Error",
+      "WarningLevel": 0,
+      "Location": ": (4,127)-(4,146)",
+      "Description": "",
+      "HelpLink": "https://github.com/GobieGenerator/Gobie/tree/main/Docs/Diagnostics#GB1024",
+      "MessageFormat": "The contents of this tag is not valid.",
+      "Message": "The contents of this tag is not valid.",
+      "Category": "Gobie",
+      "CustomTags": []
+    }
+  ]
+}
