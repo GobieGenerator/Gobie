@@ -199,11 +199,11 @@ public class Mustache
                     TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Colon, TokenType.Identifier, TokenType.Close))
                 {
                     tagClosed = true;
-                    identifier = GetText(template, upcommingTokens[0].token);
+                    identifier = GetText(template, upcommingTokens[0].Token);
 
-                    var formatToken = upcommingTokens[2].token;
+                    var formatToken = upcommingTokens[2].Token;
                     var formatTokenText = GetText(template, formatToken);
-                    AdvanceNextToken(4);
+                    AdvanceNextToken(upcommingTokens, 4);
 
                     if (IdentifierIsFormatToken(formatTokenText, out FormatSetting f))
                     {
@@ -222,8 +222,8 @@ public class Mustache
                     TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Identifier, TokenType.Close))
                 {
                     // Looks like {{ a b }}. Either missing a colon or two
-                    var formatToken = GetText(template, upcommingTokens[1].token);
-                    AdvanceNextToken(3);
+                    var formatToken = GetText(template, upcommingTokens[1].Token);
+                    AdvanceNextToken(upcommingTokens, 3);
 
                     if (IdentifierIsFormatToken(formatToken, out FormatSetting _))
                     {
@@ -239,7 +239,7 @@ public class Mustache
                         diagnostics.Add(
                             Diagnostic.Create(
                                 Diagnostics.UnexpectedToken(
-                                    GetText(template, upcommingTokens[1].token),
+                                    GetText(template, upcommingTokens[1].Token),
                                     "This is either missing a colon or has a second unexpected identifier"),
                                 null));
                     }
@@ -247,10 +247,10 @@ public class Mustache
                 else if (initialToken.TokenType == TokenType.TemplateTokenOpen &&
                     TokenKindsMatch(upcommingTokens, TokenType.Identifier, TokenType.Colon, TokenType.Identifier))
                 {
-                    if (upcommingTokens.Count == 4)
+                    if (upcommingTokens.Length == 4)
                     {
                         // We have an unexpected token where we expect the closing token
-                        AddExpectedClosingToken(diagnostics, GetText(template, upcommingTokens[3].token));
+                        AddExpectedClosingToken(diagnostics, GetText(template, upcommingTokens[3].Token));
                     }
                     else
                     {
@@ -262,15 +262,25 @@ public class Mustache
                 {
                     // We have a complete and finalized token
                     tagClosed = true;
-                    AdvanceNextToken(2);
-                    identifier = GetText(template, upcommingTokens[0].token);
+                    AdvanceNextToken(upcommingTokens, 2);
+                    identifier = GetText(template, upcommingTokens[0].Token);
                 }
                 else if (TokenKindsMatch(upcommingTokens, TokenType.Identifier))
                 {
-                    if (upcommingTokens.Count == 2)
+                    // Here we know the upcomming tokens are an identifier and then NOT a close, b/c of above case.
+                    if (TokenKindSeek(upcommingTokens, TokenType.Close, TokenType.TemplateTokenOpen, out var closeToken))
                     {
-                        // We have an unexpected token where we expect the closing token
-                        AddExpectedClosingToken(diagnostics, GetText(template, upcommingTokens[1].token));
+                        tagClosed = true;
+                        i = closeToken.Index + 1;
+                        diagnostics.Add(
+                            Diagnostic.Create(
+                                Diagnostics.TemplateTagIsInvalid(),
+                                initialLocation?.Invoke(initialToken.Start, closeToken.Token.End - initialToken.Start + 1)));
+                    }
+                    else if (upcommingTokens.Length == 2)
+                    {
+                        // No closing token exists, and we have an unexpected token where we expect the closing token
+                        AddExpectedClosingToken(diagnostics, GetText(template, upcommingTokens[1].Token));
                     }
                     else
                     {
@@ -281,20 +291,20 @@ public class Mustache
                 else if (TokenKindsMatch(upcommingTokens, TokenType.Close))
                 {
                     tagClosed = true;
-                    AdvanceNextToken(1);
+                    AdvanceNextToken(upcommingTokens, 1);
                     diagnostics.Add(
                         Diagnostic.Create(
                             Diagnostics.TemplateTagIsEmpty(),
-                            initialLocation?.Invoke(initialToken.Start, upcommingTokens[0].token.End - initialToken.Start + 1)));
+                            initialLocation?.Invoke(initialToken.Start, upcommingTokens[0].Token.End - initialToken.Start + 1)));
                 }
-                else if (upcommingTokens.Count == 1)
+                else if (upcommingTokens.Length == 1)
                 {
                     // The first token should be an identifier but isn't.
-                    AdvanceNextToken(1);
+                    AdvanceNextToken(upcommingTokens, 1);
                     diagnostics.Add(
                         Diagnostic.Create(
                             Diagnostics.UnexpectedToken(
-                                GetText(template, upcommingTokens[0].token),
+                                GetText(template, upcommingTokens[0].Token),
                                 "Expected an identifier string, which contains only letters, numbers, and underscores"),
                             null));
                 }
@@ -520,9 +530,9 @@ public class Mustache
         return false;
     }
 
-    private static bool TokenKindsMatch(IEnumerable<(int i, Token t)> tokens, params TokenType[] types)
+    private static bool TokenKindsMatch(ReadOnlySpan<IndexedToken> tokens, params TokenType[] types)
     {
-        if (tokens.Any() == false)
+        if (tokens.IsEmpty)
         {
             return false; // We are out of tokens
         }
@@ -532,19 +542,47 @@ public class Mustache
             throw new InvalidOperationException("There must be types if there are tokens.");
         }
 
-        if (tokens.First().t.TokenType == types.First())
+        if (tokens[0].Token.TokenType == types[0])
         {
             if (types.Length == 1)
             {
                 return true; // Were done.
             }
 
-            return TokenKindsMatch(tokens.Skip(1), types.Skip(1).ToArray());
+            return TokenKindsMatch(tokens.Slice(1), types.Skip(1).ToArray());
         }
         else
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Find the next instance of a <paramref name="type"/>, if any, between here and the first <paramref name="stopAt"/> token.
+    /// </summary>
+    private static bool TokenKindSeek(ReadOnlySpan<IndexedToken> tokens, TokenType type, TokenType stopAt, out IndexedToken found)
+    {
+        found = default(IndexedToken);
+
+        if (tokens.IsEmpty)
+        {
+            return false; // We are out of tokens
+        }
+
+        foreach (var t in tokens)
+        {
+            if(t.Token.TokenType == type)
+            {
+                found = t;
+                return true;
+            }
+            else if(t.Token.TokenType == stopAt)
+            {
+                return false;
+            }
+        }
+
+        return false;
     }
 
     private static bool TemplateComplete(TemplateSyntax? currentNode)
@@ -638,6 +676,20 @@ public class Mustache
         public int End { get; }
 
         public TokenType TokenType { get; }
+    }
+
+    [DebuggerDisplay("Index {Index}: {Token.Start}-{Token.End} {Token.TokenType}")]
+    public readonly struct IndexedToken
+    {
+        public IndexedToken(int index, Token token)
+        {
+            Index = index;
+            Token = token;
+        }
+
+        public int Index { get; }
+
+        public Token Token { get; }
     }
 
     public readonly struct RenderData

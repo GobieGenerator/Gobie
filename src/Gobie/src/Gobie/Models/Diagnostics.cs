@@ -73,8 +73,8 @@ public static class Diagnostics
     public static DiagnosticDescriptor TemplateTagIsEmpty() =>
         Error("GB1023", $"This template tag is empty, a value must be provided.");
 
-    public static DiagnosticDescriptor TemplateTagIsInvalid(string tag) =>
-        Error("GB1024", $"The template tag '{tag}' is not a valid tag string. Tags must contain only alphanumeric characters.");
+    public static DiagnosticDescriptor TemplateTagIsInvalid() =>
+        Error("GB1024", $"The contents of this tag is not valid.");
 
     public static DiagnosticDescriptor TemplateIsUnexpected(string tag) =>
         Error("GB1025", $"The template tag '{tag}' is not a defined tag.");

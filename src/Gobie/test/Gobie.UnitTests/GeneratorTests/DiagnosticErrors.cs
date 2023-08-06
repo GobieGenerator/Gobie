@@ -189,6 +189,19 @@ public class DiagnosticErrors
     }
 
     [Test]
+    public Task GB1024_InvalidTag2()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ ImUne'xpected  => }} {{FieldName}}.AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
     public Task GB1025_UnexpectedTag()
     {
         var source = @"
