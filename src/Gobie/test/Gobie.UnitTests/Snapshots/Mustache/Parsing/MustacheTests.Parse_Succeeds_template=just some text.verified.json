@@ -6,6 +6,8 @@
         "Type": "Root",
         "LiteralText": "",
         "Identifier": "",
+        "Start": 0,
+        "End": 13,
         "Format": "None",
         "Parent": null,
         "Children": [
@@ -13,6 +15,8 @@
             "Type": "Literal",
             "LiteralText": "just some text",
             "Identifier": "",
+            "Start": 0,
+            "End": 13,
             "Format": "None"
           }
         ]
