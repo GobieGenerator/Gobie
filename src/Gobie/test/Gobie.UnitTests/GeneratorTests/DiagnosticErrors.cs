@@ -188,7 +188,7 @@ public class DiagnosticErrors
         return TestHelper.Verify(source);
     }
 
-    [Test]
+    [Test(Description = "This one is failing b/c we only peak a few tokens forward.")]
     public Task GB1024_InvalidTag2()
     {
         var source = @"
