@@ -1,6 +1,7 @@
 ﻿namespace Gobie.UnitTests;
 
 using System.Collections.Immutable;
+using Gobie.Models.Templating;
 
 public class MustacheTests
 {
@@ -77,8 +78,32 @@ public class MustacheTests
     {
         var parsed = Mustache.Parse(template, null);
 
+
+        if(parsed.Data is Mustache.TemplateDefinition td)
+        {
+            AssertTemplateSyntaxStartEndValid(td);
+        }
+
         return Verify(new ParseResult(template, new(parsed.Data, parsed.Diagnostics)))
               .UseDirectory("Snapshots/Mustache/Parsing");
+    }
+
+    private static void AssertTemplateSyntaxStartEndValid(Mustache.TemplateDefinition td)
+    {
+        Mustache.TemplateSyntax.TraverseNodes(td.Syntax, t =>
+        {
+            if (t.Children.Count > 0)
+            {
+                // First ensure all nodes are the size of their children.
+                Assert.AreEqual(t.Start, t.Children[0].Start);
+                Assert.AreEqual(t.End, t.Children.Last().End);
+
+                for (int i = 0; i < t.Children.Count - 1; i++)
+                {
+                    Assert.AreEqual(t.Children[i].End + 1, t.Children[i + 1].Start);
+                }
+            }
+        });
     }
 
     private record ParseResult(string Template, DataOrDiagnostics<SeralizableTemplateDef> Result);

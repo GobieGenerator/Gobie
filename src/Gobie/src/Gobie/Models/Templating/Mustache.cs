@@ -171,7 +171,8 @@ public class Mustache
                     sb.Append(GetText(template, tokens[i]));
                 }
 
-                currentNode.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, sb.ToString(), string.Empty, FormatSetting.None, currentNode.Start, tokens[i].End));
+                var posStart = currentNode.Children.LastOrDefault() is TemplateSyntax ts ? ts.End + 1 : currentNode.Start;
+                currentNode.Children.Add(new TemplateSyntax(currentNode, TemplateSyntaxType.Literal, sb.ToString(), string.Empty, FormatSetting.None, posStart, tokens[i].End));
             }
             else if (tokens[i].TokenType is TokenType.Close)
             {
@@ -356,11 +357,11 @@ public class Mustache
                     // We close the syntax even if identifier isn't valid, b/c we don't want
                     // inaccurate alerts saying the template is incomplete.
                     identifiers.Add(identifier);
-                    var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier, formatSetting, currentNode.Start, currentNode.End);
+                    var ts = new TemplateSyntax(currentNode, tst, string.Empty, identifier, formatSetting, initialToken.Start, tokens[i].End);
                     currentNode.Children.Add(ts);
                     currentNode = ts.Type == TemplateSyntaxType.Identifier ? currentNode : ts;
                 }
-                if (tagClosed && initialToken.TokenType == TokenType.LogicEndOpen)
+                else if (tagClosed && initialToken.TokenType == TokenType.LogicEndOpen)
                 {
                     // Here we found a complete valid tag which ends a logical tag. We need to check
                     // if the currentNode is the matching opening tag (the good case) and move the
@@ -370,8 +371,10 @@ public class Mustache
                     {
                         if (currentNode.Identifier.Equals(identifier, StringComparison.OrdinalIgnoreCase))
                         {
-                            // The node matches, so we close it, by navigating back to the parent
+                            // The node matches, so we close it, by navigating back to the parent, and set the parent end.
+                            currentNode.Parent?.SetEnd(currentNode.End);
                             currentNode = currentNode.Parent;
+
                         }
                         else
                         {
@@ -752,13 +755,19 @@ public class Mustache
 
         public int Start { get; }
         
-        public int End { get; }
+        public int End { get; private set; }
 
         public FormatSetting Format { get; }
 
         public TemplateSyntax? Parent { get; }
 
         public List<TemplateSyntax> Children { get; } = new();
+
+
+        /// <summary>
+        /// Used to fix the end of a node location because we don't know it at the start in our forward only parser.
+        /// </summary>
+        public void SetEnd(int end) => End = end;
 
         /// <summary>
         /// Counts the nodes of a particular type, starting from this node and checking all children recursively.
