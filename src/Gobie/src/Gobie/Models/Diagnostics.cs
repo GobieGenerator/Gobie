@@ -70,6 +70,15 @@ public static class Diagnostics
     public static DiagnosticDescriptor TemplateIsConcatenatedString() =>
         Error("GB1022", $"Template strings cannot be concatenated. We currently do not support them.");
 
+    public static DiagnosticDescriptor TemplateTagIsEmpty() =>
+        Error("GB1023", $"This template tag is empty, a value must be provided.");
+
+    public static DiagnosticDescriptor TemplateTagIsInvalid(string tag) =>
+        Error("GB1024", $"The template tag '{tag}' is not a valid tag string. Tags must contain only alphanumeric characters.");
+
+    public static DiagnosticDescriptor TemplateIsUnexpected(string tag) =>
+        Error("GB1025", $"The template tag '{tag}' is not a defined tag.");
+
     private static DiagnosticDescriptor Error(string code, string message) => FullDiscriptor(code, message, DiagnosticSeverity.Error);
 
     private static DiagnosticDescriptor Warning(string code, string message) => FullDiscriptor(code, message, DiagnosticSeverity.Warning);

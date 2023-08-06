@@ -70,45 +70,6 @@ public class DiagnosticErrors
     }
 
     [Test]
-    public Task GBxxxx_EmptyTag()
-    {
-        var source = @"
-        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
-        {
-            [GobieTemplate]
-            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ }} => {{FieldName}}.AsReadOnly();"";
-        }";
-
-        return TestHelper.Verify(source);
-    }
-
-    [Test]
-    public Task GBxxxx_UnexpectedTag()
-    {
-        var source = @"
-        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
-        {
-            [GobieTemplate]
-            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ ImUnexpected }} => {{FieldName}}.AsReadOnly();"";
-        }";
-
-        return TestHelper.Verify(source);
-    }
-
-    [Test]
-    public Task GBxxxx_InvalidTag()
-    {
-        var source = @"
-        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
-        {
-            [GobieTemplate]
-            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ ImUne'xpected }} => {{FieldName}}.AsReadOnly();"";
-        }";
-
-        return TestHelper.Verify(source);
-    }
-
-    [Test]
     public Task GB1020_InvalidFormatToken()
     {
         var source = @"
@@ -196,6 +157,45 @@ public class DiagnosticErrors
             private const string EncapsulatedCollection3 =
                 ""interpolated const"" +
                 ""{{EncapsulatedCollection : pascal}} "";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task GB1023_EmptyTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ }} => {{FieldName}}.AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task GB1024_InvalidTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ ImUne'xpected }} => {{FieldName}}.AsReadOnly();"";
+        }";
+
+        return TestHelper.Verify(source);
+    }
+
+    [Test]
+    public Task GB1025_UnexpectedTag()
+    {
+        var source = @"
+        public sealed class UserDefinedGenerator : Gobie.GobieClassGenerator
+        {
+            [GobieTemplate]
+            private const string EncapsulatedCollection = ""public System.Collections.Generic.IEnumerable<{{FieldGenericType}}> {{ ImUnexpected }} => {{FieldName}}.AsReadOnly();"";
         }";
 
         return TestHelper.Verify(source);
