@@ -137,7 +137,9 @@ public class Mustache
     public static DataOrDiagnostics<TemplateDefinition> Parse(ReadOnlySpan<char> template, Func<int, int, Location>? initialLocation)
     {
         var tokens = Tokenize(template);
-        var root = new TemplateSyntax(null, TemplateSyntaxType.Root, string.Empty, string.Empty, FormatSetting.None, tokens[0].Start, tokens[tokens.Length - 1].End);
+        var root = tokens.Length > 0 ?
+            new TemplateSyntax(null, TemplateSyntaxType.Root, string.Empty, string.Empty, FormatSetting.None, tokens[0].Start, tokens[tokens.Length - 1].End) :
+            new TemplateSyntax(null, TemplateSyntaxType.Root, string.Empty, string.Empty, FormatSetting.None, 0, 0);
         var diagnostics = new List<Diagnostic>();
         var identifiers = ImmutableHashSet.CreateBuilder<string>();
 

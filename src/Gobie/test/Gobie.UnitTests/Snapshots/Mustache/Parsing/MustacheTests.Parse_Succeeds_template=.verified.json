@@ -6,6 +6,8 @@
         "Type": "Root",
         "LiteralText": "",
         "Identifier": "",
+        "Start": 0,
+        "End": 0,
         "Format": "None",
         "Parent": null
       },
